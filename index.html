@@ -693,11 +693,13 @@ function renderRequests(){
     });
   });
   tbody.querySelectorAll('[data-act="delReq"]').forEach(btn=>{
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', async function(){
       const idx = parseInt(this.dataset.idx);
       if(!confirm('Hapus request ini?')) return;
+      const deleted = REQUESTS[idx];
       REQUESTS.splice(idx,1);
       saveLocalState(); renderRequests();
+      await pushOneToSheet({sheetType:'request_delete', judul: deleted.judul, tanggal: deleted.tanggal});
     });
   });
   tbody.querySelectorAll('.reqLinkInput').forEach(inp=>{
@@ -1678,6 +1680,19 @@ function handleWrite(data) {
         data.produk || '', data.platform || '', forceText(data.deadline),
         data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || ''
       ]);
+    }
+
+  } else if (data.sheetType === 'request_delete') {
+    var sh = ss.getSheetByName('RequestKonten');
+    if (!sh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
+    var lastRow = sh.getLastRow();
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 11).getValues() : [];
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][1]).trim() === String(data.judul).trim() &&
+          String(rows[i][0]).trim() === String(data.tanggal).trim()) {
+        sh.deleteRow(i + 1);
+        break;
+      }
     }
   }
 
