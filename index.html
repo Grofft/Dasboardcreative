@@ -132,6 +132,43 @@ footer.note{text-align:center;padding:30px;font-size:11px;color:var(--footer-tex
 
 code.inline{background:var(--code-bg);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--pink);}
 pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;overflow-x:auto;white-space:pre;max-height:420px;color:#A8E6E0;}
+
+/* ============== TAMPILAN MOBILE ============== */
+@media(max-width:760px){
+  header.top{padding:14px 16px;}
+  main{padding:16px 14px 50px;}
+  #pageTabs{top:64px;}
+  .page-tab{min-width:100px;font-size:11.5px;padding:9px 10px;}
+  .section-header h2{font-size:16px;}
+  .kpi .value{font-size:19px;}
+  .chart-wrap{height:240px;}
+  .two-col{gap:12px;}
+
+  /* Tabel jadi kartu bertumpuk, tiap baris = 1 kartu, tiap kolom = label + nilai */
+  table.mobile-cards{min-width:0;width:100%;}
+  .table-scroll:has(table.mobile-cards){overflow-x:visible;}
+  table.mobile-cards thead{display:none;}
+  table.mobile-cards, table.mobile-cards tbody{display:block;width:100%;}
+  table.mobile-cards tr{
+    display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-bottom:10px;
+  }
+  table.mobile-cards tr:nth-child(odd){background:var(--panel-2);}
+  table.mobile-cards td{
+    display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+    border-bottom:1px solid var(--td-border);padding:9px 0;white-space:normal;width:100%;
+  }
+  table.mobile-cards td:last-child{border-bottom:none;padding-bottom:2px;}
+  table.mobile-cards td:first-child{padding-top:2px;}
+  table.mobile-cards td::before{
+    content:attr(data-label);font-weight:700;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  table.mobile-cards td[data-label=""]::before,
+  table.mobile-cards td:not([data-label])::before{content:none;}
+  table.mobile-cards td > *{max-width:100%;}
+  table.mobile-cards input, table.mobile-cards select{width:100%;}
+}
 </style>
 </head>
 <body>
@@ -212,7 +249,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
     <div class="section-header"><h2>Leaderboard Performa</h2><div class="muted-note">Top 5 konten berdasarkan views pada periode & filter terpilih</div></div>
     <div class="card">
       <div class="table-scroll">
-        <table>
+        <table class="mobile-cards">
           <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th></tr></thead>
           <tbody id="tblLeaderboard"></tbody>
         </table>
@@ -262,10 +299,10 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <input type="text" id="filterJudul" placeholder="Cari judul...">
       </div>
       <div class="table-scroll">
-        <table>
+        <table class="mobile-cards">
           <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Engagement Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
           <tbody id="tblVideos"></tbody>
-          <tfoot><tr><td colspan="7">Total</td><td id="ftViews">0</td><td id="ftLikes">0</td><td id="ftComments">0</td><td id="ftShares">0</td><td>-</td><td>-</td><td>-</td></tr></tfoot>
+          <tfoot><tr><td colspan="7" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -328,7 +365,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <input type="text" id="filterReqJudul" placeholder="Cari judul...">
       </div>
       <div class="table-scroll">
-        <table>
+        <table class="mobile-cards">
           <thead><tr><th>Tanggal Request</th><th>Judul</th><th>Diminta Oleh</th><th>PIC</th><th>Produk</th><th>Platform</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Brief</th><th>Link</th><th>Aksi</th></tr></thead>
           <tbody id="tblRequests"></tbody>
         </table>
@@ -579,21 +616,21 @@ function renderRequests(){
   const statusColor = {Baru:'var(--blue)', Diproses:'var(--yellow)', Revisi:'var(--red)', Selesai:'var(--pink)', Ditolak:'var(--muted)'};
   tbody.innerHTML = rows.map(r=>`
     <tr>
-      <td>${escapeHtml(r.tanggal||'')}</td>
-      <td>${escapeHtml(r.judul||'')}</td>
-      <td>${escapeHtml(r.requester||'')}</td>
-      <td>${escapeHtml(r.pic||'')}</td>
-      <td>${escapeHtml(r.produk||'')}</td>
-      <td>${escapeHtml(r.platform||'')}</td>
-      <td>${escapeHtml(r.deadline||'-')}</td>
-      <td>${escapeHtml(r.prioritas||'')}</td>
-      <td>
+      <td data-label="Tanggal Request">${escapeHtml(r.tanggal||'')}</td>
+      <td data-label="Judul">${escapeHtml(r.judul||'')}</td>
+      <td data-label="Diminta Oleh">${escapeHtml(r.requester||'')}</td>
+      <td data-label="PIC">${escapeHtml(r.pic||'')}</td>
+      <td data-label="Produk">${escapeHtml(r.produk||'')}</td>
+      <td data-label="Platform">${escapeHtml(r.platform||'')}</td>
+      <td data-label="Deadline">${escapeHtml(r.deadline||'-')}</td>
+      <td data-label="Prioritas">${escapeHtml(r.prioritas||'')}</td>
+      <td data-label="Status">
         <select data-idx="${r._idx}" class="reqStatusSelect" style="color:${statusColor[r.status]||'var(--text)'};font-weight:600;">
           ${REQ_STATUS_OPTS.map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
         </select>
         ${r.convertedToVideo?'<div style="font-size:10px;color:var(--pink);margin-top:3px;">✓ masuk Daftar Konten</div>':''}
       </td>
-      <td style="max-width:160px;overflow:hidden;">
+      <td data-label="Brief" style="max-width:160px;overflow:hidden;">
         ${(()=>{
           const b = r.brief||'';
           const idx2 = r._idx;
@@ -604,13 +641,13 @@ function renderRequests(){
           return `<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${escapeHtml(b)}${b ? copyBtn : ''}</span>`;
         })()}
       </td>
-      <td style="min-width:160px;">
+      <td data-label="Link" style="min-width:160px;">
         <div style="display:flex;gap:4px;align-items:center;">
           <input type="url" class="reqLinkInput" data-idx="${r._idx}" value="${escapeHtml(r.link||'')}" placeholder="https://..." style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 8px;font-size:11px;width:100%;min-width:100px;">
           ${r.link ? `<a href="${escapeHtml(r.link)}" target="_blank" rel="noopener" style="color:var(--cyan);font-size:14px;flex-shrink:0;" title="Buka link">🔗</a>` : ''}
         </div>
       </td>
-      <td><button class="btn" data-idx="${r._idx}" data-act="delReq" style="font-size:11px;padding:4px 8px;">Hapus</button></td>
+      <td data-label=""><button class="btn" data-idx="${r._idx}" data-act="delReq" style="font-size:11px;padding:4px 8px;">Hapus</button></td>
     </tr>
   `).join('');
   tbody.querySelectorAll('.reqStatusSelect').forEach(sel=>{
@@ -1123,9 +1160,9 @@ function renderSummary(range){
   // ── LEADERBOARD ──
   const top5 = [...vids].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
   document.getElementById('tblLeaderboard').innerHTML = top5.map(v=>`
-    <tr><td>${escapeHtml(v.judul)}</td><td>${escapeHtml(v.nama)}</td><td><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td><td><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td><td>${platformPill(v.platform)}</td>
-    <td>${fmtDateID(parseDate(v.tanggal))}</td><td>${numFmt(v.views)}</td><td>${numFmt(v.likes)}</td><td>${numFmt(v.comments)}</td><td>${numFmt(v.shares)}</td></tr>
-  `).join('') || '<tr><td colspan="10" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
+    <tr><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator">${escapeHtml(v.nama)}</td><td data-label="Tipe"><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td><td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td><td data-label="Platform">${platformPill(v.platform)}</td>
+    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td></tr>
+  `).join('') || '<tr><td colspan="10" data-label="" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
 }
 
 function tipeTagClass(tipe){
@@ -1179,17 +1216,17 @@ function renderVideoTable(range, resetPage){
       ? `<span class="tag" style="background:rgba(63,216,212,.15);color:var(--cyan);border:1px solid var(--cyan);font-size:11px;">${escapeHtml(v.akunPosting)}</span>`
       : `<span style="color:var(--muted);font-size:11px;">—</span>`;
     return `<tr>
-      <td>${fmtDateID(parseDate(v.tanggal))}</td><td>${escapeHtml(v.judul)}</td><td>${escapeHtml(v.nama)}</td>
-      <td><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td>
-      <td><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td>
-      <td>${platformPill(v.platform)}</td>
-      <td>${akunBadge}</td>
-      <td>${numFmt(v.views)}</td><td>${numFmt(v.likes)}</td><td>${numFmt(v.comments)}</td><td>${numFmt(v.shares)}</td>
-      <td>${engagementRate(v).toFixed(2)}%</td>
-      <td>${lastUpd}</td>
-      <td><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
+      <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator/Editor">${escapeHtml(v.nama)}</td>
+      <td data-label="Tipe"><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td>
+      <td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td>
+      <td data-label="Platform">${platformPill(v.platform)}</td>
+      <td data-label="Akun Posting">${akunBadge}</td>
+      <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td>
+      <td data-label="Engagement Rate">${engagementRate(v).toFixed(2)}%</td>
+      <td data-label="Terakhir Update">${lastUpd}</td>
+      <td data-label=""><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="13" class="muted-note" style="padding:16px;">Tidak ada konten yang cocok dengan filter.</td></tr>';
+  }).join('') || '<tr><td colspan="13" data-label="" class="muted-note" style="padding:16px;">Tidak ada konten yang cocok dengan filter.</td></tr>';
 
   // Footer totals (all filtered, not just page)
   document.getElementById('ftViews').textContent    = numFmt(vids.reduce((s,v)=>s+(v.views||0),0));
