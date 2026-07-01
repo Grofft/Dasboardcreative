@@ -124,6 +124,19 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 
 .loadbanner{position:fixed;bottom:18px;right:18px;z-index:40;background:rgba(63,216,212,.15);border:1px solid var(--cyan);color:var(--cyan);padding:10px 16px;border-radius:9px;font-size:12.5px;font-weight:600;max-width:360px;}
 
+/* ============== TOAST NOTIFIKASI UPDATE KONTEN ============== */
+#toastContainer{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;max-width:340px;pointer-events:none;}
+.toast{display:flex;align-items:flex-start;gap:8px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cyan);color:var(--text);padding:11px 14px;border-radius:9px;font-size:12.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.28);opacity:0;transform:translateY(12px) scale(.97);transition:opacity .25s ease,transform .25s ease;pointer-events:auto;}
+.toast.show{opacity:1;transform:translateY(0) scale(1);}
+.toast.hide{opacity:0;transform:translateY(12px) scale(.97);}
+.toast.info{border-left-color:var(--blue);}
+.toast.warn{border-left-color:var(--yellow);}
+.toast .toast-ic{flex-shrink:0;font-size:15px;line-height:1.2;}
+.toast .toast-txt{flex:1;line-height:1.4;}
+.toast .toast-txt .toast-sub{display:block;font-weight:500;color:var(--muted);font-size:11px;margin-top:2px;}
+.toast .toast-x{flex-shrink:0;cursor:pointer;color:var(--muted);font-size:13px;background:none;border:none;padding:0 0 0 4px;}
+@media(max-width:640px){#toastContainer{left:14px;right:14px;max-width:none;}}
+
 .health-card{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--panel-2);margin-bottom:8px;}
 .health-card .nm{font-weight:700;font-size:13px;}
 .health-card .meta{font-size:11px;color:var(--muted);margin-top:2px;}
@@ -399,7 +412,30 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
 
 <footer class="note">DASHBOARD CREATIVE TEAM — produksi konten (video/foto/carousel), performa konten, &amp; kesehatan akun sosmed. Terhubung ke Google Spreadsheet via Apps Script.</footer>
 
+<div id="toastContainer" aria-live="polite"></div>
+
 <script>
+/* ============== TOAST NOTIFIKASI ============== */
+function showToast(title, sub, type){
+  type = type || 'success';
+  const icons = {success:'✅', info:'🔄', warn:'⚠️'};
+  const box = document.getElementById('toastContainer');
+  if(!box) return;
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  el.innerHTML = '<span class="toast-ic">'+(icons[type]||'✅')+'</span>'
+    + '<span class="toast-txt">'+escapeHtml(title)+(sub?'<span class="toast-sub">'+escapeHtml(sub)+'</span>':'')+'</span>'
+    + '<button class="toast-x" title="Tutup">✕</button>';
+  box.appendChild(el);
+  const remove = ()=>{
+    el.classList.remove('show'); el.classList.add('hide');
+    setTimeout(()=> el.remove(), 250);
+  };
+  el.querySelector('.toast-x').onclick = remove;
+  requestAnimationFrame(()=> requestAnimationFrame(()=> el.classList.add('show')));
+  setTimeout(remove, 5000);
+}
+
 /* ============== DATA DASAR ============== */
 let TEAM = [];
 let ACCOUNTS = [];
@@ -410,6 +446,7 @@ let PRODUCTS = [];
 let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief}
+let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
 const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','Selesai','Ditolak'];
 
@@ -578,8 +615,8 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   saveLocalState(); render(); refreshPerfSelect();
   msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
   const status = await pushOneToSheet({sheetType:'video', ...rec});
-  if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; pullFromSheet(true); }
-  else if(status==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; }
+  if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; pullFromSheet(true); showToast('Konten selesai diperbarui', judul, 'success'); }
+  else if(status==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; showToast('Konten tersimpan di dashboard', judul, 'warn'); }
   else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
   document.getElementById('inVidJudul').value='';
 };
@@ -665,6 +702,11 @@ function renderRequests(){
         render(); refreshPerfSelect();
         const msg = document.getElementById('requestSaveMsg');
         if(msg){ msg.textContent = '✅ "'+REQUESTS[idx].judul+'" otomatis ditambahkan ke Daftar Konten.'; msg.style.color = 'var(--cyan)'; }
+      }
+      if(this.value === 'Selesai' && prevStatus !== 'Selesai'){
+        const pemohon = (REQUESTS[idx].requester||'').trim();
+        const sapaan  = pemohon ? 'Hai '+pemohon+'! 👋' : 'Konten selesai! 👋';
+        showToast(sapaan, 'Konten "'+REQUESTS[idx].judul+'" kamu sudah selesai dibuat nih, bisa dicrosscek ya!', 'success');
       }
     });
   });
@@ -794,8 +836,8 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   saveLocalState(); render();
   msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul; msg.style.color='var(--cyan)';
   const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[idx]});
-  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; pullFromSheet(true); }
-  else if(status==='no-url') msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).';
+  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; pullFromSheet(true); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
+  else if(status==='no-url'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).'; showToast('Update performa selesai (lokal)', VIDEOS[idx].judul, 'warn'); }
   else msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard, tapi gagal kirim ke spreadsheet — cek URL Apps Script).';
   document.getElementById('inPerfKonten').value='';
   document.getElementById('inPerfAkun').value='';
@@ -836,7 +878,8 @@ function updateAkunInline(nama){
   saveLocalState(); render();
   msg.textContent = '✅ Diperbarui'; msg.style.color='var(--cyan)';
   pushOneToSheet({sheetType:'akun_update', ...rec}).then(st=>{
-    if(st==='ok'){ msg.textContent = '✅ Diperbarui & terkirim ke spreadsheet.'; pullFromSheet(true); }
+    if(st==='ok'){ msg.textContent = '✅ Diperbarui & terkirim ke spreadsheet.'; pullFromSheet(true); showToast('Update akun selesai', nama, 'success'); }
+    else { showToast('Update akun tersimpan di dashboard', nama, 'warn'); }
   });
 }
 
@@ -1818,6 +1861,13 @@ async function pullFromSheet(silent){
     msg.textContent = '✅ Berhasil menarik '+countVideo+' baris video, '+countAkun+' baris log akun & '+countReq+' request konten dari spreadsheet.';
     msg.style.color = 'var(--cyan)';
     updateSyncBadge();
+
+    // Deteksi apakah ada konten yang berubah (baru/diupdate) sejak sinkron terakhir
+    const snapshot = JSON.stringify({VIDEOS, AKUN_LOG, REQUESTS});
+    if(lastSyncSnapshot !== null && snapshot !== lastSyncSnapshot){
+      showToast('Konten telah diperbarui', countVideo+' video, '+countAkun+' log akun, '+countReq+' request tersinkron dari spreadsheet.', 'info');
+    }
+    lastSyncSnapshot = snapshot;
   }catch(err){
     msg.textContent = 'Gagal menarik data: '+err.message;
     msg.style.color = 'var(--red)';
