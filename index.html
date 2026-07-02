@@ -449,6 +449,7 @@ let REQUESTS = []; // {tanggal, judul, requester, pic, produk, platform, deadlin
 let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
 let pendingPushes = 0; // hitung berapa proses "kirim ke spreadsheet" yang masih berjalan
 let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara lokal
+let lastPushErrorMsg = ''; // pesan error terakhir dari Apps Script, supaya bisa ditampilkan ke user
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
 const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','Selesai','Ditolak'];
 
@@ -701,7 +702,7 @@ function renderRequests(){
       saveLocalState(); renderRequests();
       const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
       if(pushResult !== 'ok'){
-        showToast('⚠️ Gagal tersimpan ke spreadsheet', 'Perubahan status "'+REQUESTS[idx].judul+'" hanya tersimpan lokal. Cek koneksi/URL Apps Script lalu coba lagi.', 'warn');
+        showToast('⚠️ Gagal tersimpan ke spreadsheet', 'Status "'+REQUESTS[idx].judul+'": '+lastPushErrorMsg, 'warn');
       }
       if(converted){
         render(); refreshPerfSelect();
@@ -763,7 +764,7 @@ function renderRequests(){
       saveLocalState();
       const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
       if(pushResult !== 'ok'){
-        showToast('⚠️ Link gagal tersimpan ke spreadsheet', 'Link untuk "'+REQUESTS[idx].judul+'" hanya tersimpan lokal. Cek koneksi/URL Apps Script lalu coba lagi.', 'warn');
+        showToast('⚠️ Link gagal tersimpan ke spreadsheet', 'Link "'+REQUESTS[idx].judul+'": '+lastPushErrorMsg, 'warn');
       }
       renderRequests();
     });
@@ -1580,7 +1581,11 @@ function doGet(e) {
   // WRITE via GET — menghindari masalah CORS pada POST
   if (action === 'write') {
     try {
-      var payload = JSON.parse(decodeURIComponent(e.parameter.data || '{}'));
+      // PENTING: e.parameter.data SUDAH otomatis di-decode oleh Apps Script.
+      // JANGAN decodeURIComponent() lagi di sini — kalau isi data mengandung
+      // karakter '%' (mis. di judul/brief/link), decode ganda akan melempar
+      // "URI malformed" dan penyimpanan gagal total tanpa alasan yang jelas.
+      var payload = JSON.parse(e.parameter.data || '{}');
       var result  = handleWrite(payload);
       return jsonOutput(result);
     } catch(err) {
@@ -1911,15 +1916,18 @@ async function pushOneToSheet(payload){
     try{ json = JSON.parse(text); }
     catch(parseErr){
       console.error('pushOneToSheet: respons Apps Script bukan JSON valid:', text);
+      lastPushErrorMsg = 'Respons server tidak valid.';
       return 'error';
     }
     if(json.status === 'error'){
       console.error('pushOneToSheet: Apps Script menolak data:', json.message, payload);
+      lastPushErrorMsg = json.message || 'Tidak diketahui';
       return 'error';
     }
     return 'ok';
   }catch(e){
     console.error('pushOneToSheet: gagal fetch:', e);
+    lastPushErrorMsg = e.message || 'Gagal terhubung';
     return 'error';
   }
   finally{
