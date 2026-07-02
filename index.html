@@ -699,7 +699,10 @@ function renderRequests(){
         converted = convertRequestToVideo(idx);
       }
       saveLocalState(); renderRequests();
-      await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
+      const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
+      if(pushResult !== 'ok'){
+        showToast('⚠️ Gagal tersimpan ke spreadsheet', 'Perubahan status "'+REQUESTS[idx].judul+'" hanya tersimpan lokal. Cek koneksi/URL Apps Script lalu coba lagi.', 'warn');
+      }
       if(converted){
         render(); refreshPerfSelect();
         const msg = document.getElementById('requestSaveMsg');
@@ -758,7 +761,10 @@ function renderRequests(){
       const idx = parseInt(this.dataset.idx);
       REQUESTS[idx].link = this.value.trim();
       saveLocalState();
-      await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
+      const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
+      if(pushResult !== 'ok'){
+        showToast('⚠️ Link gagal tersimpan ke spreadsheet', 'Link untuk "'+REQUESTS[idx].judul+'" hanya tersimpan lokal. Cek koneksi/URL Apps Script lalu coba lagi.', 'warn');
+      }
       renderRequests();
     });
   });
@@ -1899,9 +1905,23 @@ async function pushOneToSheet(payload){
     // Ini menghindari masalah CORS preflight yang terjadi pada POST ke Apps Script
     const encoded = encodeURIComponent(JSON.stringify(payload));
     const getUrl  = url + '?action=write&data=' + encoded;
-    await fetch(getUrl, {cache:'no-store'});
+    const res  = await fetch(getUrl, {cache:'no-store'});
+    const text = await res.text();
+    let json;
+    try{ json = JSON.parse(text); }
+    catch(parseErr){
+      console.error('pushOneToSheet: respons Apps Script bukan JSON valid:', text);
+      return 'error';
+    }
+    if(json.status === 'error'){
+      console.error('pushOneToSheet: Apps Script menolak data:', json.message, payload);
+      return 'error';
+    }
     return 'ok';
-  }catch(e){ return 'error'; }
+  }catch(e){
+    console.error('pushOneToSheet: gagal fetch:', e);
+    return 'error';
+  }
   finally{
     pendingPushes--;
     lastLocalEditAt = Date.now();
