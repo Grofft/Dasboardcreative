@@ -447,6 +447,8 @@ let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comment
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief}
 let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
+let pendingPushes = 0; // hitung berapa proses "kirim ke spreadsheet" yang masih berjalan
+let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara lokal
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
 const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','Selesai','Ditolak'];
 
@@ -1609,6 +1611,17 @@ function doPost(e) {
   }
 }
 
+function normalizeTanggal(v) {
+  // Kolom tanggal bisa tersimpan sebagai objek Date (auto-convert oleh Sheets)
+  // atau sebagai teks biasa (kalau dipaksa via forceText). Fungsi ini menyamakan
+  // keduanya jadi format yyyy-MM-dd supaya perbandingan judul+tanggal akurat.
+  if (!v) return '';
+  if (Object.prototype.toString.call(v) === '[object Date]' && !isNaN(v)) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(v).replace(/^'/, '').trim().slice(0, 10);
+}
+
 function handleWrite(data) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -1628,7 +1641,9 @@ function handleWrite(data) {
     var found = false;
     var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 12).getValues() : [];
     for (var i = 1; i < rows.length; i++) {
-      if (String(rows[i][1]).trim() === String(data.judul).trim()) {
+      // Cocokkan judul DAN tanggal, supaya video dengan judul sama tidak salah ketimpa
+      if (String(rows[i][1]).trim() === String(data.judul).trim() &&
+          normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal)) {
         sh.getRange(i + 1, 1, 1, 12).setValues([[
           data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
           data.platform, data.views || 0, data.likes || 0,
@@ -1705,9 +1720,11 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var found = false;
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 10).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 11).getValues() : [];
     for (var i = 1; i < rows.length; i++) {
-      if (String(rows[i][1]).trim() === String(data.judul).trim()) {
+      // Cocokkan judul DAN tanggal, supaya request dengan judul sama tidak salah ketimpa
+      if (String(rows[i][1]).trim() === String(data.judul).trim() &&
+          normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal)) {
         sh.getRange(i + 1, 1, 1, 11).setValues([[
           forceText(data.tanggal), data.judul, data.requester || '', data.pic || '',
           data.produk || '', data.platform || '', forceText(data.deadline),
@@ -1876,6 +1893,7 @@ async function pullFromSheet(silent){
 async function pushOneToSheet(payload){
   const url = getAppsScriptUrl();
   if(!url) return 'no-url';
+  pendingPushes++;
   try{
     // Kirim via GET dengan data di-encode sebagai query param
     // Ini menghindari masalah CORS preflight yang terjadi pada POST ke Apps Script
@@ -1884,6 +1902,10 @@ async function pushOneToSheet(payload){
     await fetch(getUrl, {cache:'no-store'});
     return 'ok';
   }catch(e){ return 'error'; }
+  finally{
+    pendingPushes--;
+    lastLocalEditAt = Date.now();
+  }
 }
 async function pushAllToSheet(){
   const url = getAppsScriptUrl();
@@ -1920,6 +1942,12 @@ function startAutoSync(){
     const active = document.activeElement;
     const isTyping = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
     if(isTyping) return;
+    // Jangan tarik data kalau masih ada proses kirim (push) ke spreadsheet yang belum selesai —
+    // supaya data lama di spreadsheet tidak menimpa balik perubahan (status/link) yang baru saja dibuat.
+    if(pendingPushes > 0) return;
+    // Beri jeda aman beberapa detik setelah perubahan lokal terakhir, karena Google Apps Script
+    // butuh sedikit waktu untuk benar-benar menyimpan baris baru sebelum bisa terbaca lagi saat pull.
+    if(Date.now() - lastLocalEditAt < 4000) return;
     await pullFromSheet(true);
     updateSyncBadge();
   }, AUTO_SYNC_MS);
