@@ -684,15 +684,30 @@ function renderRequests(){
         </select>
         ${r.convertedToVideo?'<div style="font-size:10px;color:var(--pink);margin-top:3px;">✓ masuk Daftar Konten</div>':''}
       </td>
-      <td data-label="Brief" style="max-width:160px;overflow:hidden;">
+      <td data-label="Brief" style="max-width:170px;">
         ${(()=>{
           const b = r.brief||'';
           const idx2 = r._idx;
-          const copyBtn = `<button class="brief-copy" data-idx="${idx2}" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 0 0 4px;" title="Copy brief">📋</button>`;
+          const copyBtn = `<button class="brief-copy" data-idx="${idx2}" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0;" title="Copy brief">📋 Copy</button>`;
+          if(!b) return '';
           if(b.length > 50){
-            return `<span class="brief-short-${idx2}" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${escapeHtml(b.slice(0,50))}... <button class="brief-toggle" data-idx="${idx2}" data-mode="expand" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-size:11px;padding:0;white-space:nowrap;">Selengkapnya</button>${copyBtn}</span><span class="brief-full-${idx2}" style="display:none;white-space:normal;word-break:break-word;">${escapeHtml(b)} <button class="brief-toggle" data-idx="${idx2}" data-mode="collapse" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0;">Sembunyikan</button>${copyBtn}</span>`;
+            return `<div class="brief-short-${idx2}">
+                <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px;">${escapeHtml(b.slice(0,50))}...</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                  <button class="brief-toggle" data-idx="${idx2}" data-mode="expand" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-size:11px;padding:0;">Selengkapnya</button>
+                  ${copyBtn}
+                </div>
+              </div>
+              <div class="brief-full-${idx2}" style="display:none;">
+                <div style="white-space:normal;word-break:break-word;">${escapeHtml(b)}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                  <button class="brief-toggle" data-idx="${idx2}" data-mode="collapse" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0;">Sembunyikan</button>
+                  ${copyBtn}
+                </div>
+              </div>`;
           }
-          return `<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${escapeHtml(b)}${b ? copyBtn : ''}</span>`;
+          return `<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px;">${escapeHtml(b)}</div>
+            <div style="margin-top:2px;">${copyBtn}</div>`;
         })()}
       </td>
       <td data-label="Link" style="min-width:160px;">
