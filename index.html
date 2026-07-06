@@ -112,6 +112,7 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 
 .acc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
 .btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
 .btn:hover{border-color:var(--pink);}
 .btn.primary{background:linear-gradient(135deg,var(--pink),#0BBFA8);border:none;color:#fff;padding:9px 16px;font-weight:700;font-size:12.5px;}
 .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 16px;font-weight:700;font-size:12.5px;}
@@ -389,6 +390,13 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
           <tbody id="tblRequests"></tbody>
         </table>
       </div>
+      <div id="reqPagination" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <span id="reqPageInfo" class="muted-note"></span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="btnReqPrevPage" type="button" style="font-size:12px;padding:6px 12px;">&laquo; Sebelumnya</button>
+          <button class="btn" id="btnReqNextPage" type="button" style="font-size:12px;padding:6px 12px;">Berikutnya &raquo;</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -452,6 +460,8 @@ let PRODUCTS = [];
 let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts}
+const REQ_PAGE_SIZE = 50;
+let reqCurrentPage = 1;
 let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
 let pendingPushes = 0; // hitung berapa proses "kirim ke spreadsheet" yang masih berjalan
 let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara lokal
@@ -675,8 +685,24 @@ function renderRequests(){
   // supaya request lama yang belum dikerjakan tidak ketutupan request baru.
   const reqSortKey = r => r.ts ? new Date(r.ts).getTime() : new Date((r.tanggal||'1970-01-01')+'T00:00:00').getTime();
   rows.sort((a,b)=> reqSortKey(a) - reqSortKey(b));
+  const totalRows = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / REQ_PAGE_SIZE));
+  if(reqCurrentPage > totalPages) reqCurrentPage = totalPages;
+  if(reqCurrentPage < 1) reqCurrentPage = 1;
+  const startIdx = (reqCurrentPage - 1) * REQ_PAGE_SIZE;
+  const pageRows = rows.slice(startIdx, startIdx + REQ_PAGE_SIZE);
+  const pageInfoEl = document.getElementById('reqPageInfo');
+  if(pageInfoEl){
+    pageInfoEl.textContent = totalRows === 0
+      ? 'Tidak ada data'
+      : `Menampilkan ${startIdx+1}-${Math.min(startIdx+REQ_PAGE_SIZE, totalRows)} dari ${totalRows} request (Halaman ${reqCurrentPage}/${totalPages})`;
+  }
+  const btnPrev = document.getElementById('btnReqPrevPage');
+  const btnNext = document.getElementById('btnReqNextPage');
+  if(btnPrev) btnPrev.disabled = reqCurrentPage <= 1;
+  if(btnNext) btnNext.disabled = reqCurrentPage >= totalPages;
   const statusColor = {Baru:'var(--blue)', Diproses:'var(--yellow)', Revisi:'var(--red)', Selesai:'var(--pink)', Ditolak:'var(--muted)'};
-  tbody.innerHTML = rows.map(r=>`
+  tbody.innerHTML = pageRows.map(r=>`
     <tr>
       <td data-label="Tanggal Request">${escapeHtml(r.ts ? new Date(r.ts).toLocaleString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (r.tanggal||''))}</td>
       <td data-label="Judul">${escapeHtml(r.judul||'')}</td>
@@ -810,12 +836,19 @@ function renderRequests(){
 }
 ['filterReqStatus','filterReqPIC','filterReqJudul','filterReqTglDari','filterReqTglSampai'].forEach(id=>{
   const el = document.getElementById(id);
-  if(el) el.addEventListener('input', renderRequests);
+  if(el) el.addEventListener('input', ()=>{ reqCurrentPage = 1; renderRequests(); });
 });
 document.getElementById('btnClearReqTgl').addEventListener('click', ()=>{
   document.getElementById('filterReqTglDari').value = '';
   document.getElementById('filterReqTglSampai').value = '';
+  reqCurrentPage = 1;
   renderRequests();
+});
+document.getElementById('btnReqPrevPage').addEventListener('click', ()=>{
+  if(reqCurrentPage > 1){ reqCurrentPage--; renderRequests(); window.scrollTo({top:0, behavior:'smooth'}); }
+});
+document.getElementById('btnReqNextPage').addEventListener('click', ()=>{
+  reqCurrentPage++; renderRequests();
 });
 
 document.getElementById('btnSaveRequest').onclick = async ()=>{
