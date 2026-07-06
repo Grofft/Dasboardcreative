@@ -75,8 +75,9 @@ main{padding:24px 28px 60px;max-width:1440px;margin:0 auto;}
 .grid{display:grid;gap:14px;}
 .grid-4{grid-template-columns:repeat(4,1fr);}
 .grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-plat{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
 @media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:640px){.grid-4,.grid-3{grid-template-columns:1fr;}}
+@media(max-width:640px){.grid-4,.grid-3,.grid-plat{grid-template-columns:1fr;}}
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
 .kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
@@ -237,7 +238,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
 
     <!-- BREAKDOWN PER PLATFORM -->
     <div class="section-header"><h2>Performa per Platform</h2><div class="muted-note">Berdasarkan filter & periode terpilih</div></div>
-    <div class="grid grid-4" id="platformCards"></div>
+    <div class="grid grid-plat" id="platformCards"></div>
 
     <div class="section-header"><h2>Tren</h2></div>
     <div class="two-col">
@@ -440,7 +441,7 @@ function showToast(title, sub, type){
 /* ============== DATA DASAR ============== */
 let TEAM = [];
 let ACCOUNTS = [];
-const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace'];
+const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','CRM','CS'];
 const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel'];
 let PRODUCTS = [];
 
@@ -1078,7 +1079,7 @@ function renderSummary(range){
   document.getElementById('rangeLabel3').textContent = label;
 
   // ── PLATFORM BREAKDOWN CARDS ──
-  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)'};
+  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)', CRM:'var(--cyan)', CS:'#B18AFF'};
   const activePlatforms = f.platform ? [f.platform] : PLATFORMS;
   document.getElementById('platformCards').innerHTML = activePlatforms.map(plat=>{
     const pvids  = vids.filter(v=>v.platform===plat);
@@ -1255,7 +1256,7 @@ function tipeTagClass(tipe){
   return 'yellow'; // Foto/Gambar
 }
 function platformPill(p){
-  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B'};
+  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CRM:'#3FD8D4', CS:'#B18AFF'};
   return `<span class="platform-pill"><span class="dot" style="background:${colors[p]||'#888'}"></span>${p||'-'}</span>`;
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
