@@ -377,7 +377,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <select id="filterReqStatus"><option value="">Semua Status</option></select>
         <select id="filterReqPIC"><option value="">Semua PIC</option></select>
         <input type="text" id="filterReqJudul" placeholder="Cari judul...">
-        <span class="range-label">Tanggal Request:</span>
+        <span class="range-label">Deadline:</span>
         <input type="date" id="filterReqTglDari" title="Dari tanggal">
         <span class="range-label">s/d</span>
         <input type="date" id="filterReqTglSampai" title="Sampai tanggal">
@@ -669,8 +669,8 @@ function renderRequests(){
   if(fStatus) rows = rows.filter(r=>r.status===fStatus);
   if(fPIC) rows = rows.filter(r=>r.pic===fPIC);
   if(fJudul) rows = rows.filter(r=>(r.judul||'').toLowerCase().includes(fJudul));
-  if(fTglDari) rows = rows.filter(r=>(r.tanggal||'') >= fTglDari);
-  if(fTglSampai) rows = rows.filter(r=>(r.tanggal||'') <= fTglSampai);
+  if(fTglDari) rows = rows.filter(r=>(r.deadline||'') >= fTglDari);
+  if(fTglSampai) rows = rows.filter(r=>(r.deadline||'') <= fTglSampai);
   // Urutkan berdasarkan kapan & jam berapa request dibuat (paling lama di atas),
   // supaya request lama yang belum dikerjakan tidak ketutupan request baru.
   const reqSortKey = r => r.ts ? new Date(r.ts).getTime() : new Date((r.tanggal||'1970-01-01')+'T00:00:00').getTime();
