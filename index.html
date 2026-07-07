@@ -453,7 +453,7 @@ function showToast(title, sub, type){
 /* ============== DATA DASAR ============== */
 let TEAM = [];
 let ACCOUNTS = [];
-const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace'];
+const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','CS','CRM'];
 const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel'];
 let PRODUCTS = [];
 
@@ -1125,7 +1125,7 @@ function renderSummary(range){
   document.getElementById('rangeLabel3').textContent = label;
 
   // ── PLATFORM BREAKDOWN CARDS ──
-  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)'};
+  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)', CS:'#3DDC97', CRM:'#5FA8FF'};
   const activePlatforms = f.platform ? [f.platform] : PLATFORMS;
   document.getElementById('platformCards').innerHTML = activePlatforms.map(plat=>{
     const pvids  = vids.filter(v=>v.platform===plat);
@@ -1302,7 +1302,7 @@ function tipeTagClass(tipe){
   return 'yellow'; // Foto/Gambar
 }
 function platformPill(p){
-  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B'};
+  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
   return `<span class="platform-pill"><span class="dot" style="background:${colors[p]||'#888'}"></span>${p||'-'}</span>`;
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
