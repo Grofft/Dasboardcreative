@@ -851,7 +851,12 @@ document.getElementById('btnReqNextPage').addEventListener('click', ()=>{
   reqCurrentPage++; renderRequests();
 });
 
+let isSubmittingRequest = false; // guard supaya tidak bisa submit dobel selagi masih proses
+let lastReqSubmitKey = '';       // fingerprint request terakhir yang berhasil dikirim
+let lastReqSubmitAt = 0;
+
 document.getElementById('btnSaveRequest').onclick = async ()=>{
+  const btnSave = document.getElementById('btnSaveRequest');
   const judul = document.getElementById('inReqJudul').value.trim();
   const requester = document.getElementById('inReqRequester').value.trim();
   const pic = document.getElementById('inReqPIC').value;
@@ -864,18 +869,45 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
   const brief = document.getElementById('inReqBrief').value.trim();
   const msg = document.getElementById('requestSaveMsg');
   if(!judul){ msg.textContent='Isi judul konten terlebih dahulu.'; msg.style.color='var(--red)'; return; }
-  const rec = {tanggal: fmtISO(new Date()), judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts: new Date().toISOString()};
-  REQUESTS.push(rec);
-  saveLocalState(); renderRequests();
-  msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
-  const res = await pushOneToSheet({sheetType:'request', ...rec});
-  if(res==='ok'){ msg.textContent='✅ Request terkirim & tersimpan: '+judul; msg.style.color='var(--cyan)'; }
-  else if(res==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; }
-  else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
-  document.getElementById('inReqJudul').value='';
-  document.getElementById('inReqRequester').value='';
-  document.getElementById('inReqDeadline').value='';
-  document.getElementById('inReqBrief').value='';
+
+  // Cegah klik dobel selagi request sebelumnya masih diproses
+  if(isSubmittingRequest){ return; }
+
+  // Cegah submit yang persis sama (judul+pic+deadline+brief) diulang dalam 5 detik terakhir
+  // — biasanya terjadi karena tap ganda di HP atau koneksi lambat sehingga user menekan lagi.
+  const submitKey = JSON.stringify({judul, pic, produk, deadline, brief});
+  const now = Date.now();
+  if(submitKey === lastReqSubmitKey && (now - lastReqSubmitAt) < 5000){
+    msg.textContent = 'Request yang sama baru saja dikirim, tidak dikirim ulang.'; msg.style.color='var(--yellow)';
+    return;
+  }
+
+  isSubmittingRequest = true;
+  btnSave.disabled = true;
+  const originalLabel = btnSave.textContent;
+  btnSave.textContent = 'Mengirim...';
+
+  try{
+    const rec = {tanggal: fmtISO(new Date()), judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts: new Date().toISOString()};
+    REQUESTS.push(rec);
+    saveLocalState(); renderRequests();
+    msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
+    const res = await pushOneToSheet({sheetType:'request', ...rec});
+    if(res==='ok'){
+      msg.textContent='✅ Request terkirim & tersimpan: '+judul; msg.style.color='var(--cyan)';
+      lastReqSubmitKey = submitKey; lastReqSubmitAt = now;
+    }
+    else if(res==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; }
+    else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
+    document.getElementById('inReqJudul').value='';
+    document.getElementById('inReqRequester').value='';
+    document.getElementById('inReqDeadline').value='';
+    document.getElementById('inReqBrief').value='';
+  } finally {
+    isSubmittingRequest = false;
+    btnSave.disabled = false;
+    btnSave.textContent = originalLabel;
+  }
 };
 
 /* ============== UPDATE PERFORMA ============== */
