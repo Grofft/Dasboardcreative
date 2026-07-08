@@ -121,6 +121,14 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 @media(max-width:900px){.input-panel{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){.input-panel{grid-template-columns:1fr;}}
 .input-panel .field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.akun-chip-group{display:flex;flex-wrap:wrap;gap:6px;padding:9px 0 2px;}
+.akun-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;background:var(--panel-2);border:1px solid var(--line);transition:all .15s ease;}
+.akun-chip:hover{border-color:var(--cyan);}
+.akun-chip.active{background:rgba(63,216,212,.15);color:var(--cyan);border-color:var(--cyan);}
+.akun-chip-empty{font-size:12px;color:var(--muted);}
+.perf-metrics-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+@media(max-width:1100px){.perf-metrics-row{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.perf-metrics-row{grid-template-columns:repeat(2,1fr);}}
 .input-panel .field input,.input-panel .field select{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:9px 11px;font-size:13px;}
 
 .loadbanner{position:fixed;bottom:18px;right:18px;z-index:40;background:rgba(63,216,212,.15);border:1px solid var(--cyan);color:var(--cyan);padding:10px 16px;border-radius:9px;font-size:12.5px;font-weight:600;max-width:360px;}
@@ -260,11 +268,20 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       <div class="chart-wrap"><canvas id="chartSalesKontribusi"></canvas></div>
     </div>
 
-    <div class="section-header"><h2>Leaderboard Performa</h2><div class="muted-note">Top 5 konten berdasarkan views pada periode & filter terpilih</div></div>
+    <div class="section-header">
+      <h2>Leaderboard Performa</h2>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div class="muted-note" id="leaderboardNote">Top 5 konten berdasarkan views pada periode &amp; filter terpilih</div>
+        <div class="period-btns" id="leaderboardModeBtns">
+          <button type="button" class="period-btn active" data-mode="views" onclick="setLeaderboardMode('views')">Top Views</button>
+          <button type="button" class="period-btn" data-mode="er" onclick="setLeaderboardMode('er')">Top ER</button>
+        </div>
+      </div>
+    </div>
     <div class="card">
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th></tr></thead>
+          <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>ER</th></tr></thead>
           <tbody id="tblLeaderboard"></tbody>
         </table>
       </div>
@@ -291,15 +308,22 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
     <div class="section-header"><h2>Update Performa Konten</h2><div class="muted-note">Timpa angka views, likes, komentar, share, save &amp; repost — aman diisi berulang kali</div></div>
     <div class="card">
       <div class="input-panel">
-        <div class="field" style="grid-column:span 2;"><label>Pilih Konten</label><select id="inPerfKonten"><option value="">— Pilih konten —</option></select></div>
-        <div class="field"><label>Akun yang Posting</label><select id="inPerfAkun"><option value="">— Pilih akun —</option></select></div>
-        <div class="field"><label>Tanggal Update</label><input type="date" id="inPerfTanggal"></div>
-        <div class="field"><label>Views</label><input type="number" id="inPerfViews" placeholder="0" min="0"></div>
-        <div class="field"><label>Likes</label><input type="number" id="inPerfLikes" placeholder="0" min="0"></div>
-        <div class="field"><label>Komentar</label><input type="number" id="inPerfComments" placeholder="0" min="0"></div>
-        <div class="field"><label>Share</label><input type="number" id="inPerfShares" placeholder="0" min="0"></div>
-        <div class="field"><label>Save</label><input type="number" id="inPerfSaves" placeholder="0" min="0"></div>
-        <div class="field"><label>Repost</label><input type="number" id="inPerfReposts" placeholder="0" min="0"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Pilih Konten</label><select id="inPerfKonten"><option value="">— Pilih konten —</option></select></div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Akun yang Posting <span style="text-transform:none;font-weight:400;color:var(--muted);">(bisa pilih lebih dari 1 akun jika konten yang sama diposting ulang)</span></label>
+          <div id="inPerfAkunChips" class="akun-chip-group"></div>
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <div class="perf-metrics-row">
+            <div class="field"><label>Tanggal Update</label><input type="date" id="inPerfTanggal"></div>
+            <div class="field"><label>Views</label><input type="number" id="inPerfViews" placeholder="0" min="0"></div>
+            <div class="field"><label>Likes</label><input type="number" id="inPerfLikes" placeholder="0" min="0"></div>
+            <div class="field"><label>Komentar</label><input type="number" id="inPerfComments" placeholder="0" min="0"></div>
+            <div class="field"><label>Share</label><input type="number" id="inPerfShares" placeholder="0" min="0"></div>
+            <div class="field"><label>Save</label><input type="number" id="inPerfSaves" placeholder="0" min="0"></div>
+            <div class="field"><label>Repost</label><input type="number" id="inPerfReposts" placeholder="0" min="0"></div>
+          </div>
+        </div>
       </div>
       <button class="btn primary" id="btnSavePerf">💾 Update Performa</button>
       <div class="muted-note" id="perfSaveMsg" style="margin-top:8px;"></div>
@@ -417,7 +441,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan 2 kolom baru <code class="inline">saves</code> dan <code class="inline">reposts</code> di paling kanan (kolom M &amp; N) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief) akan dibuat otomatis saat request konten pertama dikirim.</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan 2 kolom baru <code class="inline">saves</code> dan <code class="inline">reposts</code> di paling kanan (kolom M &amp; N) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief) akan dibuat otomatis saat request konten pertama dikirim.</div>
       <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
       <button class="btn" id="btnCopyScript">Copy Kode</button>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
@@ -921,12 +945,20 @@ function refreshPerfSelect(){
   if(cur !== '' && VIDEOS[parseInt(cur)]) sel.value = cur;
 }
 
+let selectedPerfAkun = new Set();
 function refreshPerfAkunSelect(){
-  const sel = document.getElementById('inPerfAkun');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">— Pilih akun —</option>' +
-    ACCOUNTS.map(a=>`<option value="${escapeHtml(a.nama)}">${escapeHtml(a.nama)} (${escapeHtml(a.platform)})</option>`).join('');
-  if(cur) sel.value = cur;
+  const wrap = document.getElementById('inPerfAkunChips');
+  if(!ACCOUNTS.length){ wrap.innerHTML = '<span class="akun-chip-empty">Belum ada akun terdaftar di tab Akun Tracker.</span>'; return; }
+  wrap.innerHTML = ACCOUNTS.map(a=>`<button type="button" class="akun-chip${selectedPerfAkun.has(a.nama)?' active':''}" onclick="togglePerfAkun('${escapeHtml(a.nama).replace(/'/g,"\\'")}')">${escapeHtml(a.nama)} (${escapeHtml(a.platform)})</button>`).join('');
+}
+function togglePerfAkun(nama){
+  if(selectedPerfAkun.has(nama)) selectedPerfAkun.delete(nama);
+  else selectedPerfAkun.add(nama);
+  refreshPerfAkunSelect();
+}
+function setPerfAkunFromString(str){
+  selectedPerfAkun = new Set(String(str||'').split(',').map(s=>s.trim()).filter(Boolean));
+  refreshPerfAkunSelect();
 }
 
 document.getElementById('inPerfKonten').addEventListener('change', function(){
@@ -940,7 +972,7 @@ document.getElementById('inPerfKonten').addEventListener('change', function(){
   document.getElementById('inPerfSaves').value    = v.saves||0;
   document.getElementById('inPerfReposts').value  = v.reposts||0;
   // auto-select akun if already saved on this video
-  if(v.akunPosting) document.getElementById('inPerfAkun').value = v.akunPosting;
+  setPerfAkunFromString(v.akunPosting);
 });
 
 document.getElementById('btnSavePerf').onclick = async ()=>{
@@ -948,7 +980,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   const msg = document.getElementById('perfSaveMsg');
   if(isNaN(idx) || !VIDEOS[idx]){ msg.textContent='Pilih konten terlebih dahulu.'; msg.style.color='var(--red)'; return; }
   const tanggalUpdate  = document.getElementById('inPerfTanggal').value || fmtISO(new Date());
-  const akunPosting    = document.getElementById('inPerfAkun').value;
+  const akunPosting    = Array.from(selectedPerfAkun).join(', ');
   VIDEOS[idx].views       = parseFloat(document.getElementById('inPerfViews').value)||0;
   VIDEOS[idx].likes       = parseFloat(document.getElementById('inPerfLikes').value)||0;
   VIDEOS[idx].comments    = parseFloat(document.getElementById('inPerfComments').value)||0;
@@ -964,7 +996,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   else if(status==='no-url'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).'; showToast('Update performa selesai (lokal)', VIDEOS[idx].judul, 'warn'); }
   else msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard, tapi gagal kirim ke spreadsheet — cek URL Apps Script).';
   document.getElementById('inPerfKonten').value='';
-  document.getElementById('inPerfAkun').value='';
+  selectedPerfAkun = new Set(); refreshPerfAkunSelect();
   document.getElementById('inPerfViews').value='';
   document.getElementById('inPerfLikes').value='';
   document.getElementById('inPerfComments').value='';
@@ -983,7 +1015,7 @@ function fillPerfForm(idx){
   document.getElementById('inPerfSaves').value    = v.saves||0;
   document.getElementById('inPerfReposts').value  = v.reposts||0;
   document.getElementById('inPerfTanggal').value  = fmtISO(new Date());
-  if(v.akunPosting) document.getElementById('inPerfAkun').value = v.akunPosting;
+  setPerfAkunFromString(v.akunPosting);
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
 }
 /* ============== UPDATE AKUN (inline per card) ============== */
@@ -1040,7 +1072,7 @@ function followerGrowthPct(nama){
 // Views & Engagement Rate untuk konten yang diposting lewat akun tertentu,
 // dibandingkan 30 hari terakhir vs 30 hari sebelumnya
 function accountContentStats(nama){
-  const vids = VIDEOS.filter(v=>v.akunPosting===nama && v.tanggal)
+  const vids = VIDEOS.filter(v=>v.tanggal && String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(nama))
     .map(v=>({...v, _d:new Date(v.tanggal)}))
     .filter(v=>!isNaN(v._d));
   if(!vids.length) return null;
@@ -1331,11 +1363,32 @@ function renderSummary(range){
   }
 
   // ── LEADERBOARD ──
-  const top5 = [...vids].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  window._leaderboardVids = vids;
+  renderLeaderboard();
+}
+
+let leaderboardMode = 'views';
+function setLeaderboardMode(mode){
+  leaderboardMode = mode;
+  document.querySelectorAll('#leaderboardModeBtns .period-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode===mode);
+  });
+  renderLeaderboard();
+}
+function renderLeaderboard(){
+  const vids = window._leaderboardVids || [];
+  const sorter = leaderboardMode==='er'
+    ? (a,b)=>(engagementRate(b)-engagementRate(a))
+    : (a,b)=>((b.views||0)-(a.views||0));
+  const top5 = [...vids].sort(sorter).slice(0,5);
+  const note = document.getElementById('leaderboardNote');
+  if(note) note.textContent = leaderboardMode==='er'
+    ? 'Top 5 konten berdasarkan Engagement Rate pada periode & filter terpilih'
+    : 'Top 5 konten berdasarkan views pada periode & filter terpilih';
   document.getElementById('tblLeaderboard').innerHTML = top5.map(v=>`
     <tr><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator">${escapeHtml(v.nama)}</td><td data-label="Tipe"><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td><td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td><td data-label="Platform">${platformPill(v.platform)}</td>
-    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td></tr>
-  `).join('') || '<tr><td colspan="10" data-label="" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
+    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td><td data-label="ER">${engagementRate(v).toFixed(2)}%</td></tr>
+  `).join('') || '<tr><td colspan="13" data-label="" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
 }
 
 function tipeTagClass(tipe){
@@ -1385,8 +1438,9 @@ function renderVideoTable(range, resetPage){
   document.getElementById('tblVideos').innerHTML = pageVids.map((v)=>{
     const globalIdx = VIDEOS.indexOf(v);
     const lastUpd = v.lastUpdated ? `<span style="color:var(--cyan);font-size:11px;">✓ ${v.lastUpdated}</span>` : `<span style="color:var(--muted);font-size:11px;">Belum</span>`;
-    const akunBadge = v.akunPosting
-      ? `<span class="tag" style="background:rgba(63,216,212,.15);color:var(--cyan);border:1px solid var(--cyan);font-size:11px;">${escapeHtml(v.akunPosting)}</span>`
+    const akunList = String(v.akunPosting||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const akunBadge = akunList.length
+      ? akunList.map(a=>`<span class="tag" style="background:rgba(63,216,212,.15);color:var(--cyan);border:1px solid var(--cyan);font-size:11px;margin:1px 3px 1px 0;display:inline-block;">${escapeHtml(a)}</span>`).join('')
       : `<span style="color:var(--muted);font-size:11px;">—</span>`;
     return `<tr>
       <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator/Editor">${escapeHtml(v.nama)}</td>
