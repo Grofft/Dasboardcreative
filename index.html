@@ -264,7 +264,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
     <div class="card">
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th></tr></thead>
+          <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th></tr></thead>
           <tbody id="tblLeaderboard"></tbody>
         </table>
       </div>
@@ -283,12 +283,12 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <div class="field"><label>Platform</label><select id="inVidPlatform"></select></div>
         <div class="field"><label>Produk</label><select id="inVidProduk"></select></div>
       </div>
-      <p class="muted-note" style="margin-bottom:10px;">👉 Views, likes, komentar & share bisa diisi nanti lewat <b>Update Performa</b> di bawah.</p>
+      <p class="muted-note" style="margin-bottom:10px;">👉 Views, likes, komentar, share, save &amp; repost bisa diisi nanti lewat <b>Update Performa</b> di bawah.</p>
       <button class="btn primary" id="btnSaveVideo">Simpan Konten</button>
       <div class="muted-note" id="videoSaveMsg" style="margin-top:8px;"></div>
     </div>
 
-    <div class="section-header"><h2>Update Performa Konten</h2><div class="muted-note">Timpa angka views, likes, komentar & share — aman diisi berulang kali</div></div>
+    <div class="section-header"><h2>Update Performa Konten</h2><div class="muted-note">Timpa angka views, likes, komentar, share, save &amp; repost — aman diisi berulang kali</div></div>
     <div class="card">
       <div class="input-panel">
         <div class="field" style="grid-column:span 2;"><label>Pilih Konten</label><select id="inPerfKonten"><option value="">— Pilih konten —</option></select></div>
@@ -298,6 +298,8 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <div class="field"><label>Likes</label><input type="number" id="inPerfLikes" placeholder="0" min="0"></div>
         <div class="field"><label>Komentar</label><input type="number" id="inPerfComments" placeholder="0" min="0"></div>
         <div class="field"><label>Share</label><input type="number" id="inPerfShares" placeholder="0" min="0"></div>
+        <div class="field"><label>Save</label><input type="number" id="inPerfSaves" placeholder="0" min="0"></div>
+        <div class="field"><label>Repost</label><input type="number" id="inPerfReposts" placeholder="0" min="0"></div>
       </div>
       <button class="btn primary" id="btnSavePerf">💾 Update Performa</button>
       <div class="muted-note" id="perfSaveMsg" style="margin-top:8px;"></div>
@@ -314,9 +316,9 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Engagement Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
           <tbody id="tblVideos"></tbody>
-          <tfoot><tr><td colspan="7" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
+          <tfoot><tr><td colspan="7" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="Save" id="ftSaves">0</td><td data-label="Repost" id="ftReposts">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -415,7 +417,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom: tanggal, judul, nama, tipe, platform, views, likes, comments, shares) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief) akan dibuat otomatis saat request konten pertama dikirim.</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan 2 kolom baru <code class="inline">saves</code> dan <code class="inline">reposts</code> di paling kanan (kolom M &amp; N) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief) akan dibuat otomatis saat request konten pertama dikirim.</div>
       <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
       <button class="btn" id="btnCopyScript">Copy Kode</button>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
@@ -457,7 +459,7 @@ const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','CS',
 const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel'];
 let PRODUCTS = [];
 
-let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares}
+let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts}
 const REQ_PAGE_SIZE = 50;
@@ -638,7 +640,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   const produk = document.getElementById('inVidProduk').value;
   const msg = document.getElementById('videoSaveMsg');
   if(!tanggal || !judul){ msg.textContent='Isi tanggal & judul terlebih dahulu.'; msg.style.color='var(--red)'; return; }
-  const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, lastUpdated:''};
+  const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:''};
   VIDEOS.push(rec);
   saveLocalState(); render(); refreshPerfSelect();
   msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
@@ -660,7 +662,7 @@ function convertRequestToVideo(idx){
     tipe: TIPE_KONTEN[0],
     produk: r.produk || '',
     platform: r.platform || (PLATFORMS[0]||''),
-    views:0, likes:0, comments:0, shares:0, lastUpdated:''
+    views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:''
   };
   VIDEOS.push(rec);
   pushOneToSheet({sheetType:'video', ...rec});
@@ -935,6 +937,8 @@ document.getElementById('inPerfKonten').addEventListener('change', function(){
   document.getElementById('inPerfLikes').value    = v.likes||0;
   document.getElementById('inPerfComments').value = v.comments||0;
   document.getElementById('inPerfShares').value   = v.shares||0;
+  document.getElementById('inPerfSaves').value    = v.saves||0;
+  document.getElementById('inPerfReposts').value  = v.reposts||0;
   // auto-select akun if already saved on this video
   if(v.akunPosting) document.getElementById('inPerfAkun').value = v.akunPosting;
 });
@@ -949,6 +953,8 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   VIDEOS[idx].likes       = parseFloat(document.getElementById('inPerfLikes').value)||0;
   VIDEOS[idx].comments    = parseFloat(document.getElementById('inPerfComments').value)||0;
   VIDEOS[idx].shares      = parseFloat(document.getElementById('inPerfShares').value)||0;
+  VIDEOS[idx].saves       = parseFloat(document.getElementById('inPerfSaves').value)||0;
+  VIDEOS[idx].reposts     = parseFloat(document.getElementById('inPerfReposts').value)||0;
   VIDEOS[idx].lastUpdated = tanggalUpdate;
   VIDEOS[idx].akunPosting = akunPosting;
   saveLocalState(); render();
@@ -963,6 +969,8 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   document.getElementById('inPerfLikes').value='';
   document.getElementById('inPerfComments').value='';
   document.getElementById('inPerfShares').value='';
+  document.getElementById('inPerfSaves').value='';
+  document.getElementById('inPerfReposts').value='';
 };
 
 function fillPerfForm(idx){
@@ -972,6 +980,8 @@ function fillPerfForm(idx){
   document.getElementById('inPerfLikes').value    = v.likes||0;
   document.getElementById('inPerfComments').value = v.comments||0;
   document.getElementById('inPerfShares').value   = v.shares||0;
+  document.getElementById('inPerfSaves').value    = v.saves||0;
+  document.getElementById('inPerfReposts').value  = v.reposts||0;
   document.getElementById('inPerfTanggal').value  = fmtISO(new Date());
   if(v.akunPosting) document.getElementById('inPerfAkun').value = v.akunPosting;
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
@@ -1057,7 +1067,7 @@ function statusTagClass(status){
 function engagementRate(v){
   const denom = v.views||0;
   if(denom<=0) return 0;
-  return ((v.likes+v.comments+v.shares)/denom)*100;
+  return (((v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0))/denom)*100;
 }
 function latestStatusPerAccount(){
   const map = {};
@@ -1137,13 +1147,13 @@ function renderSummary(range){
   // ── TOP 4 KPI CARDS ──
   const totalVideo      = vids.length;
   const totalViews      = vids.reduce((s,v)=>s+(v.views||0),0);
-  const totalEngagement = vids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0),0);
+  const totalEngagement = vids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const avgERVal        = totalViews>0 ? (totalEngagement/totalViews*100) : 0;
   const avgER           = totalViews>0 ? avgERVal.toFixed(2)+'%' : '0%';
 
   const prevTotalVideo      = prevVids.length;
   const prevTotalViews      = prevVids.reduce((s,v)=>s+(v.views||0),0);
-  const prevTotalEngagement = prevVids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0),0);
+  const prevTotalEngagement = prevVids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const prevAvgERVal        = prevTotalViews>0 ? (prevTotalEngagement/prevTotalViews*100) : 0;
 
   document.getElementById('kpiTotalVideo').innerHTML      = numFmt(totalVideo)      + kpiDeltaHtml(totalVideo, prevTotalVideo);
@@ -1162,14 +1172,14 @@ function renderSummary(range){
   document.getElementById('platformCards').innerHTML = activePlatforms.map(plat=>{
     const pvids  = vids.filter(v=>v.platform===plat);
     const pViews = pvids.reduce((s,v)=>s+(v.views||0),0);
-    const pEng   = pvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0),0);
+    const pEng   = pvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
     const pER    = pViews>0 ? (pEng/pViews*100) : 0;
     const pERStr = pViews>0 ? pER.toFixed(1)+'%' : '—';
     const color  = platColors[plat]||'var(--muted)';
 
     const ppvids  = prevVids.filter(v=>v.platform===plat);
     const ppViews = ppvids.reduce((s,v)=>s+(v.views||0),0);
-    const ppEng   = ppvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0),0);
+    const ppEng   = ppvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
     const ppER    = ppViews>0 ? (ppEng/ppViews*100) : 0;
 
     const dKonten = delta(pvids.length, ppvids.length);
@@ -1324,7 +1334,7 @@ function renderSummary(range){
   const top5 = [...vids].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
   document.getElementById('tblLeaderboard').innerHTML = top5.map(v=>`
     <tr><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator">${escapeHtml(v.nama)}</td><td data-label="Tipe"><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td><td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td><td data-label="Platform">${platformPill(v.platform)}</td>
-    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td></tr>
+    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td></tr>
   `).join('') || '<tr><td colspan="10" data-label="" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
 }
 
@@ -1384,7 +1394,7 @@ function renderVideoTable(range, resetPage){
       <td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td>
       <td data-label="Platform">${platformPill(v.platform)}</td>
       <td data-label="Akun Posting">${akunBadge}</td>
-      <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td>
+      <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td>
       <td data-label="Engagement Rate">${engagementRate(v).toFixed(2)}%</td>
       <td data-label="Terakhir Update">${lastUpd}</td>
       <td data-label=""><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
@@ -1396,6 +1406,8 @@ function renderVideoTable(range, resetPage){
   document.getElementById('ftLikes').textContent    = numFmt(vids.reduce((s,v)=>s+(v.likes||0),0));
   document.getElementById('ftComments').textContent = numFmt(vids.reduce((s,v)=>s+(v.comments||0),0));
   document.getElementById('ftShares').textContent   = numFmt(vids.reduce((s,v)=>s+(v.shares||0),0));
+  document.getElementById('ftSaves').textContent    = numFmt(vids.reduce((s,v)=>s+(v.saves||0),0));
+  document.getElementById('ftReposts').textContent  = numFmt(vids.reduce((s,v)=>s+(v.reposts||0),0));
 
   renderVideoPagination(vids.length, totalPages);
 }
@@ -1751,7 +1763,8 @@ function handleWrite(data) {
       data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
       data.platform, data.views || 0, data.likes || 0,
       data.comments || 0, data.shares || 0,
-      data.lastUpdated || '', data.akunPosting || ''
+      data.lastUpdated || '', data.akunPosting || '',
+      data.saves || 0, data.reposts || 0
     ]);
 
   } else if (data.sheetType === 'video_update') {
@@ -1759,16 +1772,17 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var found = false;
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 12).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 14).getValues() : [];
     for (var i = 1; i < rows.length; i++) {
       // Cocokkan judul DAN tanggal, supaya video dengan judul sama tidak salah ketimpa
       if (String(rows[i][1]).trim() === String(data.judul).trim() &&
           normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal)) {
-        sh.getRange(i + 1, 1, 1, 12).setValues([[
+        sh.getRange(i + 1, 1, 1, 14).setValues([[
           data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
           data.platform, data.views || 0, data.likes || 0,
           data.comments || 0, data.shares || 0,
-          data.lastUpdated || '', data.akunPosting || ''
+          data.lastUpdated || '', data.akunPosting || '',
+          data.saves || 0, data.reposts || 0
         ]]);
         found = true;
         break;
@@ -1779,7 +1793,8 @@ function handleWrite(data) {
         data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
         data.platform, data.views || 0, data.likes || 0,
         data.comments || 0, data.shares || 0,
-        data.lastUpdated || '', data.akunPosting || ''
+        data.lastUpdated || '', data.akunPosting || '',
+        data.saves || 0, data.reposts || 0
       ]);
     }
 
@@ -1907,7 +1922,7 @@ function jsonOutput(obj) {
 
 // ============================================================
 // STRUKTUR SHEET:
-// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting
+// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts
 // "Akun"     : tanggal | nama  | platform | status | followers | note | salesUnit | salesOmzet
 // "Kreator"  : nama
 // "Produk"   : nama
@@ -1950,7 +1965,8 @@ async function pullFromSheet(silent){
       const d = parseDate(r.tanggal);
       if(!d || !r.judul) return;
       VIDEOS.push({ tanggal: fmtISO(d), judul: r.judul, nama: r.nama, tipe: r.tipe||'Video', produk: r.produk||'', platform: r.platform,
-        views: parseFloat(r.views)||0, likes: parseFloat(r.likes)||0, comments: parseFloat(r.comments)||0, shares: parseFloat(r.shares)||0, lastUpdated: r.lastupdated||'', akunPosting: r.akunposting||'' });
+        views: parseFloat(r.views)||0, likes: parseFloat(r.likes)||0, comments: parseFloat(r.comments)||0, shares: parseFloat(r.shares)||0,
+        saves: parseFloat(r.saves)||0, reposts: parseFloat(r.reposts)||0, lastUpdated: r.lastupdated||'', akunPosting: r.akunposting||'' });
       if(r.nama && !TEAM.includes(r.nama)) TEAM.push(r.nama);
       countVideo++;
     });
