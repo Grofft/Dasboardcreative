@@ -677,7 +677,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   saveLocalState(); render(); refreshPerfSelect();
   msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
   const status = await pushOneToSheet({sheetType:'video', ...rec});
-  if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; pullFromSheet(true); showToast('Konten selesai diperbarui', judul, 'success'); }
+  if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; setTimeout(()=>pullFromSheet(true), 1500); showToast('Konten selesai diperbarui', judul, 'success'); }
   else if(status==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; showToast('Konten tersimpan di dashboard', judul, 'warn'); }
   else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
   document.getElementById('inVidJudul').value='';
@@ -1027,7 +1027,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   saveLocalState(); render();
   msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul; msg.style.color='var(--cyan)';
   const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[idx]});
-  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; unsavedDuplicatePending = false; clearTimeout(window._dupSafetyTimeout); pullFromSheet(true); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
+  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; unsavedDuplicatePending = false; clearTimeout(window._dupSafetyTimeout); setTimeout(()=>pullFromSheet(true), 1500); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
   else if(status==='no-url'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).'; showToast('Update performa selesai (lokal)', VIDEOS[idx].judul, 'warn'); }
   else msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard, tapi gagal kirim ke spreadsheet — cek URL Apps Script).';
   document.getElementById('inPerfKonten').value='';
@@ -1064,17 +1064,28 @@ function updateAkunInline(nama){
   const tanggal   = new Date().toISOString(); // datetime penuh agar entry terbaru selalu terdeteksi
   const acc       = ACCOUNTS.find(a=>a.nama===nama);
   const platform  = acc ? acc.platform : '';
-  const msg       = document.getElementById('akun_msg_'+safeId);
 
   // Mode APPEND — setiap update selalu tambah entry baru (untuk history)
   const rec = {tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet};
   AKUN_LOG.push(rec);
 
   saveLocalState(); render();
-  msg.textContent = '✅ Diperbarui'; msg.style.color='var(--cyan)';
+  // Ambil ulang elemen msg setelah render(), karena render() membangun ulang
+  // seluruh kartu akun (innerHTML diganti) sehingga referensi elemen lama sudah tidak nempel di halaman lagi.
+  const msg2 = document.getElementById('akun_msg_'+safeId);
+  if(msg2){ msg2.textContent = '✅ Diperbarui'; msg2.style.color='var(--cyan)'; }
   pushOneToSheet({sheetType:'akun_update', ...rec}).then(st=>{
-    if(st==='ok'){ msg.textContent = '✅ Diperbarui & terkirim ke spreadsheet.'; pullFromSheet(true); showToast('Update akun selesai', nama, 'success'); }
-    else { showToast('Update akun tersimpan di dashboard', nama, 'warn'); }
+    const msg3 = document.getElementById('akun_msg_'+safeId);
+    if(st==='ok'){
+      if(msg3){ msg3.textContent = '✅ Diperbarui & terkirim ke spreadsheet.'; }
+      showToast('Update akun selesai', nama, 'success');
+      // Beri jeda sebelum tarik ulang data — Google Sheets butuh sedikit waktu
+      // supaya baris yang baru saja ditambahkan benar-benar bisa dibaca lagi.
+      // Tanpa jeda ini, pull bisa "kepagian" dan baliknya angka Penjualan jadi 0 lagi.
+      setTimeout(()=>pullFromSheet(true), 1500);
+    } else {
+      showToast('Update akun tersimpan di dashboard', nama, 'warn');
+    }
   });
 }
 
@@ -2299,6 +2310,22 @@ document.getElementById('appsScriptUrl').addEventListener('change', ()=>{ saveLo
     pullFromSheet(true).then(()=>{ updateSyncBadge(); });
   }
   startAutoSync();
+
+  // FIX: sebelumnya lastLocalEditAt cuma ke-update saat edit video/konten,
+  // jadi form Kesehatan Akun (Followers, Penjualan Unit/Omzet, Status, Catatan)
+  // TIDAK terlindungi dari auto-sync tiap 10 detik. Kalau auto-sync nembak
+  // persis saat user lagi pindah antar-field di kartu akun (misal habis isi
+  // Penjualan Unit lalu klik ke kolom Omzet), seluruh kartu akun di-render
+  // ulang dari data lama spreadsheet dan angka yang baru diketik hilang jadi 0
+  // sebelum sempat diklik "Update". Delegated listener ini menandai SEMUA
+  // field di kartu akun (id diawali "akun_") sebagai edit lokal, supaya
+  // auto-sync ikut menunda 4 detik seperti halnya form video.
+  document.addEventListener('input', (e)=>{
+    if(e.target && e.target.id && e.target.id.startsWith('akun_')) lastLocalEditAt = Date.now();
+  });
+  document.addEventListener('change', (e)=>{
+    if(e.target && e.target.id && e.target.id.startsWith('akun_')) lastLocalEditAt = Date.now();
+  });
 })();
 
 </script>
