@@ -497,6 +497,7 @@ const REQ_PAGE_SIZE = 50;
 let reqCurrentPage = 1;
 let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
 let pendingPushes = 0; // hitung berapa proses "kirim ke spreadsheet" yang masih berjalan
+let unsavedDuplicatePending = false; // true selama ada entry hasil "duplikat akun" yang belum disimpan — auto-sync ditahan dulu
 let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara lokal
 let lastPushErrorMsg = ''; // pesan error terakhir dari Apps Script, supaya bisa ditampilkan ke user
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
@@ -1001,6 +1002,12 @@ document.getElementById('btnDuplikatKonten').onclick = ()=>{
   msg.textContent = '📄 Entry baru dibuat untuk "'+src.judul+'" — pilih akunnya lalu isi angka performanya, baru klik Update Performa.';
   msg.style.color = 'var(--cyan)';
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
+  // Tahan auto-sync selagi entry duplikat ini belum disimpan ke spreadsheet,
+  // supaya tidak ketarik-hilang oleh pull otomatis sebelum sempat di-klik "Update Performa".
+  unsavedDuplicatePending = true;
+  lastLocalEditAt = Date.now();
+  clearTimeout(window._dupSafetyTimeout);
+  window._dupSafetyTimeout = setTimeout(()=>{ unsavedDuplicatePending = false; }, 5*60*1000); // lepas otomatis kalau 5 menit tidak disimpan
 };
 
 document.getElementById('btnSavePerf').onclick = async ()=>{
@@ -1020,7 +1027,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   saveLocalState(); render();
   msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul; msg.style.color='var(--cyan)';
   const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[idx]});
-  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; pullFromSheet(true); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
+  if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; unsavedDuplicatePending = false; clearTimeout(window._dupSafetyTimeout); pullFromSheet(true); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
   else if(status==='no-url'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).'; showToast('Update performa selesai (lokal)', VIDEOS[idx].judul, 'warn'); }
   else msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard, tapi gagal kirim ke spreadsheet — cek URL Apps Script).';
   document.getElementById('inPerfKonten').value='';
@@ -1204,14 +1211,20 @@ function renderSummary(range){
     return `<div style="margin-top:5px;display:inline-flex;align-items:center;gap:3px;background:${bg};color:${c};border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;">${d.up?'▲':'▼'} ${Math.abs(d.pct)}% vs periode lalu</div>`;
   }
 
+  // Hitung jumlah KONTEN UNIK yang diproduksi (dedup judul+tanggal) — beda dari jumlah baris,
+  // karena 1 konten yang diposting ke beberapa akun jadi beberapa baris tapi tetap 1 konten produksi.
+  function uniqueContentCount(list){
+    return new Set(list.map(v=>(v.judul||'').trim().toLowerCase()+'|'+(v.tanggal||''))).size;
+  }
+
   // ── TOP 4 KPI CARDS ──
-  const totalVideo      = vids.length;
+  const totalVideo      = uniqueContentCount(vids);
   const totalViews      = vids.reduce((s,v)=>s+(v.views||0),0);
   const totalEngagement = vids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const avgERVal        = totalViews>0 ? (totalEngagement/totalViews*100) : 0;
   const avgER           = totalViews>0 ? avgERVal.toFixed(2)+'%' : '0%';
 
-  const prevTotalVideo      = prevVids.length;
+  const prevTotalVideo      = uniqueContentCount(prevVids);
   const prevTotalViews      = prevVids.reduce((s,v)=>s+(v.views||0),0);
   const prevTotalEngagement = prevVids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const prevAvgERVal        = prevTotalViews>0 ? (prevTotalEngagement/prevTotalViews*100) : 0;
@@ -1242,7 +1255,7 @@ function renderSummary(range){
     const ppEng   = ppvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
     const ppER    = ppViews>0 ? (ppEng/ppViews*100) : 0;
 
-    const dKonten = delta(pvids.length, ppvids.length);
+    const dKonten = delta(uniqueContentCount(pvids), uniqueContentCount(ppvids));
     const dViews  = delta(pViews, ppViews);
     const dEng    = delta(pEng, ppEng);
     const dER     = delta(pER, ppER);
@@ -1257,7 +1270,7 @@ function renderSummary(range){
         <div>
           <div style="color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;margin-bottom:3px;">Konten</div>
           <div style="display:flex;align-items:baseline;gap:5px;">
-            <span style="font-size:18px;font-weight:700;">${numFmt(pvids.length)}</span>
+            <span style="font-size:18px;font-weight:700;">${numFmt(uniqueContentCount(pvids))}</span>
             ${deltaChip(dKonten, color)}
           </div>
         </div>
@@ -2155,7 +2168,10 @@ async function pushAllToSheet(){
   for(const r of REQUESTS){ await pushOneToSheet({sheetType:'request_update', ...r}); sent++; }
   msg.textContent = 'Selesai mengirim '+sent+' baris data ke spreadsheet.'; msg.style.color='var(--cyan)';
 }
-document.getElementById('btnPullSheet').onclick = ()=>pullFromSheet(false);
+document.getElementById('btnPullSheet').onclick = ()=>{
+  if(unsavedDuplicatePending && !confirm('Ada entry hasil "duplikat konten ke akun lain" yang belum disimpan — kalau ditarik sekarang, entry itu akan hilang. Lanjutkan tarik data?')) return;
+  pullFromSheet(false);
+};
 document.getElementById('btnPushSheet').onclick = pushAllToSheet;
 document.getElementById('btnResetLocal').onclick = ()=>{
   if(!confirm('Ini akan menghapus SEMUA data yang tersimpan di browser ini (konten, akun, request, tim, produk) — termasuk URL Apps Script. Data di Google Spreadsheet tidak akan terhapus. Lanjutkan?')) return;
@@ -2182,6 +2198,9 @@ function startAutoSync(){
     // Jangan tarik data kalau masih ada proses kirim (push) ke spreadsheet yang belum selesai —
     // supaya data lama di spreadsheet tidak menimpa balik perubahan (status/link) yang baru saja dibuat.
     if(pendingPushes > 0) return;
+    // Jangan tarik data kalau ada entry hasil "duplikat konten ke akun lain" yang belum disimpan —
+    // karena entry itu cuma ada di dashboard (belum ada di spreadsheet), jadi bakal hilang/ketimpa kalau ditarik ulang sekarang.
+    if(unsavedDuplicatePending) return;
     // Beri jeda aman beberapa detik setelah perubahan lokal terakhir, karena Google Apps Script
     // butuh sedikit waktu untuk benar-benar menyimpan baris baru sebelum bisa terbaca lagi saat pull.
     if(Date.now() - lastLocalEditAt < 4000) return;
