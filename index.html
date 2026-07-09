@@ -79,6 +79,15 @@ main{padding:24px 28px 60px;max-width:1440px;margin:0 auto;}
 @media(max-width:640px){.grid-4,.grid-3{grid-template-columns:1fr;}}
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.acc-card{display:flex;flex-direction:column;padding:16px 18px 14px;}
+.acc-card-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line);}
+.acc-card-body{margin-bottom:14px;}
+.acc-card-stats{display:flex;flex-direction:column;gap:8px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--line);}
+.acc-card-footer{display:flex;flex-direction:column;}
+.acc-field-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.acc-field-input{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 10px;font-size:13px;width:100%;}
+.acc-stat{background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;padding:9px 12px;}
+.acc-stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;}
 .kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
 .kpi .value{font-family:'Plus Jakarta Sans',sans-serif;font-size:23px;font-weight:700;margin-top:8px;}
 .bar-accent{height:3px;width:28px;border-radius:2px;margin-bottom:10px;}
@@ -121,12 +130,15 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 @media(max-width:900px){.input-panel{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){.input-panel{grid-template-columns:1fr;}}
 .input-panel .field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
-.akun-chip-group{display:flex;flex-wrap:wrap;gap:6px;padding:9px 0 2px;}
-.akun-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;background:var(--panel-2);border:1px solid var(--line);transition:all .15s ease;}
-.akun-chip:hover{border-color:var(--cyan);}
-.akun-chip.active{background:rgba(63,216,212,.15);color:var(--cyan);border-color:var(--cyan);}
+.akun-chip-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);}
+.akun-chip-platform-label{width:100%;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 0 -2px;}
+.akun-chip-platform-label:first-child{margin-top:0;}
+.akun-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px 7px 11px;border-radius:20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;background:var(--panel);border:1px solid var(--line);transition:border-color .15s ease,color .15s ease,background .15s ease,transform .1s ease;}
+.akun-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.akun-chip:hover{border-color:var(--cyan);color:var(--text);transform:translateY(-1px);}
+.akun-chip.active{background:rgba(63,216,212,.15);color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset;}
 .akun-chip-empty{font-size:12px;color:var(--muted);}
-.perf-metrics-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+.perf-metrics-row{display:grid;grid-template-columns:1.3fr repeat(6,1fr);gap:10px;padding-top:14px;margin-top:2px;border-top:1px dashed var(--line);}
 @media(max-width:1100px){.perf-metrics-row{grid-template-columns:repeat(4,1fr);}}
 @media(max-width:600px){.perf-metrics-row{grid-template-columns:repeat(2,1fr);}}
 .input-panel .field input,.input-panel .field select{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:9px 11px;font-size:13px;}
@@ -308,19 +320,19 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
     <div class="section-header"><h2>Update Performa Konten</h2><div class="muted-note">Timpa angka views, likes, komentar, share, save &amp; repost — aman diisi berulang kali</div></div>
     <div class="card">
       <div class="input-panel">
-        <div class="field" style="grid-column:1/-1;">
+        <div class="field" style="grid-column:1/-1;margin-bottom:6px;">
           <label>Pilih Konten</label>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <select id="inPerfKonten" style="flex:1;min-width:220px;"><option value="">— Pilih konten —</option></select>
             <button type="button" class="btn secondary" id="btnDuplikatKonten" style="white-space:nowrap;">🔁 Konten sama, posting ke akun lain</button>
           </div>
-          <div class="muted-note" style="margin-top:5px;">Kalau konten yang sama diposting ulang di akun lain dengan angka performa berbeda, klik tombol duplikat — jangan pilih banyak akun sekaligus di bawah, supaya tiap akun punya baris & angka performa sendiri.</div>
+          <div class="muted-note" style="margin-top:6px;">Kalau konten yang sama diposting ulang di akun lain dengan angka performa berbeda, klik tombol duplikat — jangan pilih banyak akun sekaligus di bawah, supaya tiap akun punya baris & angka performa sendiri.</div>
         </div>
-        <div class="field" style="grid-column:1/-1;">
+        <div class="field" style="grid-column:1/-1;margin-top:8px;">
           <label>Akun yang Posting</label>
           <div id="inPerfAkunChips" class="akun-chip-group"></div>
         </div>
-        <div class="field" style="grid-column:1/-1;">
+        <div class="field" style="grid-column:1/-1;margin-top:4px;">
           <div class="perf-metrics-row">
             <div class="field"><label>Tanggal Update</label><input type="date" id="inPerfTanggal"></div>
             <div class="field"><label>Views</label><input type="number" id="inPerfViews" placeholder="0" min="0"></div>
@@ -499,6 +511,10 @@ let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto
 let pendingPushes = 0; // hitung berapa proses "kirim ke spreadsheet" yang masih berjalan
 let unsavedDuplicatePending = false; // true selama ada entry hasil "duplikat akun" yang belum disimpan — auto-sync ditahan dulu
 let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara lokal
+// Menyimpan nilai field kartu akun yang sedang diketik user tapi belum diklik
+// "Update" — dipakai renderHealth() supaya isian ini tidak hilang kalau ada
+// render ulang (dari pull spreadsheet) di tengah-tengah proses mengisi.
+let akunDirtyFields = {};
 let lastPushErrorMsg = ''; // pesan error terakhir dari Apps Script, supaya bisa ditampilkan ke user
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
 const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','Selesai','Ditolak'];
@@ -956,11 +972,19 @@ function refreshPerfSelect(){
   if(cur !== '' && VIDEOS[parseInt(cur)]) sel.value = cur;
 }
 
+const PERF_PLATFORM_COLORS = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
 let selectedPerfAkun = new Set();
 function refreshPerfAkunSelect(){
   const wrap = document.getElementById('inPerfAkunChips');
   if(!ACCOUNTS.length){ wrap.innerHTML = '<span class="akun-chip-empty">Belum ada akun terdaftar di tab Akun Tracker.</span>'; return; }
-  wrap.innerHTML = ACCOUNTS.map(a=>`<button type="button" class="akun-chip${selectedPerfAkun.has(a.nama)?' active':''}" onclick="togglePerfAkun('${escapeHtml(a.nama).replace(/'/g,"\\'")}')">${escapeHtml(a.nama)} (${escapeHtml(a.platform)})</button>`).join('');
+  // Kelompokkan per platform supaya lebih gampang di-scan (bukan cuma tumpukan pill acak)
+  const grouped = {};
+  ACCOUNTS.forEach(a=>{ (grouped[a.platform||'Lainnya'] = grouped[a.platform||'Lainnya']||[]).push(a); });
+  wrap.innerHTML = Object.keys(grouped).sort().map(platform=>{
+    const color = PERF_PLATFORM_COLORS[platform] || 'var(--muted)';
+    const chips = grouped[platform].map(a=>`<button type="button" class="akun-chip${selectedPerfAkun.has(a.nama)?' active':''}" onclick="togglePerfAkun('${escapeHtml(a.nama).replace(/'/g,"\\'")}')"><span class="dot" style="background:${color};"></span>${escapeHtml(a.nama)}</button>`).join('');
+    return `<div class="akun-chip-platform-label">${escapeHtml(platform)}</div>${chips}`;
+  }).join('');
 }
 function togglePerfAkun(nama){
   selectedPerfAkun = selectedPerfAkun.has(nama) && selectedPerfAkun.size===1 ? new Set() : new Set([nama]);
@@ -1069,6 +1093,11 @@ function updateAkunInline(nama){
   const rec = {tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet};
   AKUN_LOG.push(rec);
 
+  // Nilai-nilai ini sudah resmi dibaca & dikirim, jadi bukan "belum tersimpan"
+  // lagi — bersihkan dari akunDirtyFields supaya render berikutnya menampilkan
+  // data server apa adanya (bukan nilai lama yang ke-lock terus-menerus).
+  ['akun_followers_','akun_status_','akun_note_','akun_salesunit_','akun_salesomzet_'].forEach(p=> delete akunDirtyFields[p+safeId]);
+
   saveLocalState(); render();
   // Ambil ulang elemen msg setelah render(), karena render() membangun ulang
   // seluruh kartu akun (innerHTML diganti) sehingga referensi elemen lama sudah tidak nempel di halaman lagi.
@@ -1079,14 +1108,49 @@ function updateAkunInline(nama){
     if(st==='ok'){
       if(msg3){ msg3.textContent = '✅ Diperbarui & terkirim ke spreadsheet.'; }
       showToast('Update akun selesai', nama, 'success');
-      // Beri jeda sebelum tarik ulang data — Google Sheets butuh sedikit waktu
-      // supaya baris yang baru saja ditambahkan benar-benar bisa dibaca lagi.
-      // Tanpa jeda ini, pull bisa "kepagian" dan baliknya angka Penjualan jadi 0 lagi.
-      setTimeout(()=>pullFromSheet(true), 1500);
+      // Verifikasi baris benar-benar sudah bisa dibaca ulang dari spreadsheet,
+      // dengan retry — supaya angka yang baru diisi TIDAK PERNAH balik ke 0/kosong
+      // di layar hanya karena Google Sheets/Apps Script butuh waktu lebih lama
+      // dari perkiraan untuk sinkron (sebelumnya pakai jeda tetap 1.5 detik saja,
+      // yang kadang kurang lama sehingga pull "kepagian" menimpa balik ke data lama).
+      verifyAndSyncAkunUpdate(rec);
     } else {
       showToast('Update akun tersimpan di dashboard', nama, 'warn');
     }
   });
+}
+
+/* Pastikan entry akun yang baru saja disimpan benar-benar sudah kebaca ulang
+ * dari spreadsheet sebelum dipercaya sepenuhnya. Google Sheets/Apps Script
+ * kadang butuh waktu lebih dari 1.5 detik untuk baris baru siap dibaca lagi —
+ * kalau pull terjadi sebelum itu, AKUN_LOG lama (tanpa entry baru) akan
+ * menimpa layar dan angka Followers/Penjualan yang baru diisi kelihatan
+ * "balik ke 0/kosong" padahal sebenarnya cuma belum sempat sinkron.
+ * Fungsi ini menarik ulang data, mengecek apakah entry yang baru disimpan
+ * sudah muncul (dicocokkan dari nilai field-nya, bukan timestamp — karena
+ * fmtISO() cuma menyimpan tanggal tanpa jam), dan kalau belum, kembalikan
+ * entry lokal supaya tidak pernah hilang dari layar, lalu coba lagi. */
+function verifyAndSyncAkunUpdate(rec, attempt){
+  attempt = attempt || 0;
+  const MAX_ATTEMPTS = 5;
+  const delay = 1500 + attempt*1200;
+  setTimeout(async ()=>{
+    await pullFromSheet(true);
+    const latest = latestStatusPerAccount()[rec.nama];
+    const matches = latest
+      && Number(latest.followers)===Number(rec.followers)
+      && String(latest.status)===String(rec.status)
+      && String(latest.note||'')===String(rec.note||'')
+      && Number(latest.salesUnit||0)===Number(rec.salesUnit||0)
+      && Number(latest.salesOmzet||0)===Number(rec.salesOmzet||0);
+    if(!matches){
+      // Belum kebaca ulang dari spreadsheet — kembalikan entry lokal supaya
+      // angka yang baru diisi tetap tampil benar, jangan sampai balik ke 0/kosong.
+      AKUN_LOG.push(rec);
+      saveLocalState(); render();
+      if(attempt < MAX_ATTEMPTS) verifyAndSyncAkunUpdate(rec, attempt+1);
+    }
+  }, delay);
 }
 
 /* Hitung % kenaikan follower vs bulan sebelumnya */
@@ -1608,24 +1672,26 @@ function renderHealth(){
       const pct = parseFloat(growth.pct);
       const isPos = pct >= 0;
       const color = isPos ? 'var(--cyan)' : 'var(--red)';
-      const bg    = isPos ? 'rgba(63,216,212,.12)' : 'rgba(240,86,108,.12)';
+      const bg    = isPos ? 'rgba(63,216,212,.10)' : 'rgba(240,86,108,.10)';
       const arrow = isPos ? '▲' : '▼';
       const tooltip = `vs ${numFmt(growth.prevFollowers)} followers pada ${growth.prevDate}`;
       growthBadge = `
-        <div style="background:${bg};border:1px solid ${color};border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;" title="${escapeHtml(tooltip)}">
-          <div>
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;">Pertumbuhan Followers</div>
-            <div style="font-size:18px;font-weight:700;color:${color};letter-spacing:.01em;">${arrow} ${Math.abs(pct)}%</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">vs bulan lalu</div>
-            <div style="font-size:11px;color:var(--muted);">${numFmt(growth.prevFollowers)} → ${numFmt(curFollowers||0)}</div>
+        <div class="acc-stat" style="background:${bg};border-left-color:${color};" title="${escapeHtml(tooltip)}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div>
+              <div class="acc-stat-label">Pertumbuhan Followers</div>
+              <div style="font-size:18px;font-weight:700;color:${color};letter-spacing:.01em;">${arrow} ${Math.abs(pct)}%</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">vs bulan lalu</div>
+              <div style="font-size:11px;color:var(--muted);">${numFmt(growth.prevFollowers)} → ${numFmt(curFollowers||0)}</div>
+            </div>
           </div>
         </div>`;
     } else if(r.followers != null){
       growthBadge = `
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:2px;">Pertumbuhan Followers</div>
+        <div class="acc-stat">
+          <div class="acc-stat-label" style="margin-bottom:2px;">Pertumbuhan Followers</div>
           <div style="font-size:12px;color:var(--muted);">Butuh minimal 2 data update untuk menghitung pertumbuhan</div>
         </div>`;
     }
@@ -1645,14 +1711,14 @@ function renderHealth(){
         viewsLine = `<span style="font-size:11px;color:var(--muted);">Belum ada data 30 hari sebelumnya untuk dibandingkan</span>`;
       }
       viewsErBadge = `
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;" title="Berdasarkan konten yang diposting lewat akun ini, 30 hari terakhir">
+        <div class="acc-stat" style="border-left-color:var(--purple);display:flex;flex-direction:column;gap:6px;" title="Berdasarkan konten yang diposting lewat akun ini, 30 hari terakhir">
           <div>
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:2px;">Pertumbuhan Views (30 hari)</div>
+            <div class="acc-stat-label" style="margin-bottom:2px;">Pertumbuhan Views (30 hari)</div>
             <div style="font-size:13px;">${viewsLine}</div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;">Avg. Engagement Rate</div>
+              <div class="acc-stat-label">Avg. Engagement Rate</div>
               <div style="font-size:16px;font-weight:700;color:var(--purple);">${cstats.curER.toFixed(2)}%</div>
             </div>
             <div style="font-size:10px;color:var(--muted);">${cstats.contentCount} konten</div>
@@ -1660,8 +1726,8 @@ function renderHealth(){
         </div>`;
     } else {
       viewsErBadge = `
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:2px;">Pertumbuhan Views &amp; ER</div>
+        <div class="acc-stat">
+          <div class="acc-stat-label" style="margin-bottom:2px;">Pertumbuhan Views &amp; ER</div>
           <div style="font-size:12px;color:var(--muted);">Belum ada konten yang diposting via akun ini</div>
         </div>`;
     }
@@ -1673,75 +1739,83 @@ function renderHealth(){
     let salesBadge = '';
     if(totalSalesUnit>0 || totalSalesOmzet>0){
       salesBadge = `
-        <div style="background:rgba(63,216,140,.10);border:1px solid var(--pink);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;" title="Akumulasi seluruh entry penjualan organik akun ini">
-          <div>
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;">Total Penjualan Organik</div>
-            <div style="font-size:16px;font-weight:700;color:var(--pink);">${numFmt(totalSalesUnit)} unit</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Omzet</div>
-            <div style="font-size:13px;font-weight:700;color:var(--pink);">Rp ${numFmt(totalSalesOmzet)}</div>
+        <div class="acc-stat" style="background:rgba(63,216,140,.08);border-left-color:var(--pink);" title="Akumulasi seluruh entry penjualan organik akun ini">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div>
+              <div class="acc-stat-label">Total Penjualan Organik</div>
+              <div style="font-size:16px;font-weight:700;color:var(--pink);">${numFmt(totalSalesUnit)} unit</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Omzet</div>
+              <div style="font-size:13px;font-weight:700;color:var(--pink);">Rp ${numFmt(totalSalesOmzet)}</div>
+            </div>
           </div>
         </div>`;
     } else {
       salesBadge = `
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:2px;">Total Penjualan Organik</div>
+        <div class="acc-stat">
+          <div class="acc-stat-label" style="margin-bottom:2px;">Total Penjualan Organik</div>
           <div style="font-size:12px;color:var(--muted);">Belum ada data penjualan tercatat</div>
         </div>`;
     }
 
-    return `<div class="card" style="display:flex;flex-direction:column;gap:12px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+    return `<div class="card acc-card">
+      <div class="acc-card-head">
         <div>
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">${platformPill(acc.platform)}<b style="font-size:13px;">${escapeHtml(acc.nama)}</b></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">${platformPill(acc.platform)}<b style="font-size:13.5px;">${escapeHtml(acc.nama)}</b></div>
           ${lastUpd}
         </div>
         <span class="tag ${tagClass}" id="akun_badge_${safeId}">${curStatus}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div class="field" style="margin:0;">
-          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Followers</label>
-          <input type="number" id="akun_followers_${safeId}" value="${curFollowers}" placeholder="0" min="0"
-            style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:13px;width:100%;">
-        </div>
-        <div class="field" style="margin:0;">
-          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Status</label>
-          <select id="akun_status_${safeId}"
-            style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:13px;width:100%;">
-            <option value="Aktif" ${curStatus==='Aktif'?'selected':''}>Aktif</option>
-            <option value="Warning" ${curStatus==='Warning'?'selected':''}>Warning</option>
-            <option value="Restricted" ${curStatus==='Restricted'?'selected':''}>Restricted</option>
-            <option value="Suspended" ${curStatus==='Suspended'?'selected':''}>Suspended / Banned</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:0.8fr 1.2fr;gap:8px;">
-        <div class="field" style="margin:0;">
-          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;">Penjualan (Unit)</label>
-          <input type="number" id="akun_salesunit_${safeId}" value="${curSalesUnit}" placeholder="0" min="0"
-            style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:13px;width:100%;">
-        </div>
-        <div class="field" style="margin:0;">
-          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;">Penjualan (Omzet Rp)</label>
-          <input type="number" id="akun_salesomzet_${safeId}" value="${curSalesOmzet}" placeholder="0" min="0"
-            style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:13px;width:100%;">
+      <div class="acc-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="field" style="margin:0;">
+            <label class="acc-field-label">Followers</label>
+            <input type="number" id="akun_followers_${safeId}" value="${curFollowers}" placeholder="0" min="0" class="acc-field-input">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="acc-field-label">Status</label>
+            <select id="akun_status_${safeId}" class="acc-field-input">
+              <option value="Aktif" ${curStatus==='Aktif'?'selected':''}>Aktif</option>
+              <option value="Warning" ${curStatus==='Warning'?'selected':''}>Warning</option>
+              <option value="Restricted" ${curStatus==='Restricted'?'selected':''}>Restricted</option>
+              <option value="Suspended" ${curStatus==='Suspended'?'selected':''}>Suspended / Banned</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="acc-field-label">Penjualan (Unit)</label>
+            <input type="number" id="akun_salesunit_${safeId}" value="${curSalesUnit}" placeholder="0" min="0" class="acc-field-input">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="acc-field-label">Penjualan (Omzet Rp)</label>
+            <input type="number" id="akun_salesomzet_${safeId}" value="${curSalesOmzet}" placeholder="0" min="0" class="acc-field-input">
+          </div>
         </div>
       </div>
-      ${salesBadge}
-      ${growthBadge}
-      ${viewsErBadge}
-      <div class="field" style="margin:0;">
-        <label style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Catatan (opsional)</label>
-        <input type="text" id="akun_note_${safeId}" value="${escapeHtml(curNote)}" placeholder="Catatan tambahan..."
-          style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:13px;width:100%;">
+      <div class="acc-card-stats">
+        ${salesBadge}
+        ${growthBadge}
+        ${viewsErBadge}
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${acc.nama.replace(/'/g,"\\'")}')">💾 Update</button>
-        <span id="akun_msg_${safeId}" style="font-size:11px;"></span>
+      <div class="acc-card-footer">
+        <div class="field" style="margin:0 0 10px;">
+          <label class="acc-field-label">Catatan (opsional)</label>
+          <input type="text" id="akun_note_${safeId}" value="${escapeHtml(curNote)}" placeholder="Catatan tambahan..." class="acc-field-input">
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${acc.nama.replace(/'/g,"\\'")}')">💾 Update</button>
+          <span id="akun_msg_${safeId}" style="font-size:11px;"></span>
+        </div>
       </div>
     </div>`;
   }).join('');
+
+  // Tempel balik isian yang belum diklik "Update" (lihat akunDirtyFields di atas),
+  // supaya render ulang ini tidak menghapus apa yang sedang diketik user.
+  Object.keys(akunDirtyFields).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = akunDirtyFields[id];
+  });
 }
 
 /* ============== MASTER RENDER ============== */
@@ -2311,20 +2385,35 @@ document.getElementById('appsScriptUrl').addEventListener('change', ()=>{ saveLo
   }
   startAutoSync();
 
-  // FIX: sebelumnya lastLocalEditAt cuma ke-update saat edit video/konten,
-  // jadi form Kesehatan Akun (Followers, Penjualan Unit/Omzet, Status, Catatan)
-  // TIDAK terlindungi dari auto-sync tiap 10 detik. Kalau auto-sync nembak
-  // persis saat user lagi pindah antar-field di kartu akun (misal habis isi
-  // Penjualan Unit lalu klik ke kolom Omzet), seluruh kartu akun di-render
-  // ulang dari data lama spreadsheet dan angka yang baru diketik hilang jadi 0
-  // sebelum sempat diklik "Update". Delegated listener ini menandai SEMUA
-  // field di kartu akun (id diawali "akun_") sebagai edit lokal, supaya
-  // auto-sync ikut menunda 4 detik seperti halnya form video.
+  // FIX: renderHealth() (dipanggil oleh render(), yang dipanggil oleh SETIAP
+  // pullFromSheet — baik auto-sync 10 detik, pull paksa 1.5 detik setelah
+  // simpan konten/performa, maupun retry sinkron akun) selalu membangun ULANG
+  // seluruh innerHTML kartu akun dari data server. Kalau proses itu kejadian
+  // SAAT user lagi mengisi field di kartu akun lain (atau field yang sama)
+  // yang belum sempat diklik "Update", isian yang belum tersimpan itu hilang
+  // ketimpa nilai lama/kosong dari server — lalu begitu user klik "Update",
+  // yang kebaca & terkirim ke spreadsheet adalah nilai kosong itu (BUKAN yang
+  // baru diketik). Ini akar masalah kenapa Penjualan bisa balik ke 0 di sheet
+  // padahal sudah diisi di dashboard.
+  //
+  // Solusinya: lacak setiap field kartu akun yang sedang diketik user (belum
+  // diklik Update) di akunDirtyFields. Setiap kali renderHealth() membangun
+  // ulang kartu-kartu itu, nilai yang masih "dirty" ini langsung ditempel
+  // balik ke input yang baru, sehingga TIDAK PERNAH hilang walau render
+  // terjadi di tengah-tengah proses mengisi form. Begitu user klik "Update"
+  // untuk akun tsb, dirty flag-nya dibersihkan karena nilainya sudah resmi
+  // tersimpan.
   document.addEventListener('input', (e)=>{
-    if(e.target && e.target.id && e.target.id.startsWith('akun_')) lastLocalEditAt = Date.now();
+    if(e.target && e.target.id && e.target.id.startsWith('akun_')){
+      lastLocalEditAt = Date.now();
+      akunDirtyFields[e.target.id] = e.target.value;
+    }
   });
   document.addEventListener('change', (e)=>{
-    if(e.target && e.target.id && e.target.id.startsWith('akun_')) lastLocalEditAt = Date.now();
+    if(e.target && e.target.id && e.target.id.startsWith('akun_')){
+      lastLocalEditAt = Date.now();
+      akunDirtyFields[e.target.id] = e.target.value;
+    }
   });
 })();
 
