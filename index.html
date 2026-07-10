@@ -300,6 +300,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       </div>
     </div>
     <span id="syncBadge" style="font-size:11px;opacity:0.6;transition:opacity 0.5s;white-space:nowrap;">🔄 Auto-sync aktif</span>
+    <button type="button" id="btnSoundToggle" class="theme-toggle-btn" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;width:auto;height:auto;padding:7px 10px;" title="Suara notifikasi konten selesai">🔊</button>
     <div class="theme-toggle">
       <button class="theme-toggle-btn" id="btnThemeDark" title="Gelap">🌙</button>
       <button class="theme-toggle-btn" id="btnThemeLight" title="Terang">☀️</button>
@@ -784,6 +785,87 @@ function onRangeDayClick(iso){
   renderRangePresets(); renderRangeCalendars();
 }
 
+/* ============== NOTIFIKASI SUARA "KONTEN SELESAI" ============== */
+let soundNotifEnabled = true;
+try{ soundNotifEnabled = localStorage.getItem('creativeOpsSoundNotif') !== 'off'; }catch(e){}
+function updateSoundToggleBtn(){
+  const b = document.getElementById('btnSoundToggle');
+  if(!b) return;
+  b.textContent = soundNotifEnabled ? '🔊' : '🔇';
+  b.title = soundNotifEnabled ? 'Suara notifikasi: AKTIF (klik utk matikan)' : 'Suara notifikasi: MATI (klik utk aktifkan)';
+}
+document.getElementById('btnSoundToggle').addEventListener('click', ()=>{
+  soundNotifEnabled = !soundNotifEnabled;
+  try{ localStorage.setItem('creativeOpsSoundNotif', soundNotifEnabled?'on':'off'); }catch(e){}
+  updateSoundToggleBtn();
+  if(soundNotifEnabled) playDingSound(); // kasih contoh bunyi biar user tau berhasil dinyalain
+});
+updateSoundToggleBtn();
+
+function playDingSound(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return;
+    const ctx = new AudioCtx();
+    [880, 1175].forEach((freq, i)=>{
+      const t0 = ctx.currentTime + i*0.14;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.28, t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.4);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t0); osc.stop(t0+0.42);
+    });
+  }catch(e){}
+}
+function speakKontenSelesai(namaPemohon){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const nama = (namaPemohon||'').trim();
+    const teks = nama ? ('Woi konten '+nama+' udah selesai, ndang di cek.') : 'Woi konten udah selesai, ndang di cek.';
+    const utter = new SpeechSynthesisUtterance(teks);
+    utter.lang = 'id-ID'; utter.rate = 1; utter.pitch = 1; utter.volume = 1;
+    const voices = speechSynthesis.getVoices();
+    const idVoice = voices.find(v=> /^id/i.test(v.lang));
+    if(idVoice) utter.voice = idVoice;
+    setTimeout(()=> speechSynthesis.speak(utter), 320); // kasih jeda dikit dari bunyi ding
+  }catch(e){}
+}
+function notifyKontenSelesai(namaPemohon){
+  if(!soundNotifEnabled) return;
+  playDingSound();
+  speakKontenSelesai(namaPemohon);
+}
+
+/* ============== TRACKING "KONTEN SELESAI" UNTUK BROADCAST KE SEMUA BROWSER ==============
+   Supaya notifikasi suara tidak cuma kedengeran di browser yang ngeklik status "Selesai",
+   tapi juga di browser lain yang lagi buka dashboard ini (lewat auto-sync). Caranya: tiap
+   browser nyimpen daftar request (pakai key unik) yang notifikasinya SUDAH pernah dibunyikan
+   di browser itu, jadi begitu auto-sync narik data & ketemu status "Selesai" yang belum pernah
+   dibunyikan di browser ini, baru dia bunyiin. Disimpan di localStorage biar tahan reload. */
+let notifiedFinishedKeys = new Set();
+try{ notifiedFinishedKeys = new Set(JSON.parse(localStorage.getItem('creativeOpsNotifiedFinished')||'[]')); }catch(e){}
+function reqKey(r){
+  return r.ts || [r.judul||'', r.tanggal||'', r.requester||''].join('|');
+}
+function saveNotifiedFinishedKeys(){
+  try{
+    // simpan max 500 entri terbaru biar localStorage gak membengkak terus
+    const arr = Array.from(notifiedFinishedKeys).slice(-500);
+    localStorage.setItem('creativeOpsNotifiedFinished', JSON.stringify(arr));
+  }catch(e){}
+}
+function markReqAsNotified(r){
+  notifiedFinishedKeys.add(reqKey(r));
+  saveNotifiedFinishedKeys();
+}
+// Preload daftar suara TTS lebih awal (di sebagian browser baru terisi async)
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=> speechSynthesis.getVoices(); }
+
 /* ============== LOCAL STORAGE ============== */
 function saveLocalState(){
   try{
@@ -1023,6 +1105,8 @@ function renderRequests(){
       const idx = parseInt(this.dataset.idx);
       const prevStatus = REQUESTS[idx].status;
       REQUESTS[idx].status = this.value;
+      const justFinished = this.value === 'Selesai' && prevStatus !== 'Selesai';
+      if(justFinished){ notifyKontenSelesai(REQUESTS[idx].requester); markReqAsNotified(REQUESTS[idx]); } // dipicu langsung di sini (masih dalam gesture klik user) biar suara tidak diblokir browser
       let converted = false;
       if(this.value === 'Selesai' && prevStatus !== 'Selesai' && !REQUESTS[idx].convertedToVideo){
         converted = convertRequestToVideo(idx);
@@ -2460,6 +2544,10 @@ async function pullFromSheet(silent){
         if(r.nama && !ACCOUNTS.find(a=>a.nama===r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
       });
     }
+    // Simpan status request SEBELUM ditimpa data baru, buat bandingin mana yang baru jadi "Selesai"
+    const prevStatusByKey = {};
+    REQUESTS.forEach(r=>{ prevStatusByKey[reqKey(r)] = r.status; });
+
     // Sync request konten dari sheet
     let countReq = 0;
     if((json.requests||[]).length > 0){
@@ -2484,6 +2572,25 @@ async function pullFromSheet(silent){
     if(lastSyncSnapshot !== null && snapshot !== lastSyncSnapshot){
       showToast('Konten telah diperbarui', countVideo+' video, '+countAkun+' log akun, '+countReq+' request tersinkron dari spreadsheet.', 'info');
     }
+
+    // Cari request yang baru saja berubah jadi "Selesai" (dari sync, bisa jadi diselesaikan
+    // orang lain di device lain) dan belum pernah dibunyikan notifikasinya di browser ini.
+    const isFirstSyncEver = (lastSyncSnapshot === null);
+    const baruSelesai = REQUESTS.filter(r=>
+      r.status === 'Selesai' &&
+      prevStatusByKey[reqKey(r)] !== 'Selesai' &&
+      !notifiedFinishedKeys.has(reqKey(r))
+    );
+    if(baruSelesai.length > 0){
+      baruSelesai.forEach(r=> markReqAsNotified(r));
+      if(!isFirstSyncEver){
+        // kasih jeda antar item biar suaranya nggak numpuk/motong satu sama lain kalau ada beberapa sekaligus
+        baruSelesai.forEach((r, i)=>{ setTimeout(()=> notifyKontenSelesai(r.requester), i*1900); });
+      }
+      // kalau isFirstSyncEver: cuma ditandai "sudah dinotif" tanpa dibunyikan,
+      // biar pas dashboard pertama kali dibuka nggak nembak banyak bunyi sekaligus untuk data lama.
+    }
+
     lastSyncSnapshot = snapshot;
   }catch(err){
     msg.textContent = 'Gagal menarik data: '+err.message;
