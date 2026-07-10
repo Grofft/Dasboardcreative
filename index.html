@@ -867,9 +867,20 @@ function notifyKontenSelesai(namaPemohon){
    dibunyikan di browser ini, baru dia bunyiin. Disimpan di localStorage biar tahan reload. */
 let notifiedFinishedKeys = new Set();
 try{ notifiedFinishedKeys = new Set(JSON.parse(localStorage.getItem('creativeOpsNotifiedFinished')||'[]')); }catch(e){}
+/* ============== PROTEKSI RACE CONDITION: PERUBAHAN LOKAL VS AUTO-SYNC ==============
+   Auto-sync narik ulang SEMUA data request dari spreadsheet & menimpa REQUESTS lokal.
+   Kalau ada request yang baru ditambah/diedit di device ini tapi belum sempat "nyampe & kebaca
+   balik" dari spreadsheet, auto-sync bisa menimpa & bikin request itu KELIHATAN HILANG dari
+   daftar. Untuk itu, tiap perubahan lokal dicatat & dilindungi selama beberapa saat dari
+   ketimpa hasil sync, sampai spreadsheet-nya "nyusul". */
+const recentLocalReqChanges = new Map(); // reqKey -> waktu terakhir diubah lokal
+const recentLocalReqDeletes = new Map(); // reqKey -> waktu terakhir dihapus lokal
+const LOCAL_CHANGE_PROTECT_MS = 60000;   // lindungi perubahan lokal selama 60 detik dari sync
 function reqKey(r){
   return r.ts || [r.judul||'', r.tanggal||'', r.requester||''].join('|');
 }
+function markLocalReqChange(r){ recentLocalReqChanges.set(reqKey(r), Date.now()); }
+function markLocalReqDelete(r){ recentLocalReqDeletes.set(reqKey(r), Date.now()); recentLocalReqChanges.delete(reqKey(r)); }
 function saveNotifiedFinishedKeys(){
   try{
     // simpan max 500 entri terbaru biar localStorage gak membengkak terus
@@ -1123,6 +1134,7 @@ function renderRequests(){
       const idx = parseInt(this.dataset.idx);
       const prevStatus = REQUESTS[idx].status;
       REQUESTS[idx].status = this.value;
+      markLocalReqChange(REQUESTS[idx]);
       const justFinished = this.value === 'Selesai' && prevStatus !== 'Selesai';
       if(justFinished){ notifyKontenSelesai(REQUESTS[idx].requester); markReqAsNotified(REQUESTS[idx]); } // dipicu langsung di sini (masih dalam gesture klik user) biar suara tidak diblokir browser
       let converted = false;
@@ -1176,6 +1188,7 @@ function renderRequests(){
       if(!confirm('Hapus request ini?')) return;
       const deleted = REQUESTS[idx];
       REQUESTS.splice(idx,1);
+      markLocalReqDelete(deleted);
       saveLocalState(); renderRequests();
       await pushOneToSheet({sheetType:'request_delete', judul: deleted.judul, tanggal: deleted.tanggal});
     });
@@ -1191,6 +1204,7 @@ function renderRequests(){
     inp.addEventListener('change', async function(){
       const idx = parseInt(this.dataset.idx);
       REQUESTS[idx].link = this.value.trim();
+      markLocalReqChange(REQUESTS[idx]);
       saveLocalState();
       const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
       if(pushResult !== 'ok'){
@@ -1256,6 +1270,7 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
   try{
     const rec = {tanggal: fmtISO(new Date()), judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts: new Date().toISOString()};
     REQUESTS.push(rec);
+    markLocalReqChange(rec);
     saveLocalState(); renderRequests();
     msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
     const res = await pushOneToSheet({sheetType:'request', ...rec});
@@ -2564,19 +2579,41 @@ async function pullFromSheet(silent){
     }
     // Simpan status request SEBELUM ditimpa data baru, buat bandingin mana yang baru jadi "Selesai"
     const prevStatusByKey = {};
-    REQUESTS.forEach(r=>{ prevStatusByKey[reqKey(r)] = r.status; });
+    const oldReqs = REQUESTS;
+    oldReqs.forEach(r=>{ prevStatusByKey[reqKey(r)] = r.status; });
+
+    // Bersihin catatan perubahan lokal yang udah lewat masa proteksinya (>60 detik),
+    // asumsinya spreadsheet udah pasti nyusul kalau segitu lama
+    const nowTs = Date.now();
+    for(const [k,t] of recentLocalReqChanges){ if(nowTs - t > LOCAL_CHANGE_PROTECT_MS) recentLocalReqChanges.delete(k); }
+    for(const [k,t] of recentLocalReqDeletes){ if(nowTs - t > LOCAL_CHANGE_PROTECT_MS) recentLocalReqDeletes.delete(k); }
 
     // Sync request konten dari sheet
     let countReq = 0;
     if((json.requests||[]).length > 0){
-      REQUESTS = [];
+      const serverKeys = new Set();
+      const newReqs = [];
       json.requests.forEach(r=>{
         if(!r.judul) return;
-        REQUESTS.push({ tanggal: r.tanggal||fmtISO(new Date()), judul: r.judul, requester: r.requester||'', pic: r.pic||'',
+        const rec = { tanggal: r.tanggal||fmtISO(new Date()), judul: r.judul, requester: r.requester||'', pic: r.pic||'',
           produk: r.produk||'', tipe: r.tipe||TIPE_KONTEN[0], platform: r.platform||'', deadline: r.deadline||'', prioritas: r.prioritas||'Normal',
-          status: r.status||'Baru', brief: r.brief||'', link: r.link||'', ts: r.ts||'' });
+          status: r.status||'Baru', brief: r.brief||'', link: r.link||'', ts: r.ts||'' };
+        const k = reqKey(rec);
+        serverKeys.add(k);
+        if(recentLocalReqDeletes.has(k)) return; // baru aja dihapus lokal, spreadsheet belum nyusul — jangan dimunculin lagi dulu
+        newReqs.push(rec);
         countReq++;
       });
+      // Request yang baru ditambah/diedit lokal tapi belum muncul di hasil sync (spreadsheet
+      // masih proses nyusul) tetap dipertahankan, biar nggak "hilang" dari daftar sementara.
+      oldReqs.forEach(r=>{
+        const k = reqKey(r);
+        if(!serverKeys.has(k) && recentLocalReqChanges.has(k)){
+          newReqs.push(r);
+          countReq++;
+        }
+      });
+      REQUESTS = newReqs;
     }
     saveLocalState();
     refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
