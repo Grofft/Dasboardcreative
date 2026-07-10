@@ -802,11 +802,29 @@ document.getElementById('btnSoundToggle').addEventListener('click', ()=>{
 });
 updateSoundToggleBtn();
 
-function playDingSound(){
+let sharedAudioCtx = null;
+function getSharedAudioCtx(){
   try{
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if(!AudioCtx) return;
-    const ctx = new AudioCtx();
+    if(!AudioCtx) return null;
+    if(!sharedAudioCtx || sharedAudioCtx.state === 'closed'){
+      sharedAudioCtx = new AudioCtx();
+    }
+    if(sharedAudioCtx.state === 'suspended'){
+      sharedAudioCtx.resume().catch(()=>{}); // browser bisa nge-suspend context kalau tab lama gak difokus
+    }
+    return sharedAudioCtx;
+  }catch(e){ return null; }
+}
+// Begitu ada interaksi apa pun di halaman (klik/ketik/sentuh), coba "bangunin" audio context.
+// Ini jaga-jaga kalau browser nge-block audio sebelum ada gesture user sama sekali.
+['click','keydown','touchstart'].forEach(ev=>{
+  document.addEventListener(ev, ()=>{ getSharedAudioCtx(); }, {once:true, passive:true});
+});
+function playDingSound(){
+  try{
+    const ctx = getSharedAudioCtx();
+    if(!ctx) return;
     [880, 1175].forEach((freq, i)=>{
       const t0 = ctx.currentTime + i*0.14;
       const osc = ctx.createOscillator();
