@@ -2463,43 +2463,44 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 13).getValues() : [];
-    var matchIdxs = []; // index baris (0-based dalam array rows) yang cocok dengan request ini
     var hasTs = !!(data.ts && String(data.ts).trim());
-    for (var i = 1; i < rows.length; i++) {
-      var rowTs = String(rows[i][12] || '').trim();
-      var sameJudulTgl = String(rows[i][1]).trim() === String(data.judul).trim() &&
-                          normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal);
-      if (!sameJudulTgl) continue;
-      // Kalau data yang dikirim client punya ts, dan baris sheet ini juga punya ts,
-      // wajib cocok persis dulu ts-nya baru dianggap match (lebih presisi daripada judul+tanggal saja,
-      // supaya kalau ada >1 baris judul+tanggal sama, yang keupdate benar-benar yang diklik user).
-      if (hasTs && rowTs) {
-        if (rowTs === String(data.ts).trim()) matchIdxs.push(i);
-      } else {
-        matchIdxs.push(i);
+
+    // TAHAP 1 (paling aman): cari baris dengan ts PERSIS SAMA. Ini bukti pasti itu baris
+    // yang dimaksud (atau duplikat literal dari request yang sama persis).
+    var exactTsMatches = [];
+    if (hasTs) {
+      for (var i = 1; i < rows.length; i++) {
+        if (String(rows[i][12] || '').trim() === String(data.ts).trim()) exactTsMatches.push(i);
       }
     }
-    // Kalau tadi filter pakai ts ternyata nggak nemu match sama sekali (misal baris lama belum punya ts),
-    // fallback ke pencocokan judul+tanggal biasa supaya tetap ke-update.
-    if (matchIdxs.length === 0) {
+
+    var primary = -1;
+    if (exactTsMatches.length > 0) {
+      primary = exactTsMatches[0];
+    } else {
+      // TAHAP 2 (fallback, kurang presisi): tidak ada ts yang cocok — baik karena client
+      // tidak kirim ts, atau baris di sheet belum punya ts (data lama). Cocokkan judul+tanggal
+      // saja, TAPI update HANYA baris pertama yang ketemu dan JANGAN hapus baris lain,
+      // karena tidak ada bukti kuat baris-baris itu benar-benar duplikat (bisa jadi request
+      // lain yang kebetulan judul & tanggalnya sama).
       for (var j = 1; j < rows.length; j++) {
         if (String(rows[j][1]).trim() === String(data.judul).trim() &&
             normalizeTanggal(rows[j][0]) === normalizeTanggal(data.tanggal)) {
-          matchIdxs.push(j);
+          primary = j;
+          break;
         }
       }
     }
-    if (matchIdxs.length > 0) {
-      var primary = matchIdxs[0];
+
+    if (primary >= 0) {
       sh.getRange(primary + 1, 1, 1, 13).setValues([[
         forceText(data.tanggal), data.judul, data.requester || '', data.pic || '',
         data.produk || '', data.platform || '', forceText(data.deadline),
         data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || rows[primary][12] || ''
       ]]);
-      // Kalau ternyata ada baris duplikat lain (judul+tanggal sama) yang tidak ikut keupdate,
-      // hapus supaya tidak nongol lagi sebagai "request baru" pas auto-sync berikutnya.
-      // Dihapus dari bawah ke atas biar nomor baris yang lain tidak bergeser.
-      var extras = matchIdxs.slice(1);
+      // Hapus baris duplikat HANYA kalau ts-nya identik persis dengan yang barusan diupdate
+      // (bukti kuat itu baris kembar dari request yang sama, bukan request lain yang beda).
+      var extras = exactTsMatches.filter(function(idx){ return idx !== primary; });
       for (var e = extras.length - 1; e >= 0; e--) {
         sh.deleteRow(extras[e] + 1);
       }
@@ -2677,19 +2678,22 @@ async function pullFromSheet(silent){
           countReq++;
         }
       });
-      // Jaga-jaga terakhir: kalau sheet ternyata masih ada baris kembar (judul+tanggal+requester sama,
-      // misal karena diedit manual di spreadsheet), jangan sampai keduanya tampil di dashboard.
-      // Utamakan yang statusnya paling "maju" (Selesai > Revisi > Diproses > Baru/Ditolak).
+      // Jaga-jaga terakhir: kalau sheet ternyata masih ada baris yang BENAR-BENAR kembar
+      // (ts identik persis — bukti pasti itu duplikat literal, misal dari retry jaringan),
+      // jangan sampai keduanya tampil di dashboard. Request lain yang cuma kebetulan
+      // judul+tanggalnya mirip TIDAK disentuh, supaya tidak ada request asli yang hilang.
       const statusRank = {Selesai:4, Revisi:3, Diproses:2, Baru:1, Ditolak:0};
       const dedupMap = new Map();
+      const passthrough = [];
       newReqs.forEach(r=>{
-        const k = [r.judul||'', r.tanggal||'', r.requester||''].join('|');
+        if(!r.ts){ passthrough.push(r); return; } // tanpa ts, tidak ada dasar kuat buat dianggap duplikat — tampilkan apa adanya
+        const k = r.ts;
         const existing = dedupMap.get(k);
         if(!existing || (statusRank[r.status]||0) >= (statusRank[existing.status]||0)){
           dedupMap.set(k, r);
         }
       });
-      REQUESTS = Array.from(dedupMap.values());
+      REQUESTS = [...Array.from(dedupMap.values()), ...passthrough];
     }
     saveLocalState();
     refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
