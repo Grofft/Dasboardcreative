@@ -87,9 +87,9 @@ header.top{
 .range-trigger-icon span:nth-child(3){background:var(--cyan);}
 .range-trigger-icon span:nth-child(4){background:var(--blue);}
 .range-trigger-dot{width:9px;height:9px;border-radius:50%;background:var(--pink);flex-shrink:0;}
-.range-picker-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:50;display:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.45);overflow:hidden;}
+.range-picker-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:50;display:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.45);overflow:hidden;max-width:calc(100vw - 24px);}
 .range-picker-panel.open{display:block;}
-.range-picker-body{display:flex;align-items:stretch;}
+.range-picker-body{display:flex;align-items:stretch;max-width:100%;overflow-x:auto;}
 .range-presets{width:158px;flex-shrink:0;border-right:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:3px;max-height:420px;overflow-y:auto;}
 .range-preset-btn{text-align:left;padding:9px 12px;border-radius:8px;border:none;background:none;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
 .range-preset-btn:hover{background:var(--row-hover);}
@@ -687,9 +687,36 @@ function openRangePicker(){
   selectingEnd = false;
   const [s] = getPendingRange();
   calViewYear = s.getFullYear(); calViewMonth = s.getMonth();
-  document.getElementById('rangePickerPanel').classList.add('open');
+  const panel = document.getElementById('rangePickerPanel');
+  panel.classList.add('open');
   renderRangePresets(); renderRangeCalendars();
+  repositionRangePanel();
 }
+function repositionRangePanel(){
+  // Pastikan panel selalu utuh kelihatan di layar (tidak kepotong di kanan),
+  // supaya tidak perlu digeser/scroll manual buat lihat bulan berikutnya.
+  const panel = document.getElementById('rangePickerPanel');
+  const trigger = document.getElementById('rangePicker');
+  if(!panel || !trigger) return;
+  // Reset dulu biar pengukuran lebar panel akurat (bukan sisa dari posisi sebelumnya)
+  panel.style.left = '0px';
+  panel.style.right = 'auto';
+  requestAnimationFrame(()=>{
+    const triggerRect = trigger.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const margin = 12;
+    const overflowRight = panelRect.right > (window.innerWidth - margin);
+    if(overflowRight){
+      // Geser ke kiri secukupnya supaya sisi kanan panel pas di dalam layar
+      const shift = Math.min(triggerRect.left - margin, panelRect.right - (window.innerWidth - margin));
+      panel.style.left = (-Math.max(0, shift)) + 'px';
+    }
+  });
+}
+window.addEventListener('resize', ()=>{
+  const panel = document.getElementById('rangePickerPanel');
+  if(panel && panel.classList.contains('open')) repositionRangePanel();
+});
 function closeRangePicker(){ document.getElementById('rangePickerPanel').classList.remove('open'); }
 document.getElementById('rangeTriggerBtn').addEventListener('click', (e)=>{
   e.stopPropagation();
@@ -1031,7 +1058,7 @@ function convertRequestToVideo(idx){
     tanggal: fmtISO(new Date()),
     judul: r.judul,
     nama: r.pic || (TEAM[0]||''),
-    tipe: TIPE_KONTEN[0],
+    tipe: r.tipe || TIPE_KONTEN[0],
     produk: r.produk || '',
     platform: r.platform || (PLATFORMS[0]||''),
     views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:''
