@@ -331,6 +331,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <select id="rsFilterPlatform" style="min-width:130px;"><option value="">Semua Platform</option></select>
         <select id="rsFilterKreator" style="min-width:140px;"><option value="">Semua Kreator</option></select>
         <select id="rsFilterProduk"  style="min-width:130px;"><option value="">Semua Produk</option></select>
+        <select id="rsFilterAkun"    style="min-width:150px;"><option value="">Semua Akun</option></select>
         <button class="btn" id="rsReset" style="font-size:11px;padding:5px 12px;">↺ Reset</button>
       </div>
     </div>
@@ -1606,7 +1607,13 @@ function accountContentStats(nama){
   const curViews = sumViews(curPeriod), prevViews = sumViews(prevPeriod);
   let viewsPct = null;
   if(prevViews>0) viewsPct = (((curViews-prevViews)/prevViews)*100).toFixed(1);
-  return { curViews, prevViews, viewsPct, curER: avgER(curPeriod), contentCount: curPeriod.length };
+  const sumField = f=> vids.reduce((s,v)=>s+(v[f]||0),0);
+  const totals = {
+    views: sumField('views'), likes: sumField('likes'), comments: sumField('comments'),
+    shares: sumField('shares'), saves: sumField('saves'), reposts: sumField('reposts'),
+    contentCount: vids.length
+  };
+  return { curViews, prevViews, viewsPct, curER: avgER(curPeriod), contentCount: curPeriod.length, totals };
 }
 
 /* ============== RENDER: PAGE 1 RINGKASAN ============== */
@@ -1634,6 +1641,7 @@ function refreshSummaryFilters(){
   fillSelect(document.getElementById('rsFilterPlatform'), PLATFORMS, true);
   fillSelect(document.getElementById('rsFilterKreator'), TEAM, true);
   fillSelect(document.getElementById('rsFilterProduk'), PRODUCTS, true);
+  fillSelect(document.getElementById('rsFilterAkun'), ACCOUNTS.map(a=>a.nama), true);
 }
 
 function getSummaryFilters(){
@@ -1641,16 +1649,18 @@ function getSummaryFilters(){
     platform: document.getElementById('rsFilterPlatform').value,
     kreator:  document.getElementById('rsFilterKreator').value,
     produk:   document.getElementById('rsFilterProduk').value,
+    akun:     document.getElementById('rsFilterAkun').value,
   };
 }
 
-['rsFilterPlatform','rsFilterKreator','rsFilterProduk'].forEach(id=>{
+['rsFilterPlatform','rsFilterKreator','rsFilterProduk','rsFilterAkun'].forEach(id=>{
   document.getElementById(id).addEventListener('change', ()=>renderSummary(getRange()));
 });
 document.getElementById('rsReset').addEventListener('click', ()=>{
   document.getElementById('rsFilterPlatform').value='';
   document.getElementById('rsFilterKreator').value='';
   document.getElementById('rsFilterProduk').value='';
+  document.getElementById('rsFilterAkun').value='';
   renderSummary(getRange());
 });
 
@@ -1662,6 +1672,7 @@ function renderSummary(range){
   if(f.platform) vids = vids.filter(v=>v.platform===f.platform);
   if(f.kreator)  vids = vids.filter(v=>v.nama===f.kreator);
   if(f.produk)   vids = vids.filter(v=>v.produk===f.produk);
+  if(f.akun)     vids = vids.filter(v=>String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(f.akun));
 
   // previous period (same duration, immediately before)
   const durMs = range[1] - range[0];
@@ -1670,6 +1681,7 @@ function renderSummary(range){
   if(f.platform) prevVids = prevVids.filter(v=>v.platform===f.platform);
   if(f.kreator)  prevVids = prevVids.filter(v=>v.nama===f.kreator);
   if(f.produk)   prevVids = prevVids.filter(v=>v.produk===f.produk);
+  if(f.akun)     prevVids = prevVids.filter(v=>String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(f.akun));
 
   // helper: compute % delta
   function delta(cur, prev){
@@ -2153,6 +2165,35 @@ function renderHealth(){
         </div>`;
     }
 
+    // Ringkasan total interaksi konten (akumulasi semua konten yang diposting via akun ini)
+    let engagementBadge = '';
+    if(cstats && cstats.totals && cstats.totals.contentCount>0){
+      const t = cstats.totals;
+      const metric = (label, val)=>`
+        <div style="text-align:center;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">${numFmt(val)}</div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:2px;">${label}</div>
+        </div>`;
+      engagementBadge = `
+        <div class="acc-stat" style="border-left-color:var(--cyan);" title="Akumulasi seluruh konten yang diposting lewat akun ini">
+          <div class="acc-stat-label" style="margin-bottom:8px;">Ringkasan Interaksi Konten (${t.contentCount} konten)</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px 4px;">
+            ${metric('Views', t.views)}
+            ${metric('Like', t.likes)}
+            ${metric('Komen', t.comments)}
+            ${metric('Share', t.shares)}
+            ${metric('Save', t.saves)}
+            ${metric('Repost', t.reposts)}
+          </div>
+        </div>`;
+    } else {
+      engagementBadge = `
+        <div class="acc-stat">
+          <div class="acc-stat-label" style="margin-bottom:2px;">Ringkasan Interaksi Konten</div>
+          <div style="font-size:12px;color:var(--muted);">Belum ada konten yang diposting via akun ini</div>
+        </div>`;
+    }
+
     // Total penjualan organik (akumulasi semua entry yang pernah diinput utk akun ini)
     const accLog = AKUN_LOG.filter(r2=>r2.nama===acc.nama);
     const totalSalesUnit  = accLog.reduce((s,r2)=>s+(r2.salesUnit ||0),0);
@@ -2217,6 +2258,7 @@ function renderHealth(){
         ${salesBadge}
         ${growthBadge}
         ${viewsErBadge}
+        ${engagementBadge}
       </div>
       <div class="acc-card-footer">
         <div class="field" style="margin:0 0 10px;">
