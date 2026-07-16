@@ -300,7 +300,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       </div>
     </div>
     <span id="syncBadge" style="font-size:11px;opacity:0.6;transition:opacity 0.5s;white-space:nowrap;">🔄 Auto-sync aktif</span>
-    <button type="button" id="btnSoundToggle" class="theme-toggle-btn" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;width:auto;height:auto;padding:7px 10px;" title="Suara notifikasi konten selesai">🔊</button>
+    <button type="button" id="btnSoundToggle" class="theme-toggle-btn" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;width:auto;height:auto;padding:7px 10px;" title="Suara notifikasi konten selesai & revisi">🔊</button>
     <div class="theme-toggle">
       <button class="theme-toggle-btn" id="btnThemeDark" title="Gelap">🌙</button>
       <button class="theme-toggle-btn" id="btnThemeLight" title="Terang">☀️</button>
@@ -869,7 +869,6 @@ function playDingSound(){
 function speakKontenSelesai(namaPemohon){
   try{
     if(!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
     const nama = (namaPemohon||'').trim();
     const teks = nama ? ('Woi konten '+nama+' udah selesai, ndang di cek.') : 'Woi konten udah selesai, ndang di cek.';
     const utter = new SpeechSynthesisUtterance(teks);
@@ -877,6 +876,9 @@ function speakKontenSelesai(namaPemohon){
     const voices = speechSynthesis.getVoices();
     const idVoice = voices.find(v=> /^id/i.test(v.lang));
     if(idVoice) utter.voice = idVoice;
+    // TIDAK pakai speechSynthesis.cancel() di sini — kalau ada notifikasi lain yang masih
+    // ngomong (misal notifikasi revisi konten lain), utterance ini otomatis ANTRE nunggu
+    // gantian selesai, bukan motong paksa suara yang lagi jalan.
     setTimeout(()=> speechSynthesis.speak(utter), 320); // kasih jeda dikit dari bunyi ding
   }catch(e){}
 }
@@ -884,6 +886,28 @@ function notifyKontenSelesai(namaPemohon){
   if(!soundNotifEnabled) return;
   playDingSound();
   speakKontenSelesai(namaPemohon);
+}
+function speakRevisiKonten(namaEditor){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    const nama = (namaEditor||'').trim();
+    const teks = nama
+      ? ('Woi '+nama+', revisian ndang di selesaiin men ra kakean revisi.')
+      : 'Woi, revisian ndang di selesaiin men ra kakean revisi.';
+    const utter = new SpeechSynthesisUtterance(teks);
+    utter.lang = 'id-ID'; utter.rate = 1; utter.pitch = 1; utter.volume = 1;
+    const voices = speechSynthesis.getVoices();
+    const idVoice = voices.find(v=> /^id/i.test(v.lang));
+    if(idVoice) utter.voice = idVoice;
+    // Sama seperti speakKontenSelesai: sengaja TIDAK cancel() supaya nggak motong
+    // notifikasi lain yang lagi ngomong — cukup antre di belakangnya.
+    setTimeout(()=> speechSynthesis.speak(utter), 320); // kasih jeda dikit dari bunyi ding
+  }catch(e){}
+}
+function notifyRevisiKonten(namaEditor){
+  if(!soundNotifEnabled) return;
+  playDingSound(); // pakai bunyi ding yang sama persis dengan notifikasi konten selesai
+  speakRevisiKonten(namaEditor);
 }
 
 /* ============== TRACKING "KONTEN SELESAI" UNTUK BROADCAST KE SEMUA BROWSER ==============
@@ -894,6 +918,10 @@ function notifyKontenSelesai(namaPemohon){
    dibunyikan di browser ini, baru dia bunyiin. Disimpan di localStorage biar tahan reload. */
 let notifiedFinishedKeys = new Set();
 try{ notifiedFinishedKeys = new Set(JSON.parse(localStorage.getItem('creativeOpsNotifiedFinished')||'[]')); }catch(e){}
+// Sama seperti notifiedFinishedKeys, tapi khusus buat status "Revisi" — supaya suara tegor
+// editor cuma bunyi SEKALI per request per browser, nggak keulang tiap auto-sync.
+let notifiedRevisiKeys = new Set();
+try{ notifiedRevisiKeys = new Set(JSON.parse(localStorage.getItem('creativeOpsNotifiedRevisi')||'[]')); }catch(e){}
 /* ============== PROTEKSI RACE CONDITION: PERUBAHAN LOKAL VS AUTO-SYNC ==============
    Auto-sync narik ulang SEMUA data request dari spreadsheet & menimpa REQUESTS lokal.
    Kalau ada request yang baru ditambah/diedit di device ini tapi belum sempat "nyampe & kebaca
@@ -918,6 +946,16 @@ function saveNotifiedFinishedKeys(){
 function markReqAsNotified(r){
   notifiedFinishedKeys.add(reqKey(r));
   saveNotifiedFinishedKeys();
+}
+function saveNotifiedRevisiKeys(){
+  try{
+    const arr = Array.from(notifiedRevisiKeys).slice(-500);
+    localStorage.setItem('creativeOpsNotifiedRevisi', JSON.stringify(arr));
+  }catch(e){}
+}
+function markReqAsNotifiedRevisi(r){
+  notifiedRevisiKeys.add(reqKey(r));
+  saveNotifiedRevisiKeys();
 }
 // Preload daftar suara TTS lebih awal (di sebagian browser baru terisi async)
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=> speechSynthesis.getVoices(); }
@@ -1164,6 +1202,8 @@ function renderRequests(){
       markLocalReqChange(REQUESTS[idx]);
       const justFinished = this.value === 'Selesai' && prevStatus !== 'Selesai';
       if(justFinished){ notifyKontenSelesai(REQUESTS[idx].requester); markReqAsNotified(REQUESTS[idx]); } // dipicu langsung di sini (masih dalam gesture klik user) biar suara tidak diblokir browser
+      const justRevisi = this.value === 'Revisi' && prevStatus !== 'Revisi';
+      if(justRevisi){ notifyRevisiKonten(REQUESTS[idx].pic); markReqAsNotifiedRevisi(REQUESTS[idx]); } // sama alasannya: dipicu di dalam gesture klik biar suara tidak diblokir browser
       let converted = false;
       if(this.value === 'Selesai' && prevStatus !== 'Selesai' && !REQUESTS[idx].convertedToVideo){
         converted = convertRequestToVideo(idx);
@@ -1182,6 +1222,11 @@ function renderRequests(){
         const pemohon = (REQUESTS[idx].requester||'').trim();
         const sapaan  = pemohon ? 'Hai '+pemohon+'! 👋' : 'Konten selesai! 👋';
         showToast(sapaan, 'Konten "'+REQUESTS[idx].judul+'" kamu sudah selesai dibuat nih, bisa dicrosscek ya!', 'success');
+      }
+      if(this.value === 'Revisi' && prevStatus !== 'Revisi'){
+        const editor = (REQUESTS[idx].pic||'').trim();
+        const sapaan  = editor ? 'Woi '+editor+'! ⚠️' : 'Ada revisi! ⚠️';
+        showToast(sapaan, 'Konten "'+REQUESTS[idx].judul+'" masuk status Revisi, ndang diselesaikan ya!', 'warn');
       }
     });
   });
@@ -2743,12 +2788,31 @@ async function pullFromSheet(silent){
       prevStatusByKey[reqKey(r)] !== 'Selesai' &&
       !notifiedFinishedKeys.has(reqKey(r))
     );
+    // Gabungkan jeda "baru selesai" & "baru revisi" jadi SATU timeline bareng (bukan
+    // masing-masing mulai dari 0 detik sendiri-sendiri), supaya kalau dua-duanya kejadian
+    // dalam sinkronisasi yang sama, bunyi dingnya tidak numpuk persis di waktu yang sama.
+    const notifQueue = [];
     if(baruSelesai.length > 0){
       baruSelesai.forEach(r=> markReqAsNotified(r));
-      if(!isFirstSyncEver){
-        // kasih jeda antar item biar suaranya nggak numpuk/motong satu sama lain kalau ada beberapa sekaligus
-        baruSelesai.forEach((r, i)=>{ setTimeout(()=> notifyKontenSelesai(r.requester), i*1900); });
-      }
+      baruSelesai.forEach(r=> notifQueue.push({type:'selesai', r}));
+    }
+    const baruRevisi = REQUESTS.filter(r=>
+      r.status === 'Revisi' &&
+      prevStatusByKey[reqKey(r)] !== 'Revisi' &&
+      !notifiedRevisiKeys.has(reqKey(r))
+    );
+    if(baruRevisi.length > 0){
+      baruRevisi.forEach(r=> markReqAsNotifiedRevisi(r));
+      baruRevisi.forEach(r=> notifQueue.push({type:'revisi', r}));
+    }
+    if(notifQueue.length > 0 && !isFirstSyncEver){
+      // kasih jeda antar item biar suaranya nggak numpuk/motong satu sama lain kalau ada beberapa sekaligus
+      notifQueue.forEach((item, i)=>{
+        setTimeout(()=>{
+          if(item.type === 'selesai') notifyKontenSelesai(item.r.requester);
+          else notifyRevisiKonten(item.r.pic);
+        }, i*1900);
+      });
       // kalau isFirstSyncEver: cuma ditandai "sudah dinotif" tanpa dibunyikan,
       // biar pas dashboard pertama kali dibuka nggak nembak banyak bunyi sekaligus untuk data lama.
     }
