@@ -369,23 +369,16 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
     </div>
 
     <div class="section-header">
-      <h2>Leaderboard Performa</h2>
+      <h2>Leaderboard Performa per Akun</h2>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div class="muted-note" id="leaderboardNote">Top 5 konten berdasarkan views pada periode &amp; filter terpilih</div>
+        <div class="muted-note" id="leaderboardNote">Top 3 konten per akun berdasarkan views pada periode &amp; filter terpilih</div>
         <div class="period-btns" id="leaderboardModeBtns">
           <button type="button" class="period-btn active" data-mode="views" onclick="setLeaderboardMode('views')">Top Views</button>
           <button type="button" class="period-btn" data-mode="er" onclick="setLeaderboardMode('er')">Top ER</button>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="table-scroll">
-        <table class="mobile-cards">
-          <thead><tr><th>Judul</th><th>Kreator</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Tanggal</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>ER</th></tr></thead>
-          <tbody id="tblLeaderboard"></tbody>
-        </table>
-      </div>
-    </div>
+    <div id="leaderboardAkunGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;"></div>
   </div>
 
   <!-- ===================== PAGE 2: PRODUKSI & PERFORMA ===================== -->
@@ -1592,7 +1585,7 @@ function followerGrowthPct(nama){
 
 // Views & Engagement Rate untuk konten yang diposting lewat akun tertentu,
 // dibandingkan 30 hari terakhir vs 30 hari sebelumnya
-function accountContentStats(nama){
+function accountContentStats(nama, range){
   const vids = VIDEOS.filter(v=>v.tanggal && String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(nama))
     .map(v=>({...v, _d:new Date(v.tanggal)}))
     .filter(v=>!isNaN(v._d));
@@ -1607,11 +1600,13 @@ function accountContentStats(nama){
   const curViews = sumViews(curPeriod), prevViews = sumViews(prevPeriod);
   let viewsPct = null;
   if(prevViews>0) viewsPct = (((curViews-prevViews)/prevViews)*100).toFixed(1);
-  const sumField = f=> vids.reduce((s,v)=>s+(v[f]||0),0);
+  // Total interaksi mengikuti filter periode/tanggal global (kalau ada) — bukan sepanjang masa lagi
+  const totalVids = range ? vids.filter(v=> inRange(v._d, range)) : vids;
+  const sumField = f=> totalVids.reduce((s,v)=>s+(v[f]||0),0);
   const totals = {
     views: sumField('views'), likes: sumField('likes'), comments: sumField('comments'),
     shares: sumField('shares'), saves: sumField('saves'), reposts: sumField('reposts'),
-    contentCount: vids.length
+    contentCount: totalVids.length
   };
   return { curViews, prevViews, viewsPct, curER: avgER(curPeriod), contentCount: curPeriod.length, totals };
 }
@@ -1918,15 +1913,41 @@ function renderLeaderboard(){
   const sorter = leaderboardMode==='er'
     ? (a,b)=>(engagementRate(b)-engagementRate(a))
     : (a,b)=>((b.views||0)-(a.views||0));
-  const top5 = [...vids].sort(sorter).slice(0,5);
   const note = document.getElementById('leaderboardNote');
   if(note) note.textContent = leaderboardMode==='er'
-    ? 'Top 5 konten berdasarkan Engagement Rate pada periode & filter terpilih'
-    : 'Top 5 konten berdasarkan views pada periode & filter terpilih';
-  document.getElementById('tblLeaderboard').innerHTML = top5.map(v=>`
-    <tr><td data-label="Judul">${escapeHtml(v.judul)}</td><td data-label="Kreator">${escapeHtml(v.nama)}</td><td data-label="Tipe"><span class="tag ${tipeTagClass(v.tipe)}">${v.tipe||'-'}</span></td><td data-label="Produk"><span class="tag purple">${escapeHtml(v.produk||'-')}</span></td><td data-label="Platform">${platformPill(v.platform)}</td>
-    <td data-label="Tanggal">${fmtDateID(parseDate(v.tanggal))}</td><td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td><td data-label="ER">${engagementRate(v).toFixed(2)}%</td></tr>
-  `).join('') || '<tr><td colspan="13" data-label="" class="muted-note">Belum ada data konten pada periode ini.</td></tr>';
+    ? 'Top 3 konten per akun berdasarkan Engagement Rate pada periode & filter terpilih'
+    : 'Top 3 konten per akun berdasarkan views pada periode & filter terpilih';
+
+  const grid = document.getElementById('leaderboardAkunGrid');
+  if(!grid) return;
+
+  const cards = ACCOUNTS.map(acc=>{
+    const accVids = vids.filter(v=> String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(acc.nama));
+    if(!accVids.length) return null;
+    const top = [...accVids].sort(sorter).slice(0,3);
+    const rows = top.map(v=>`
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:4px;">${escapeHtml(v.judul)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);">
+          <span>👁 ${numFmt(v.views)}</span>
+          <span>❤️ ${numFmt(v.likes)}</span>
+          <span>💬 ${numFmt(v.comments)}</span>
+          <span>↗️ ${numFmt(v.shares)}</span>
+          <span>🔖 ${numFmt(v.saves)}</span>
+          <span>🔁 ${numFmt(v.reposts)}</span>
+          <span style="color:var(--purple);font-weight:700;">ER ${engagementRate(v).toFixed(2)}%</span>
+        </div>
+      </div>`).join('');
+    return `
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          ${platformPill(acc.platform)}<b style="font-size:13.5px;">${escapeHtml(acc.nama)}</b>
+        </div>
+        ${rows}
+      </div>`;
+  }).filter(Boolean);
+
+  grid.innerHTML = cards.join('') || '<div class="muted-note" style="padding:16px;">Belum ada data konten pada periode &amp; filter ini.</div>';
 }
 
 function tipeTagClass(tipe){
@@ -2080,7 +2101,7 @@ function goVideoPage(p){
 });
 
 /* ============== RENDER: PAGE 3 KESEHATAN AKUN ============== */
-function renderHealth(){
+function renderHealth(range){
   const statusMap = latestStatusPerAccount();
   const wrap = document.getElementById('healthCards');
   if(!ACCOUNTS.length){
@@ -2130,7 +2151,7 @@ function renderHealth(){
     }
 
     // Views growth & Engagement Rate badge (berdasarkan konten yang diposting via akun ini)
-    const cstats = accountContentStats(acc.nama);
+    const cstats = accountContentStats(acc.nama, range);
     let viewsErBadge = '';
     if(cstats){
       let viewsLine;
@@ -2165,7 +2186,7 @@ function renderHealth(){
         </div>`;
     }
 
-    // Ringkasan total interaksi konten (akumulasi semua konten yang diposting via akun ini)
+    // Ringkasan total interaksi konten — mengikuti periode/tanggal yang sedang difilter di dashboard
     let engagementBadge = '';
     if(cstats && cstats.totals && cstats.totals.contentCount>0){
       const t = cstats.totals;
@@ -2175,8 +2196,8 @@ function renderHealth(){
           <div style="font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:2px;">${label}</div>
         </div>`;
       engagementBadge = `
-        <div class="acc-stat" style="border-left-color:var(--cyan);" title="Akumulasi seluruh konten yang diposting lewat akun ini">
-          <div class="acc-stat-label" style="margin-bottom:8px;">Ringkasan Interaksi Konten (${t.contentCount} konten)</div>
+        <div class="acc-stat" style="border-left-color:var(--cyan);" title="Mengikuti periode/tanggal yang sedang dipilih di filter dashboard">
+          <div class="acc-stat-label" style="margin-bottom:8px;">Ringkasan Interaksi Konten (${t.contentCount} konten pada periode ini)</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px 4px;">
             ${metric('Views', t.views)}
             ${metric('Like', t.likes)}
@@ -2190,7 +2211,7 @@ function renderHealth(){
       engagementBadge = `
         <div class="acc-stat">
           <div class="acc-stat-label" style="margin-bottom:2px;">Ringkasan Interaksi Konten</div>
-          <div style="font-size:12px;color:var(--muted);">Belum ada konten yang diposting via akun ini</div>
+          <div style="font-size:12px;color:var(--muted);">Belum ada konten pada periode ini untuk akun ini</div>
         </div>`;
     }
 
@@ -2286,7 +2307,7 @@ function render(){
   const range = getRange();
   renderSummary(range);
   renderVideoTable(range, true);
-  renderHealth();
+  renderHealth(range);
   renderRequests();
 }
 
