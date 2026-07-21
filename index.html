@@ -160,10 +160,19 @@ main{padding:24px 28px 60px;max-width:1440px;margin:0 auto;}
 
 .panel-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;margin-bottom:4px;}
 .panel-desc{font-size:11.5px;color:var(--muted);margin-bottom:14px;}
-.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 8px;}
-.chart-wrap{position:relative;height:300px;}
-.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;display:flex;flex-direction:column;}
+.chart-wrap{position:relative;height:280px;flex:none;}
+.two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start;}
 @media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+.chart-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);text-align:center;padding:0 20px;}
+.chart-empty svg{width:34px;height:34px;opacity:.45;margin-bottom:2px;}
+.chart-empty-title{font-size:12.5px;font-weight:600;color:var(--text);}
+.chart-empty-sub{font-size:11px;}
+.donut-layout{display:flex;gap:20px;align-items:center;}
+.chart-wrap-sm{position:relative;width:150px;height:150px;flex:none;}
+.chart-wrap-sm .chart-empty svg{width:26px;height:26px;}
+.kontribusi-detail{flex:1;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-content:start;gap:8px;max-height:230px;overflow-y:auto;padding-right:2px;}
+@media(max-width:520px){.donut-layout{flex-direction:column;align-items:stretch;}.chart-wrap-sm{width:100%;max-width:170px;margin:0 auto;}}
 
 .table-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px;}
@@ -184,6 +193,29 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 
 .platform-pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;}
 .platform-pill .dot{width:7px;height:7px;border-radius:50%;}
+
+.kontribusi-person{border:1px solid var(--line);border-radius:9px;background:var(--panel-2);}
+.kontribusi-person summary{list-style:none;cursor:pointer;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;}
+.kontribusi-person summary::-webkit-details-marker{display:none;}
+.kontribusi-person summary::before{content:'▸';color:var(--muted);font-size:10px;transition:transform .15s;flex:none;}
+.kontribusi-person[open] summary::before{transform:rotate(90deg);}
+.kontribusi-person .k-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.kontribusi-person .ki-name{font-weight:600;white-space:nowrap;}
+.kontribusi-person .ki-bar{flex:1 1 60px;min-width:40px;height:6px;border-radius:4px;background:var(--panel);overflow:hidden;}
+.kontribusi-person .ki-bar-fill{display:block;height:100%;border-radius:4px;}
+.kontribusi-person .ki-count{white-space:nowrap;color:var(--muted);font-size:11px;}
+.kontribusi-person .ki-pct{white-space:nowrap;font-weight:700;font-size:11.5px;min-width:30px;text-align:right;}
+.kontribusi-person .kontribusi-badges{flex-basis:100%;display:flex;flex-wrap:wrap;gap:5px;padding-left:17px;margin-top:2px;}
+.kontribusi-person .mini-badge{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:2px 8px;font-size:10.5px;}
+.kontribusi-items{padding:2px 12px 10px 34px;display:flex;flex-direction:column;gap:5px;border-top:1px dashed var(--line);}
+.kontribusi-item{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:12px;padding-top:6px;}
+.kontribusi-item .ki-judul{font-weight:600;}
+.kontribusi-item .ki-meta{color:var(--muted);font-size:11px;}
+.sales-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);font-size:12px;}
+.sales-row .sr-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.sales-row .sr-name{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sales-row .sr-value{font-weight:700;font-size:12px;white-space:nowrap;}
+.sales-row .sr-pct{color:var(--muted);font-size:10.5px;min-width:32px;text-align:right;}
 
 .acc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
 .btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;}
@@ -353,19 +385,44 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       <div class="chart-card">
         <div class="panel-title">Produksi Konten Harian</div>
         <div class="panel-desc">Jumlah konten (video/foto/carousel) yang diupload per hari pada periode terpilih</div>
-        <div class="chart-wrap"><canvas id="chartProduksiHarian"></canvas></div>
+        <div class="chart-wrap">
+          <canvas id="chartProduksiHarian"></canvas>
+          <div class="chart-empty" id="chartProduksiHarianEmpty" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V10M9 20V4M15 20v-7M21 20V13"/></svg>
+            <div class="chart-empty-title">Belum ada konten diproduksi</div>
+            <div class="chart-empty-sub">Coba ganti periode atau filter yang dipilih</div>
+          </div>
+        </div>
       </div>
       <div class="chart-card">
         <div class="panel-title">Kontribusi per Tim/Orang</div>
-        <div class="panel-desc">Jumlah konten berdasarkan kreator/editor</div>
-        <div class="chart-wrap"><canvas id="chartKontribusi"></canvas></div>
+        <div class="panel-desc">Jumlah konten berdasarkan kreator/editor — klik nama untuk lihat rincian konten yang dibuat</div>
+        <div class="donut-layout">
+          <div class="chart-wrap-sm">
+            <canvas id="chartKontribusi"></canvas>
+            <div class="chart-empty" id="chartKontribusiEmpty" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/></svg>
+              <div class="chart-empty-title" style="font-size:11px;">Belum ada data</div>
+            </div>
+          </div>
+          <div id="kontribusiDetail" class="kontribusi-detail"></div>
+        </div>
       </div>
     </div>
 
     <div class="chart-card">
       <div class="panel-title">Kontribusi Penjualan Organik</div>
       <div class="panel-desc">Omzet penjualan organik berdasarkan akun (akumulasi semua data, tidak terikat filter periode)</div>
-      <div class="chart-wrap"><canvas id="chartSalesKontribusi"></canvas></div>
+      <div class="donut-layout">
+        <div class="chart-wrap-sm">
+          <canvas id="chartSalesKontribusi"></canvas>
+          <div class="chart-empty" id="chartSalesKontribusiEmpty" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+            <div class="chart-empty-title" style="font-size:11px;">Belum ada data</div>
+          </div>
+        </div>
+        <div id="salesDetail" class="kontribusi-detail"></div>
+      </div>
     </div>
 
     <div class="section-header">
@@ -1840,8 +1897,16 @@ function renderSummary(range){
   let cur = new Date(range[0]);
   while(cur <= range[1]){ days.push(new Date(cur)); cur = addDays(cur,1); }
   const countsPerDay = days.map(d=> vids.filter(v=>{ const vd=parseDate(v.tanggal); return vd && startOfDay(vd).getTime()===startOfDay(d).getTime(); }).length);
-
+  const hasProduksiData = countsPerDay.some(c=>c>0);
+  const produksiCanvas = document.getElementById('chartProduksiHarian');
+  const produksiEmpty  = document.getElementById('chartProduksiHarianEmpty');
   destroyChart('chartProduksiHarian');
+  if (!hasProduksiData) {
+    produksiCanvas.style.display = 'none';
+    produksiEmpty.style.display = 'flex';
+  } else {
+    produksiCanvas.style.display = 'block';
+    produksiEmpty.style.display = 'none';
   charts.chartProduksiHarian = new Chart(document.getElementById('chartProduksiHarian'), {
     type:'bar',
     data:{
@@ -1852,6 +1917,9 @@ function renderSummary(range){
         backgroundColor: days.map((_,i)=>{ const t=i/Math.max(days.length-1,1); const h=Math.round(150+t*30); const l=Math.round(45+t*15); return `hsla(${h},70%,${l}%,0.9)`; }),
         borderRadius: 6,
         borderSkipped: false,
+        maxBarThickness: 46,
+        categoryPercentage: 0.6,
+        barPercentage: 0.9,
       }]
     },
     options:{
@@ -1864,6 +1932,7 @@ function renderSummary(range){
       }
     }
   });
+  }
 
   // ── CHART: Kontribusi per Orang ──
   const perOrang = {};
@@ -1871,7 +1940,15 @@ function renderSummary(range){
   vids.forEach(v=>{ if(perOrang[v.nama]===undefined) perOrang[v.nama]=0; perOrang[v.nama]++; });
   const names = Object.keys(perOrang).filter(n=>perOrang[n]>0);
   const palette = ['#FF5FA2','#9C6BFF','#3FD8D4','#F2C12E','#4C8DFF','#F0566C'];
+  const kontribusiCanvas = document.getElementById('chartKontribusi');
+  const kontribusiEmpty  = document.getElementById('chartKontribusiEmpty');
   destroyChart('chartKontribusi');
+  if (names.length === 0) {
+    kontribusiCanvas.style.display = 'none';
+    kontribusiEmpty.style.display = 'flex';
+  } else {
+    kontribusiCanvas.style.display = 'block';
+    kontribusiEmpty.style.display = 'none';
   charts.chartKontribusi = new Chart(document.getElementById('chartKontribusi'), {
     type:'doughnut',
     data:{
@@ -1885,9 +1962,9 @@ function renderSummary(range){
       }]
     },
     options:{
-      cutout:'60%',
+      cutout:'62%',
       plugins:{
-        legend:{ position:'bottom', labels:{ color: getMuted(), padding:16, font:{size:12}, usePointStyle:true, pointStyleWidth:10 } },
+        legend:{ display:false },
         tooltip:{ callbacks:{
           label: ctx=>{
             const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
@@ -1898,18 +1975,83 @@ function renderSummary(range){
       }
     }
   });
+  }
 
-  // ── CHART: Kontribusi Penjualan Organik (Omzet) per Akun ──
+  // ── DETAIL: rincian konten per orang (dedup konten yg sama walau posting ke beberapa akun) ──
+  const kdCont = document.getElementById('kontribusiDetail');
+  if (kdCont) {
+    if (names.length === 0) {
+      kdCont.innerHTML = '';
+    } else {
+      // kumpulkan dulu semua item per orang (dedup) supaya bisa hitung total & persentase
+      const dataPerName = names.map(n=>{
+        const seen = new Set();
+        const items = [];
+        vids.filter(v=>v.nama===n).forEach(v=>{
+          const key = (v.judul||'').trim().toLowerCase()+'|'+(v.tanggal||'');
+          if (seen.has(key)) return;
+          seen.add(key);
+          items.push(v);
+        });
+        return { n, items };
+      }).sort((a,b)=>b.items.length-a.items.length);
+      const totalKonten = dataPerName.reduce((s,d)=>s+d.items.length,0);
+      const colorByName = {};
+      names.forEach((n,i)=>{ colorByName[n] = palette[i % palette.length]; });
+      kdCont.innerHTML = dataPerName.map(({n, items})=>{
+        const byTipe = {};
+        items.forEach(v=>{ const t=v.tipe||'Lainnya'; byTipe[t]=(byTipe[t]||0)+1; });
+        const tipeBadges = Object.entries(byTipe).map(([t,c])=>`<span class="mini-badge">${escapeHtml(t)}: ${c}</span>`).join('');
+        const itemRows = items.slice().sort((a,b)=>(b.tanggal||'').localeCompare(a.tanggal||'')).map(v=>
+          `<div class="kontribusi-item">
+            <span class="ki-judul">${escapeHtml(v.judul||'(tanpa judul)')}</span>
+            <span class="ki-meta">${escapeHtml(v.tipe||'-')} · ${escapeHtml(v.produk||'-')} · ${escapeHtml(v.platform||'-')} · ${fmtDateID(parseDate(v.tanggal))}</span>
+          </div>`
+        ).join('');
+        const color = colorByName[n];
+        const pct = totalKonten>0 ? (items.length/totalKonten*100) : 0;
+        return `<details class="kontribusi-person">
+          <summary>
+            <span class="k-dot" style="background:${color}"></span>
+            <span class="ki-name">${escapeHtml(n)}</span>
+            <span class="ki-bar"><span class="ki-bar-fill" style="width:${pct}%;background:${color}"></span></span>
+            <span class="ki-count">${items.length} konten</span>
+            <span class="ki-pct">${pct.toFixed(0)}%</span>
+            <span class="kontribusi-badges">${tipeBadges}</span>
+          </summary>
+          <div class="kontribusi-items">${itemRows || '<div class="muted-note">Tidak ada konten.</div>'}</div>
+        </details>`;
+      }).join('');
+    }
+  }
   const omzetPerAkun = {};
   AKUN_LOG.forEach(r=>{ omzetPerAkun[r.nama] = (omzetPerAkun[r.nama]||0) + (r.salesOmzet||0); });
-  const akunNamesSales = Object.keys(omzetPerAkun).filter(n=>omzetPerAkun[n]>0);
+  const akunNamesSales = Object.keys(omzetPerAkun).filter(n=>omzetPerAkun[n]>0).sort((a,b)=>omzetPerAkun[b]-omzetPerAkun[a]);
   const salesCanvas = document.getElementById('chartSalesKontribusi');
+  const salesEmpty  = document.getElementById('chartSalesKontribusiEmpty');
+  const salesDetailEl = document.getElementById('salesDetail');
   destroyChart('chartSalesKontribusi');
   if(salesCanvas){
     if(akunNamesSales.length === 0){
-      const ctx2d = salesCanvas.getContext('2d');
-      ctx2d.clearRect(0,0,salesCanvas.width,salesCanvas.height);
+      salesCanvas.style.display = 'none';
+      if(salesEmpty) salesEmpty.style.display = 'flex';
+      if(salesDetailEl) salesDetailEl.innerHTML = '';
     } else {
+      salesCanvas.style.display = 'block';
+      if(salesEmpty) salesEmpty.style.display = 'none';
+      const totalOmzet = akunNamesSales.reduce((s,n)=>s+omzetPerAkun[n],0);
+      if(salesDetailEl){
+        salesDetailEl.innerHTML = akunNamesSales.map((n,i)=>{
+          const val = omzetPerAkun[n];
+          const pct = totalOmzet>0 ? (val/totalOmzet*100).toFixed(0) : 0;
+          return `<div class="sales-row">
+            <span class="sr-dot" style="background:${palette[i%palette.length]}"></span>
+            <span class="sr-name">${escapeHtml(n)}</span>
+            <span class="sr-value">Rp ${numFmt(val)}</span>
+            <span class="sr-pct">${pct}%</span>
+          </div>`;
+        }).join('');
+      }
       charts.chartSalesKontribusi = new Chart(salesCanvas, {
         type:'doughnut',
         data:{
@@ -1925,7 +2067,7 @@ function renderSummary(range){
         options:{
           cutout:'60%',
           plugins:{
-            legend:{ position:'bottom', labels:{ color: getMuted(), padding:16, font:{size:12}, usePointStyle:true, pointStyleWidth:10 } },
+            legend:{ display:false },
             tooltip:{ callbacks:{
               label: ctx=>{
                 const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
@@ -2880,15 +3022,24 @@ async function pullFromSheet(silent){
       REQUESTS = [...Array.from(dedupMap.values()), ...passthrough];
     }
     saveLocalState();
-    refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
-    render();
+
+    // Cuma render ulang (rebuild chart, tabel, dll — yang bikin dashboard "berkedip")
+    // kalau datanya BENERAN beda dari yang lagi tampil. Kalau sama persis, skip render
+    // supaya auto-sync tiap 10 detik tidak bikin layar kedip-kedip padahal tidak ada perubahan.
+    const snapshot = JSON.stringify({VIDEOS, AKUN_LOG, REQUESTS});
+    const isFirstPull = (lastSyncSnapshot === null);
+    const dataChanged = isFirstPull || snapshot !== lastSyncSnapshot;
+
+    if (dataChanged) {
+      refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
+      render();
+    }
     msg.textContent = '✅ Berhasil menarik '+countVideo+' baris video, '+countAkun+' baris log akun & '+countReq+' request konten dari spreadsheet.';
     msg.style.color = 'var(--cyan)';
     updateSyncBadge();
 
     // Deteksi apakah ada konten yang berubah (baru/diupdate) sejak sinkron terakhir
-    const snapshot = JSON.stringify({VIDEOS, AKUN_LOG, REQUESTS});
-    if(lastSyncSnapshot !== null && snapshot !== lastSyncSnapshot){
+    if(!isFirstPull && dataChanged){
       showToast('Konten telah diperbarui', countVideo+' video, '+countAkun+' log akun, '+countReq+' request tersinkron dari spreadsheet.', 'info');
     }
 
