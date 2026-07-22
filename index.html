@@ -2490,10 +2490,11 @@ function renderHealth(range){
 }
 
 /* ============== MASTER RENDER ============== */
-function render(){
+function render(opts){
+  const resetPage = !(opts && opts.resetPage === false);
   const range = getRange();
   renderSummary(range);
-  renderVideoTable(range, true);
+  renderVideoTable(range, resetPage);
   renderHealth(range);
   renderRequests();
 }
@@ -3032,7 +3033,9 @@ async function pullFromSheet(silent){
 
     if (dataChanged) {
       refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
-      render();
+      // resetPage:false — supaya kalau lagi buka halaman 3 tabel Kelola Konten pas
+      // auto-sync ketemu perubahan data, tidak ke-lempar balik ke halaman 1.
+      render({resetPage:false});
     }
     msg.textContent = '✅ Berhasil menarik '+countVideo+' baris video, '+countAkun+' baris log akun & '+countReq+' request konten dari spreadsheet.';
     msg.style.color = 'var(--cyan)';
