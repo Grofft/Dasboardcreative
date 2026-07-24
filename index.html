@@ -547,6 +547,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <div class="field"><label>Produk</label><select id="inReqProduk"></select></div>
         <div class="field"><label>Jenis Konten</label><select id="inReqTipe"></select></div>
         <div class="field"><label>Platform Tujuan</label><select id="inReqPlatform"></select></div>
+        <div class="field"><label>Jumlah Konten (QTY)</label><input type="number" id="inReqQty" min="1" step="1" value="1" placeholder="1"></div>
         <div class="field"><label>Deadline</label><input type="date" id="inReqDeadline"></div>
         <div class="field"><label>Prioritas</label><select id="inReqPrioritas"></select></div>
         <div class="field"><label>Status</label><select id="inReqStatus"></select></div>
@@ -558,6 +559,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
 
     <div class="section-header"><h2>Daftar Request Konten</h2><div class="muted-note">Klik status untuk memperbarui progres</div></div>
     <div class="card">
+      <div id="reqQtySummary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;"></div>
       <div class="filterbar" style="margin-bottom:12px;">
         <select id="filterReqStatus"><option value="">Semua Status</option></select>
         <select id="filterReqPIC"><option value="">Semua PIC</option></select>
@@ -570,7 +572,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal Request</th><th>Judul</th><th>Diminta Oleh</th><th>PIC</th><th>Produk</th><th>Tipe</th><th>Platform</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Brief</th><th>Link</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal Request</th><th>Judul</th><th>Diminta Oleh</th><th>PIC</th><th>Produk</th><th>Tipe</th><th>Platform</th><th>QTY</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Brief</th><th>Link</th><th>Aksi</th></tr></thead>
           <tbody id="tblRequests"></tbody>
         </table>
       </div>
@@ -599,7 +601,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, dan <code class="inline">tanggalPosting</code> di paling kanan (kolom M, N &amp; O) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief) akan dibuat otomatis saat request konten pertama dikirim.</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, dan <code class="inline">tanggalPosting</code> di paling kanan (kolom M, N &amp; O) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N).</div>
       <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
       <button class="btn" id="btnCopyScript">Copy Kode</button>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
@@ -643,7 +645,7 @@ let PRODUCTS = [];
 
 let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
-let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts}
+let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, qty, deadline, prioritas, status, brief, ts}
 const REQ_PAGE_SIZE = 50;
 let reqCurrentPage = 1;
 let lastSyncSnapshot = null; // untuk deteksi ada konten baru/diupdate saat auto-sync
@@ -1148,17 +1150,22 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
 function convertRequestToVideo(idx){
   const r = REQUESTS[idx];
   if(!r || r.convertedToVideo) return false;
-  const rec = {
-    tanggal: fmtISO(new Date()),
-    judul: r.judul,
-    nama: r.pic || (TEAM[0]||''),
-    tipe: r.tipe || TIPE_KONTEN[0],
-    produk: r.produk || '',
-    platform: r.platform || (PLATFORMS[0]||''),
-    views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:''
-  };
-  VIDEOS.push(rec);
-  pushOneToSheet({sheetType:'video', ...rec});
+  // QTY menentukan berapa baris konten produksi yang dibuat, supaya jumlah konten
+  // yang benar-benar diproduksi bisa dihitung dari Daftar Konten (bukan cuma 1 per request).
+  const qty = Math.max(1, parseInt(r.qty, 10) || 1);
+  for(let n = 1; n <= qty; n++){
+    const rec = {
+      tanggal: fmtISO(new Date()),
+      judul: qty > 1 ? `${r.judul} (${n}/${qty})` : r.judul,
+      nama: r.pic || (TEAM[0]||''),
+      tipe: r.tipe || TIPE_KONTEN[0],
+      produk: r.produk || '',
+      platform: r.platform || (PLATFORMS[0]||''),
+      views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:''
+    };
+    VIDEOS.push(rec);
+    pushOneToSheet({sheetType:'video', ...rec});
+  }
   r.convertedToVideo = true;
   return true;
 }
@@ -1181,6 +1188,17 @@ function renderRequests(){
   // supaya request lama yang belum dikerjakan tidak ketutupan request baru.
   const reqSortKey = r => r.ts ? new Date(r.ts).getTime() : new Date((r.tanggal||'1970-01-01')+'T00:00:00').getTime();
   rows.sort((a,b)=> reqSortKey(a) - reqSortKey(b));
+  const qtySummaryEl = document.getElementById('reqQtySummary');
+  if(qtySummaryEl){
+    const sumQty = arr => arr.reduce((s,r)=> s + (parseInt(r.qty,10)||1), 0);
+    const totalQtyDiminta = sumQty(rows);
+    const totalQtySelesai = sumQty(rows.filter(r=>r.status==='Selesai'));
+    const totalQtyProses = sumQty(rows.filter(r=>r.status!=='Selesai' && r.status!=='Ditolak'));
+    const chip = (label, val, color) => `<div style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">${label}</div><div style="font-size:19px;font-weight:800;color:${color};">${val}</div></div>`;
+    qtySummaryEl.innerHTML = chip('Total QTY Diminta', totalQtyDiminta, 'var(--text)')
+      + chip('QTY Selesai Diproduksi', totalQtySelesai, 'var(--pink)')
+      + chip('QTY Masih Berjalan', totalQtyProses, 'var(--yellow)');
+  }
   const totalRows = rows.length;
   const totalPages = Math.max(1, Math.ceil(totalRows / REQ_PAGE_SIZE));
   if(reqCurrentPage > totalPages) reqCurrentPage = totalPages;
@@ -1207,6 +1225,7 @@ function renderRequests(){
       <td data-label="Produk">${escapeHtml(r.produk||'')}</td>
       <td data-label="Tipe">${escapeHtml(r.tipe||'')}</td>
       <td data-label="Platform">${escapeHtml(r.platform||'')}</td>
+      <td data-label="QTY" style="text-align:center;font-weight:700;">${escapeHtml(String(r.qty||1))}</td>
       <td data-label="Deadline">${escapeHtml(r.deadline||'-')}</td>
       <td data-label="Prioritas">${escapeHtml(r.prioritas||'')}</td>
       <td data-label="Status">
@@ -1371,6 +1390,7 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
   const produk = document.getElementById('inReqProduk').value;
   const tipe = document.getElementById('inReqTipe').value;
   const platform = document.getElementById('inReqPlatform').value;
+  const qty = Math.max(1, parseInt(document.getElementById('inReqQty').value, 10) || 1);
   const deadline = document.getElementById('inReqDeadline').value;
   const prioritas = document.getElementById('inReqPrioritas').value;
   const status = document.getElementById('inReqStatus').value || 'Baru';
@@ -1383,7 +1403,7 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
 
   // Cegah submit yang persis sama (judul+pic+deadline+brief) diulang dalam 5 detik terakhir
   // — biasanya terjadi karena tap ganda di HP atau koneksi lambat sehingga user menekan lagi.
-  const submitKey = JSON.stringify({judul, pic, produk, deadline, brief});
+  const submitKey = JSON.stringify({judul, pic, produk, deadline, brief, qty});
   const now = Date.now();
   if(submitKey === lastReqSubmitKey && (now - lastReqSubmitAt) < 5000){
     msg.textContent = 'Request yang sama baru saja dikirim, tidak dikirim ulang.'; msg.style.color='var(--yellow)';
@@ -1396,7 +1416,7 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
   btnSave.textContent = 'Mengirim...';
 
   try{
-    const rec = {tanggal: fmtISO(new Date()), judul, requester, pic, produk, tipe, platform, deadline, prioritas, status, brief, ts: new Date().toISOString()};
+    const rec = {tanggal: fmtISO(new Date()), judul, requester, pic, produk, tipe, platform, qty, deadline, prioritas, status, brief, ts: new Date().toISOString()};
     REQUESTS.push(rec);
     markLocalReqChange(rec);
     saveLocalState(); renderRequests();
@@ -1410,6 +1430,7 @@ document.getElementById('btnSaveRequest').onclick = async ()=>{
     else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
     document.getElementById('inReqJudul').value='';
     document.getElementById('inReqRequester').value='';
+    document.getElementById('inReqQty').value='1';
     document.getElementById('inReqDeadline').value='';
     document.getElementById('inReqBrief').value='';
   } finally {
@@ -2490,11 +2511,10 @@ function renderHealth(range){
 }
 
 /* ============== MASTER RENDER ============== */
-function render(opts){
-  const resetPage = !(opts && opts.resetPage === false);
+function render(){
   const range = getRange();
   renderSummary(range);
-  renderVideoTable(range, resetPage);
+  renderVideoTable(range, true);
   renderHealth(range);
   renderRequests();
 }
@@ -2775,19 +2795,19 @@ function handleWrite(data) {
 
   } else if (data.sheetType === 'request') {
     var sh = ss.getSheetByName('RequestKonten');
-    if (!sh) { sh = ss.insertSheet('RequestKonten'); sh.appendRow(['tanggal','judul','requester','pic','produk','platform','deadline','prioritas','status','brief','link','tipe','ts']); }
-    else if (sh.getLastRow() === 0) sh.appendRow(['tanggal','judul','requester','pic','produk','platform','deadline','prioritas','status','brief','link','tipe','ts']);
+    if (!sh) { sh = ss.insertSheet('RequestKonten'); sh.appendRow(['tanggal','judul','requester','pic','produk','platform','deadline','prioritas','status','brief','link','tipe','ts','qty']); }
+    else if (sh.getLastRow() === 0) sh.appendRow(['tanggal','judul','requester','pic','produk','platform','deadline','prioritas','status','brief','link','tipe','ts','qty']);
     sh.appendRow([
       forceText(data.tanggal), data.judul, data.requester || '', data.pic || '',
       data.produk || '', data.platform || '', forceText(data.deadline),
-      data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || ''
+      data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || '', data.qty || 1
     ]);
 
   } else if (data.sheetType === 'request_update') {
     var sh = ss.getSheetByName('RequestKonten');
     if (!sh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
     var lastRow = sh.getLastRow();
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 13).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 14).getValues() : [];
     var hasTs = !!(data.ts && String(data.ts).trim());
 
     // TAHAP 1 (paling aman): cari baris dengan ts PERSIS SAMA. Ini bukti pasti itu baris
@@ -2818,10 +2838,11 @@ function handleWrite(data) {
     }
 
     if (primary >= 0) {
-      sh.getRange(primary + 1, 1, 1, 13).setValues([[
+      sh.getRange(primary + 1, 1, 1, 14).setValues([[
         forceText(data.tanggal), data.judul, data.requester || '', data.pic || '',
         data.produk || '', data.platform || '', forceText(data.deadline),
-        data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || rows[primary][12] || ''
+        data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || rows[primary][12] || '',
+        data.qty || rows[primary][13] || 1
       ]]);
       // Hapus baris duplikat HANYA kalau ts-nya identik persis dengan yang barusan diupdate
       // (bukti kuat itu baris kembar dari request yang sama, bukan request lain yang beda).
@@ -2833,7 +2854,7 @@ function handleWrite(data) {
       sh.appendRow([
         forceText(data.tanggal), data.judul, data.requester || '', data.pic || '',
         data.produk || '', data.platform || '', forceText(data.deadline),
-        data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || ''
+        data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || '', data.qty || 1
       ]);
     }
 
@@ -2898,7 +2919,7 @@ function jsonOutput(obj) {
 // "Kreator"  : nama
 // "Produk"   : nama
 // "Akun_List": nama | platform
-// "RequestKonten": tanggal | judul | requester | pic | produk | platform | deadline | prioritas | status | brief | link | tipe | ts
+// "RequestKonten": tanggal | judul | requester | pic | produk | platform | deadline | prioritas | status | brief | link | tipe | ts | qty
 // (Sheet Kreator, Produk, Akun_List, RequestKonten dibuat otomatis jika belum ada)
 //
 // action=test  -> read-only, hanya hitung jumlah baris per sheet (untuk tombol Test Koneksi)
@@ -2988,7 +3009,7 @@ async function pullFromSheet(silent){
       json.requests.forEach(r=>{
         if(!r.judul) return;
         const rec = { tanggal: r.tanggal||fmtISO(new Date()), judul: r.judul, requester: r.requester||'', pic: r.pic||'',
-          produk: r.produk||'', tipe: r.tipe||TIPE_KONTEN[0], platform: r.platform||'', deadline: r.deadline||'', prioritas: r.prioritas||'Normal',
+          produk: r.produk||'', tipe: r.tipe||TIPE_KONTEN[0], platform: r.platform||'', qty: parseInt(r.qty,10)||1, deadline: r.deadline||'', prioritas: r.prioritas||'Normal',
           status: r.status||'Baru', brief: r.brief||'', link: r.link||'', ts: r.ts||'' };
         const k = reqKey(rec);
         serverKeys.add(k);
@@ -3033,9 +3054,7 @@ async function pullFromSheet(silent){
 
     if (dataChanged) {
       refreshSelectors(); refreshSummaryFilters(); renderTeamList(); renderAccList(); renderProductList(); refreshPerfSelect(); refreshPerfAkunSelect(); renderRequests();
-      // resetPage:false — supaya kalau lagi buka halaman 3 tabel Kelola Konten pas
-      // auto-sync ketemu perubahan data, tidak ke-lempar balik ke halaman 1.
-      render({resetPage:false});
+      render();
     }
     msg.textContent = '✅ Berhasil menarik '+countVideo+' baris video, '+countAkun+' baris log akun & '+countReq+' request konten dari spreadsheet.';
     msg.style.color = 'var(--cyan)';
