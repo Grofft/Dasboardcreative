@@ -370,10 +370,15 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
 
     <div class="section-header"><h2>Ringkasan Periode</h2><div class="muted-note" id="rangeLabel2"></div></div>
     <div class="grid grid-4">
-      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi</div><div class="value" id="kpiTotalVideo">-</div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi <span style="font-weight:400;opacity:.7;" title="Sum QTY dari Request Konten berstatus Selesai, basis tanggal request">(QTY Selesai)</span></div><div class="value" id="kpiTotalVideo">-</div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--purple)"></div><div class="label">Total Views</div><div class="value" id="kpiTotalViews">-</div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--cyan)"></div><div class="label">Total Engagement</div><div class="value" id="kpiTotalEngagement">-</div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--yellow)"></div><div class="label">Avg Engagement Rate</div><div class="value" id="kpiAvgER">-</div></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:repeat(2,1fr);margin-top:14px;">
+      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Avg Hook Rate (Video)</div><div class="value" id="kpiAvgHookRate">-</div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--blue)"></div><div class="label">Avg Konversi Rate (Landing Page)</div><div class="value" id="kpiAvgKonversiRate">-</div></div>
     </div>
 
     <!-- BREAKDOWN PER PLATFORM -->
@@ -482,6 +487,20 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
             <div class="field"><label>Repost</label><input type="number" id="inPerfReposts" placeholder="0" min="0"></div>
           </div>
         </div>
+        <div class="field" id="perfHookRateFields" style="grid-column:1/-1;margin-top:4px;display:none;">
+          <label style="margin-bottom:6px;display:block;">Hook Rate (khusus Video) <span style="color:var(--cyan);font-weight:600;" title="Hook Rate = Views 3 Detik ÷ Impression/Reach × 100%. Ambil dari Insight native TikTok/Instagram, atau Ads Manager kalau konten diboost.">ⓘ</span></label>
+          <div class="perf-metrics-row">
+            <div class="field"><label>Impression / Reach</label><input type="number" id="inPerfImpression" placeholder="0" min="0"></div>
+            <div class="field"><label>Views 3 Detik</label><input type="number" id="inPerfViews3Detik" placeholder="0" min="0"></div>
+          </div>
+        </div>
+        <div class="field" id="perfKonversiFields" style="grid-column:1/-1;margin-top:4px;display:none;">
+          <label style="margin-bottom:6px;display:block;">Konversi Rate (khusus Landing Page) <span style="color:var(--cyan);font-weight:600;" title="Konversi Rate = Jumlah Konversi ÷ Kunjungan/Klik × 100%. Ambil dari GA/Meta Pixel atau tracking link.">ⓘ</span></label>
+          <div class="perf-metrics-row">
+            <div class="field"><label>Kunjungan / Klik</label><input type="number" id="inPerfKunjunganLP" placeholder="0" min="0"></div>
+            <div class="field"><label>Jumlah Konversi</label><input type="number" id="inPerfKonversiLP" placeholder="0" min="0"></div>
+          </div>
+        </div>
       </div>
       <button class="btn primary" id="btnSavePerf">💾 Update Performa</button>
       <div class="muted-note" id="perfSaveMsg" style="margin-top:8px;"></div>
@@ -498,9 +517,9 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Hook/Konversi Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
           <tbody id="tblVideos"></tbody>
-          <tfoot><tr><td colspan="8" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="Save" id="ftSaves">0</td><td data-label="Repost" id="ftReposts">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
+          <tfoot><tr><td colspan="8" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="Save" id="ftSaves">0</td><td data-label="Repost" id="ftReposts">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -601,7 +620,7 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, dan <code class="inline">tanggalPosting</code> di paling kanan (kolom M, N &amp; O) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N).</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, impression, views3detik, kunjunganLP, konversiLP) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">impression</code>, <code class="inline">views3detik</code>, <code class="inline">kunjunganLP</code> dan <code class="inline">konversiLP</code> di paling kanan (kolom M sampai S) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">impression</code> &amp; <code class="inline">views3detik</code> dipakai untuk hitung <b>Hook Rate</b> konten Tipe=Video (Views 3 Detik ÷ Impression). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N).</div>
       <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
       <button class="btn" id="btnCopyScript">Copy Kode</button>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
@@ -640,10 +659,10 @@ function showToast(title, sub, type){
 let TEAM = [];
 let ACCOUNTS = [];
 const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','CS','CRM'];
-const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel'];
+const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel','Landing Page'];
 let PRODUCTS = [];
 
-let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts}
+let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts, impression, views3detik, kunjunganLP, konversiLP}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, qty, deadline, prioritas, status, brief, ts}
 const REQ_PAGE_SIZE = 50;
@@ -1135,7 +1154,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   const produk = document.getElementById('inVidProduk').value;
   const msg = document.getElementById('videoSaveMsg');
   if(!tanggal || !judul){ msg.textContent='Isi tanggal & judul terlebih dahulu.'; msg.style.color='var(--red)'; return; }
-  const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:''};
+  const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', impression:0, views3detik:0, kunjunganLP:0, konversiLP:0};
   VIDEOS.push(rec);
   saveLocalState(); render(); refreshPerfSelect();
   msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
@@ -1477,6 +1496,11 @@ function setPerfAkunFromString(str){
   refreshPerfAkunSelect();
 }
 
+function togglePerfMetricFields(tipe){
+  document.getElementById('perfHookRateFields').style.display  = (tipe==='Video') ? '' : 'none';
+  document.getElementById('perfKonversiFields').style.display  = (tipe==='Landing Page') ? '' : 'none';
+}
+
 document.getElementById('inPerfKonten').addEventListener('change', function(){
   const idx = parseInt(this.value);
   if(isNaN(idx) || !VIDEOS[idx]) return;
@@ -1487,7 +1511,12 @@ document.getElementById('inPerfKonten').addEventListener('change', function(){
   document.getElementById('inPerfShares').value   = v.shares||0;
   document.getElementById('inPerfSaves').value    = v.saves||0;
   document.getElementById('inPerfReposts').value  = v.reposts||0;
+  document.getElementById('inPerfImpression').value  = v.impression||0;
+  document.getElementById('inPerfViews3Detik').value = v.views3detik||0;
+  document.getElementById('inPerfKunjunganLP').value = v.kunjunganLP||0;
+  document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
+  togglePerfMetricFields(v.tipe);
   // auto-select akun if already saved on this video
   setPerfAkunFromString(v.akunPosting);
 });
@@ -1499,7 +1528,8 @@ document.getElementById('btnDuplikatKonten').onclick = ()=>{
   const src = VIDEOS[idx];
   const clone = {
     tanggal: src.tanggal, judul: src.judul, nama: src.nama, tipe: src.tipe, produk: src.produk, platform: src.platform,
-    views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:''
+    views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'',
+    impression:0, views3detik:0, kunjunganLP:0, konversiLP:0
   };
   VIDEOS.push(clone);
   saveLocalState(); refreshPerfSelect();
@@ -1537,6 +1567,10 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   VIDEOS[idx].shares      = parseFloat(document.getElementById('inPerfShares').value)||0;
   VIDEOS[idx].saves       = parseFloat(document.getElementById('inPerfSaves').value)||0;
   VIDEOS[idx].reposts     = parseFloat(document.getElementById('inPerfReposts').value)||0;
+  VIDEOS[idx].impression  = parseFloat(document.getElementById('inPerfImpression').value)||0;
+  VIDEOS[idx].views3detik = parseFloat(document.getElementById('inPerfViews3Detik').value)||0;
+  VIDEOS[idx].kunjunganLP = parseFloat(document.getElementById('inPerfKunjunganLP').value)||0;
+  VIDEOS[idx].konversiLP  = parseFloat(document.getElementById('inPerfKonversiLP').value)||0;
   VIDEOS[idx].lastUpdated = tanggalUpdate;
   VIDEOS[idx].akunPosting = akunPosting;
   VIDEOS[idx].tanggalPosting = tanggalPosting;
@@ -1562,6 +1596,11 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   document.getElementById('inPerfShares').value='';
   document.getElementById('inPerfSaves').value='';
   document.getElementById('inPerfReposts').value='';
+  document.getElementById('inPerfImpression').value='';
+  document.getElementById('inPerfViews3Detik').value='';
+  document.getElementById('inPerfKunjunganLP').value='';
+  document.getElementById('inPerfKonversiLP').value='';
+  togglePerfMetricFields('');
 };
 
 function fillPerfForm(idx){
@@ -1573,8 +1612,13 @@ function fillPerfForm(idx){
   document.getElementById('inPerfShares').value   = v.shares||0;
   document.getElementById('inPerfSaves').value    = v.saves||0;
   document.getElementById('inPerfReposts').value  = v.reposts||0;
+  document.getElementById('inPerfImpression').value  = v.impression||0;
+  document.getElementById('inPerfViews3Detik').value = v.views3detik||0;
+  document.getElementById('inPerfKunjunganLP').value = v.kunjunganLP||0;
+  document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
   document.getElementById('inPerfTanggal').value  = fmtISO(new Date());
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
+  togglePerfMetricFields(v.tipe);
   setPerfAkunFromString(v.akunPosting);
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -1720,6 +1764,18 @@ function engagementRate(v){
   if(denom<=0) return 0;
   return (((v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0))/denom)*100;
 }
+// Hook Rate (khusus Tipe=Video): Views 3 Detik ÷ Impression/Reach × 100%
+function hookRate(v){
+  const denom = v.impression||0;
+  if(denom<=0) return 0;
+  return ((v.views3detik||0)/denom)*100;
+}
+// Konversi Rate (khusus Tipe=Landing Page): Jumlah Konversi ÷ Kunjungan/Klik × 100%
+function conversionRate(v){
+  const denom = v.kunjunganLP||0;
+  if(denom<=0) return 0;
+  return ((v.konversiLP||0)/denom)*100;
+}
 function latestStatusPerAccount(){
   const map = {};
   AKUN_LOG.forEach(r=>{
@@ -1832,13 +1888,28 @@ function renderSummary(range){
   // Total Konten Diproduksi tetap berbasis tanggal produksi (vids).
   // Views/Engagement/Avg ER berbasis tanggal POSTING (vidsPosted), supaya cuma
   // konten yang benar-benar sudah tayang di periode ini yang dihitung performanya.
-  const totalVideo      = uniqueContentCount(vids);
+  // Total Konten Diproduksi: dihitung dari SUM kolom QTY di Request Konten yang
+  // statusnya "Selesai", basis tanggal REQUEST (bukan tanggal produksi/posting) —
+  // atas permintaan user, menggantikan cara lama (unique content count dari VIDEOS).
+  // Catatan: konten yang diinput langsung lewat "Tambah Konten Baru" tanpa melalui
+  // Request Konten formal TIDAK ikut terhitung di sini.
+  const sumQtySelesaiInRange = (rng)=>{
+    let reqs = REQUESTS.filter(r=>{
+      const d = parseDate(r.tanggal);
+      return r.status==='Selesai' && d && inRange(d, rng);
+    });
+    if(f.platform) reqs = reqs.filter(r=>r.platform===f.platform);
+    if(f.kreator)  reqs = reqs.filter(r=>r.pic===f.kreator);
+    if(f.produk)   reqs = reqs.filter(r=>r.produk===f.produk);
+    return reqs.reduce((s,r)=> s + (parseInt(r.qty,10)||1), 0);
+  };
+  const totalVideo      = sumQtySelesaiInRange(range);
   const totalViews      = vidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const totalEngagement = vidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const avgERVal        = totalViews>0 ? (totalEngagement/totalViews*100) : 0;
   const avgER           = totalViews>0 ? avgERVal.toFixed(2)+'%' : '0%';
 
-  const prevTotalVideo      = uniqueContentCount(prevVids);
+  const prevTotalVideo      = sumQtySelesaiInRange(prevRange);
   const prevTotalViews      = prevVidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const prevTotalEngagement = prevVidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const prevAvgERVal        = prevTotalViews>0 ? (prevTotalEngagement/prevTotalViews*100) : 0;
@@ -1847,6 +1918,20 @@ function renderSummary(range){
   document.getElementById('kpiTotalViews').innerHTML      = numFmt(totalViews)      + kpiDeltaHtml(totalViews, prevTotalViews);
   document.getElementById('kpiTotalEngagement').innerHTML = numFmt(totalEngagement) + kpiDeltaHtml(totalEngagement, prevTotalEngagement);
   document.getElementById('kpiAvgER').innerHTML           = avgER                   + kpiDeltaHtml(avgERVal, prevAvgERVal);
+
+  // Avg Hook Rate (khusus Tipe=Video) & Avg Konversi Rate (khusus Tipe=Landing Page)
+  // Dihitung dari total agregat (bukan rata-rata dari persen per-baris), supaya akurat
+  // walau tiap konten punya impression/kunjungan yang beda-beda besarannya.
+  const videoRows = vidsPosted.filter(v=>v.tipe==='Video');
+  const lpRows     = vidsPosted.filter(v=>v.tipe==='Landing Page');
+  const totalImpression  = videoRows.reduce((s,v)=>s+(v.impression||0),0);
+  const totalViews3Detik = videoRows.reduce((s,v)=>s+(v.views3detik||0),0);
+  const avgHookRateVal   = totalImpression>0 ? (totalViews3Detik/totalImpression*100) : 0;
+  const totalKunjunganLP = lpRows.reduce((s,v)=>s+(v.kunjunganLP||0),0);
+  const totalKonversiLP  = lpRows.reduce((s,v)=>s+(v.konversiLP||0),0);
+  const avgKonversiRateVal = totalKunjunganLP>0 ? (totalKonversiLP/totalKunjunganLP*100) : 0;
+  document.getElementById('kpiAvgHookRate').textContent      = totalImpression>0 ? avgHookRateVal.toFixed(2)+'%' : '—';
+  document.getElementById('kpiAvgKonversiRate').textContent  = totalKunjunganLP>0 ? avgKonversiRateVal.toFixed(2)+'%' : '—';
 
   const label = fmtDateID(range[0])+' — '+fmtDateID(range[1]);
   document.getElementById('rangeLabel').textContent  = label;
@@ -2160,6 +2245,7 @@ function renderLeaderboard(){
 function tipeTagClass(tipe){
   if(tipe==='Video') return 'purple';
   if(tipe==='Carousel') return 'blue';
+  if(tipe==='Landing Page') return 'green';
   return 'yellow'; // Foto/Gambar
 }
 function platformPill(p){
@@ -2228,6 +2314,7 @@ function renderVideoTable(range, resetPage){
       <td data-label="Tanggal Posting">${v.tanggalPosting ? `<span style="color:var(--cyan);font-size:11px;">✓ ${fmtDateID(parseDate(v.tanggalPosting))}</span>` : `<span style="color:var(--muted);font-size:11px;">Belum posting</span>`}</td>
       <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td>
       <td data-label="Engagement Rate">${engagementRate(v).toFixed(2)}%</td>
+      <td data-label="Hook/Konversi Rate">${v.tipe==='Video' ? 'Hook '+hookRate(v).toFixed(2)+'%' : (v.tipe==='Landing Page' ? 'Konv '+conversionRate(v).toFixed(2)+'%' : '—')}</td>
       <td data-label="Terakhir Update">${lastUpd}</td>
       <td data-label=""><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
     </tr>`;
@@ -2686,7 +2773,8 @@ function handleWrite(data) {
       data.platform, data.views || 0, data.likes || 0,
       data.comments || 0, data.shares || 0,
       data.lastUpdated || '', data.akunPosting || '',
-      data.saves || 0, data.reposts || 0, data.tanggalPosting || ''
+      data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
+      data.impression || 0, data.views3detik || 0, data.kunjunganLP || 0, data.konversiLP || 0
     ]);
 
   } else if (data.sheetType === 'video_update') {
@@ -2694,7 +2782,7 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var found = false;
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 15).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 19).getValues() : [];
     var newAkun = String(data.akunPosting || '').trim();
 
     // TAHAP 1: cocokkan judul + tanggal + akunPosting PERSIS SAMA, supaya konten
@@ -2704,13 +2792,14 @@ function handleWrite(data) {
       if (String(rows[i][1]).trim() === String(data.judul).trim() &&
           normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal) &&
           String(rows[i][11] || '').trim() === newAkun) {
-        sh.getRange(i + 1, 1, 1, 15).setValues([[
+        sh.getRange(i + 1, 1, 1, 19).setValues([[
           data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
           data.platform, data.views || 0, data.likes || 0,
           data.comments || 0, data.shares || 0,
           data.lastUpdated || '', data.akunPosting || '',
           data.saves || 0, data.reposts || 0,
-          data.tanggalPosting || normalizeTanggal(rows[i][14]) || ''
+          data.tanggalPosting || normalizeTanggal(rows[i][14]) || '',
+          data.impression || 0, data.views3detik || 0, data.kunjunganLP || 0, data.konversiLP || 0
         ]]);
         found = true;
         break;
@@ -2727,13 +2816,14 @@ function handleWrite(data) {
         if (String(rows[j][1]).trim() === String(data.judul).trim() &&
             normalizeTanggal(rows[j][0]) === normalizeTanggal(data.tanggal) &&
             String(rows[j][11] || '').trim() === '') {
-          sh.getRange(j + 1, 1, 1, 15).setValues([[
+          sh.getRange(j + 1, 1, 1, 19).setValues([[
             data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
             data.platform, data.views || 0, data.likes || 0,
             data.comments || 0, data.shares || 0,
             data.lastUpdated || '', data.akunPosting || '',
             data.saves || 0, data.reposts || 0,
-            data.tanggalPosting || normalizeTanggal(rows[j][14]) || ''
+            data.tanggalPosting || normalizeTanggal(rows[j][14]) || '',
+            data.impression || 0, data.views3detik || 0, data.kunjunganLP || 0, data.konversiLP || 0
           ]]);
           found = true;
           break;
@@ -2747,7 +2837,8 @@ function handleWrite(data) {
         data.platform, data.views || 0, data.likes || 0,
         data.comments || 0, data.shares || 0,
         data.lastUpdated || '', data.akunPosting || '',
-        data.saves || 0, data.reposts || 0, data.tanggalPosting || ''
+        data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
+        data.impression || 0, data.views3detik || 0, data.kunjunganLP || 0, data.konversiLP || 0
       ]);
     }
 
@@ -2914,7 +3005,7 @@ function jsonOutput(obj) {
 
 // ============================================================
 // STRUKTUR SHEET:
-// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting
+// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting | impression | views3detik | kunjunganLP | konversiLP
 // "Akun"     : tanggal | nama  | platform | status | followers | note | salesUnit | salesOmzet
 // "Kreator"  : nama
 // "Produk"   : nama
@@ -2960,7 +3051,9 @@ async function pullFromSheet(silent){
       VIDEOS.push({ tanggal: fmtISO(d), judul: r.judul, nama: r.nama, tipe: r.tipe||'Video', produk: r.produk||'', platform: r.platform,
         views: parseFloat(r.views)||0, likes: parseFloat(r.likes)||0, comments: parseFloat(r.comments)||0, shares: parseFloat(r.shares)||0,
         saves: parseFloat(r.saves)||0, reposts: parseFloat(r.reposts)||0, lastUpdated: r.lastupdated||'', akunPosting: r.akunposting||'',
-        tanggalPosting: dPost ? fmtISO(dPost) : '' });
+        tanggalPosting: dPost ? fmtISO(dPost) : '',
+        impression: parseFloat(r.impression)||0, views3detik: parseFloat(r.views3detik)||0,
+        kunjunganLP: parseFloat(r.kunjunganlp)||0, konversiLP: parseFloat(r.konversilp)||0 });
       if(r.nama && !TEAM.includes(r.nama)) TEAM.push(r.nama);
       countVideo++;
     });
