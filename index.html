@@ -3129,6 +3129,16 @@ async function pullFromSheet(silent){
       });
       REQUESTS = [...Array.from(dedupMap.values()), ...passthrough];
     }
+    // Auto-convert request yang statusnya sudah "Selesai" tapi belum pernah masuk ke Daftar
+    // Konten — sebelumnya convert cuma jalan kalau status diubah lewat klik dropdown di
+    // dashboard ini, jadi kalau status "Selesai" datang dari sync (diubah di device lain,
+    // atau memang sudah "Selesai" duluan di spreadsheet), kontennya nggak pernah otomatis
+    // masuk Daftar Konten. Loop ini juga otomatis benerin request lama yang kejebak.
+    REQUESTS.forEach((r, i)=>{
+      if(r.status === 'Selesai' && !r.convertedToVideo){
+        convertRequestToVideo(i);
+      }
+    });
     saveLocalState();
 
     // Cuma render ulang (rebuild chart, tabel, dll — yang bikin dashboard "berkedip")
