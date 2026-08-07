@@ -10,29 +10,37 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0B0E16; --panel:#13101F; --panel-2:#1C1730; --line:#2C2545;
-  --text:#ECE9F7; --muted:#8E87A8;
-  --pink:#3DD68C; --pinkdark:#1FA863; --purple:#9C6BFF; --cyan:#3FD8D4; --yellow:#F2C12E; --red:#F0566C; --blue:#4C8DFF;
-  --scrollbar:#332B57; --td-border:#221C3A; --footer-text:#534B72; --code-bg:#0E0B18;
-  --chart-grid:#221C3A; --chart-tick:#6E6790;
-  --th-text:#0B0E16;
-  --row-odd:rgba(255,255,255,.02); --row-hover:rgba(156,107,255,.08);
-  --soft-white:rgba(255,255,255,.06);
-  --overlay-bg:rgba(0,0,0,.6);
-  --header-bg:rgba(11,14,22,.95); --tabs-bg:rgba(11,14,22,.97);
+  --bg:#0A0B12; --panel:#12141F; --panel-2:#191C29; --line:#262A3C;
+  --text:#EEEFF7; --muted:#8D92AC;
+  --pink:#34D399; --pinkdark:#0EA872; --purple:#8B7CF6; --cyan:#22D3EE; --yellow:#FBBF24; --red:#F87171; --blue:#5B9DFF;
+  --scrollbar:#363B54; --td-border:#20232F; --footer-text:#575C78; --code-bg:#0D0F17;
+  --chart-grid:#20232F; --chart-tick:#6D7292;
+  --th-text:#052A1D;
+  --row-odd:rgba(255,255,255,.018); --row-hover:rgba(139,124,246,.09);
+  --soft-white:rgba(255,255,255,.05);
+  --overlay-bg:rgba(4,5,10,.65);
+  --header-bg:rgba(10,11,18,.88); --tabs-bg:rgba(10,11,18,.92);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.25);
+  --shadow-md:0 8px 24px rgba(3,4,10,.35);
+  --shadow-lg:0 20px 48px rgba(3,4,10,.45);
+  --radius-lg:16px; --radius-md:12px; --radius-sm:8px;
   color-scheme:dark;
 }
 :root[data-theme="light"]{
-  --bg:#F7F5FB; --panel:#FFFFFF; --panel-2:#F0EBFB; --line:#E1D9F0;
-  --text:#211C33; --muted:#6E6486;
-  --pink:#22C06B; --pinkdark:#178C4D; --purple:#7A47E0; --cyan:#1FAFAB; --yellow:#B8860B; --red:#D7384F; --blue:#2B6FE0;
-  --scrollbar:#D6CCEA; --td-border:#E9E2F5; --footer-text:#A89DC2; --code-bg:#F1ECFA;
-  --chart-grid:#E9E2F5; --chart-tick:#8A7FA8;
+  --bg:#F5F6FB; --panel:#FFFFFF; --panel-2:#F2F3F9; --line:#E5E7F1;
+  --text:#1B1E2C; --muted:#6A7089;
+  --pink:#0FA968; --pinkdark:#0A8654; --purple:#6D5AE0; --cyan:#0A9FBF; --yellow:#C6870C; --red:#DC3A4E; --blue:#2E6FE0;
+  --scrollbar:#D6D9E8; --td-border:#ECEEF6; --footer-text:#9AA0BC; --code-bg:#EEF0F8;
+  --chart-grid:#ECEEF6; --chart-tick:#8790AC;
   --th-text:#FFFFFF;
-  --row-odd:rgba(80,40,140,.02); --row-hover:rgba(122,71,224,.06);
-  --soft-white:rgba(80,40,140,.05);
-  --overlay-bg:rgba(20,14,38,.45);
-  --header-bg:rgba(255,255,255,.92); --tabs-bg:rgba(255,255,255,.95);
+  --row-odd:rgba(30,32,60,.02); --row-hover:rgba(109,90,224,.06);
+  --soft-white:rgba(30,32,60,.04);
+  --overlay-bg:rgba(15,17,30,.45);
+  --header-bg:rgba(255,255,255,.86); --tabs-bg:rgba(255,255,255,.92);
+  --shadow-sm:0 1px 2px rgba(20,22,50,.05);
+  --shadow-md:0 10px 28px rgba(20,22,50,.08);
+  --shadow-lg:0 24px 56px rgba(20,22,50,.12);
+  --radius-lg:16px; --radius-md:12px; --radius-sm:8px;
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -302,6 +310,183 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
   table.mobile-cards td > *{max-width:100%;}
   table.mobile-cards input, table.mobile-cards select{width:100%;}
 }
+
+/* ==========================================================================
+   PROFESSIONAL REFRESH — visual polish layer (spacing, depth, motion)
+   ========================================================================== */
+*{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+html{scroll-behavior:smooth;}
+body{
+  background:
+    radial-gradient(1100px 520px at 12% -8%, rgba(139,124,246,.10), transparent 60%),
+    radial-gradient(900px 480px at 96% 0%, rgba(52,211,153,.08), transparent 55%),
+    var(--bg);
+  letter-spacing:.005em;
+  line-height:1.5;
+}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:8px;border:2px solid transparent;background-clip:padding-box;}
+::-webkit-scrollbar-thumb:hover{background:var(--purple);}
+::selection{background:var(--purple);color:#fff;}
+
+a{color:var(--cyan);}
+
+/* ---------- Header ---------- */
+header.top{
+  padding:16px 30px;
+  background:var(--header-bg);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:0 1px 0 rgba(255,255,255,.02), var(--shadow-sm);
+}
+.brandblock .mark{font-size:20px;font-weight:800;letter-spacing:.01em;}
+.brandblock .mark span{color:var(--pink);}
+.brandblock .sub{opacity:.85;}
+
+.theme-toggle, .period-btns, .filterbar select, .filterbar input, .range-trigger{box-shadow:var(--shadow-sm);}
+.theme-toggle-btn, .period-btn{transition:background .18s ease,color .18s ease,transform .12s ease;}
+.theme-toggle-btn.active{box-shadow:0 4px 14px rgba(52,211,153,.35);}
+.period-btn.active{box-shadow:0 4px 14px rgba(52,211,153,.3);}
+.range-trigger{transition:border-color .15s ease,transform .12s ease,box-shadow .15s ease;}
+.range-trigger:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.range-picker-panel{box-shadow:var(--shadow-lg);border-radius:16px;}
+#syncBadge{background:var(--panel-2);border:1px solid var(--line);padding:6px 11px;border-radius:20px;font-weight:600;}
+
+/* ---------- Layout / sections ---------- */
+main{padding:28px 30px 70px;}
+.section-header{margin:38px 0 16px;}
+.section-header h2{font-size:17px;font-weight:800;letter-spacing:-.01em;position:relative;padding-left:13px;}
+.section-header h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:3px;background:linear-gradient(180deg,var(--pink),var(--purple));}
+
+#pageTabs{
+  padding:5px;border-radius:14px;box-shadow:var(--shadow-sm);
+  background:var(--tabs-bg);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+}
+.page-tab{border-radius:10px;transition:background .18s ease,color .18s ease,transform .12s ease;}
+.page-tab:hover:not(.active){background:var(--row-hover);color:var(--text);}
+.page-tab.active{
+  background:linear-gradient(135deg,var(--pink),var(--cyan));
+  color:#04241A;box-shadow:0 6px 18px rgba(52,211,153,.28);
+}
+
+/* ---------- Cards ---------- */
+.card, .chart-card, .acc-card{
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+  background:linear-gradient(180deg, var(--soft-white), transparent 40%) var(--panel);
+}
+.card:hover, .chart-card:hover, .acc-card:hover{box-shadow:var(--shadow-md);border-color:color-mix(in srgb, var(--purple) 30%, var(--line));}
+.card.kpi{padding:18px 20px;position:relative;overflow:hidden;}
+.card.kpi::after{content:'';position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle, var(--row-hover), transparent 70%);pointer-events:none;}
+.bar-accent{height:4px;width:34px;border-radius:3px;box-shadow:0 0 12px currentColor;}
+.kpi .value{font-size:25px;letter-spacing:-.02em;}
+.kpi .label{letter-spacing:.05em;}
+
+.panel-title{font-size:15px;letter-spacing:-.01em;}
+.chart-card{padding:20px 20px 18px;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  border-radius:9px;transition:transform .12s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+  box-shadow:var(--shadow-sm);
+}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.btn:active:not(:disabled){transform:translateY(0);}
+.btn.primary{border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--cyan));box-shadow:0 8px 20px rgba(52,211,153,.28);color:#04241A;}
+.btn.primary:hover{box-shadow:0 10px 26px rgba(52,211,153,.4);}
+.btn.secondary{border-radius:10px;}
+
+/* ---------- Tables ---------- */
+.table-scroll{border-radius:var(--radius-md);border:1px solid var(--line);box-shadow:var(--shadow-sm);}
+table{min-width:640px;font-size:12.8px;}
+th{padding:12px 14px;font-size:10.5px;letter-spacing:.06em;}
+td{padding:11px 14px;}
+tbody tr{transition:background .12s ease;}
+.table-scroll table{border-radius:var(--radius-md);overflow:hidden;}
+
+/* ---------- Tags / pills / chips ---------- */
+.tag{padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:.01em;}
+.akun-chip{box-shadow:var(--shadow-sm);}
+.akun-chip.active{box-shadow:0 4px 14px rgba(34,211,238,.25), 0 0 0 1px var(--cyan) inset;}
+
+/* ---------- Inputs ---------- */
+.filterbar input, .filterbar select, .input-panel .field input, .input-panel .field select, .acc-field-input{
+  border-radius:9px;transition:border-color .15s ease, box-shadow .15s ease;
+}
+.filterbar input:focus, .filterbar select:focus, .input-panel .field input:focus, .input-panel .field select:focus, .acc-field-input:focus{
+  outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,124,246,.18);
+}
+.input-panel .field label{letter-spacing:.05em;}
+
+/* ---------- Account health cards ---------- */
+.acc-card{padding:18px 20px 16px;}
+.acc-stat{border-radius:10px;transition:transform .15s ease;}
+.health-card{border-radius:11px;box-shadow:var(--shadow-sm);}
+
+/* ---------- Kontribusi / leaderboard ---------- */
+.kontribusi-person{border-radius:11px;transition:border-color .15s ease;}
+.kontribusi-person:hover{border-color:var(--purple);}
+.sales-row{border-radius:10px;transition:transform .15s ease, border-color .15s ease;}
+.sales-row:hover{transform:translateY(-1px);border-color:var(--purple);}
+
+/* ---------- Toasts / banners ---------- */
+.toast{border-radius:11px;box-shadow:var(--shadow-lg);}
+.loadbanner{border-radius:11px;box-shadow:var(--shadow-lg);}
+
+/* ---------- Code block ---------- */
+pre#scriptCode{border-radius:12px;box-shadow:var(--shadow-sm);}
+
+/* ---------- Footer ---------- */
+footer.note{padding:36px 20px 44px;font-size:11.5px;}
+
+/* ==========================================================================
+   LIGHT THEME — extra definition (flat white was reading weak, add depth,
+   crisper borders and a bit more color so it doesn't look washed out)
+   ========================================================================== */
+:root[data-theme="light"] body{
+  background:
+    radial-gradient(1000px 480px at 10% -10%, rgba(15,169,104,.10), transparent 55%),
+    radial-gradient(900px 460px at 100% 0%, rgba(109,90,224,.09), transparent 55%),
+    radial-gradient(700px 420px at 50% 100%, rgba(10,159,191,.06), transparent 60%),
+    var(--bg);
+}
+:root[data-theme="light"] header.top{
+  box-shadow:0 1px 0 rgba(20,22,50,.05), 0 6px 18px rgba(20,22,50,.04);
+}
+:root[data-theme="light"] .card, :root[data-theme="light"] .chart-card, :root[data-theme="light"] .acc-card{
+  border-color:#E3E6F1;
+  box-shadow:0 1px 2px rgba(20,22,50,.04), 0 10px 24px rgba(20,22,50,.05);
+}
+:root[data-theme="light"] .card:hover, :root[data-theme="light"] .chart-card:hover, :root[data-theme="light"] .acc-card:hover{
+  box-shadow:0 4px 10px rgba(20,22,50,.06), 0 18px 36px rgba(20,22,50,.09);
+  border-color:#D7DAEC;
+}
+:root[data-theme="light"] .card.kpi{border-top:3px solid transparent;}
+:root[data-theme="light"] .card.kpi:nth-of-type(1){border-top-color:var(--pink);}
+:root[data-theme="light"] .kpi .value{color:#111328;}
+:root[data-theme="light"] #pageTabs{background:#FFFFFF;border-color:#E3E6F1;box-shadow:0 1px 2px rgba(20,22,50,.04), 0 8px 20px rgba(20,22,50,.05);}
+:root[data-theme="light"] .page-tab.active{color:#04241A;box-shadow:0 6px 16px rgba(15,169,104,.22);}
+:root[data-theme="light"] .page-tab:hover:not(.active){background:rgba(109,90,224,.07);}
+:root[data-theme="light"] .btn{border-color:#DEE1EF;}
+:root[data-theme="light"] .btn:hover:not(:disabled){box-shadow:0 6px 16px rgba(20,22,50,.08);border-color:#CDD1E6;}
+:root[data-theme="light"] .btn.primary{box-shadow:0 8px 18px rgba(15,169,104,.22);}
+:root[data-theme="light"] .btn.primary:hover{box-shadow:0 12px 24px rgba(15,169,104,.3);}
+:root[data-theme="light"] .table-scroll{border-color:#E3E6F1;box-shadow:0 1px 2px rgba(20,22,50,.04);}
+:root[data-theme="light"] tbody tr:hover{background:rgba(109,90,224,.05);}
+:root[data-theme="light"] tfoot td{background:#F1F3F9;}
+:root[data-theme="light"] .filterbar input, :root[data-theme="light"] .filterbar select,
+:root[data-theme="light"] .input-panel .field input, :root[data-theme="light"] .input-panel .field select,
+:root[data-theme="light"] .acc-field-input{border-color:#DEE1EF;background:#FBFBFE;}
+:root[data-theme="light"] .akun-chip{border-color:#DEE1EF;background:#FFFFFF;}
+:root[data-theme="light"] .range-picker-panel{box-shadow:0 4px 12px rgba(20,22,50,.06), 0 24px 56px rgba(20,22,50,.14);}
+:root[data-theme="light"] .toast{box-shadow:0 4px 14px rgba(20,22,50,.08), 0 20px 40px rgba(20,22,50,.1);}
+:root[data-theme="light"] .section-header h2{color:#111328;}
+:root[data-theme="light"] .muted-note{color:#767CA0;}
+:root[data-theme="light"] pre#scriptCode{background:#161826;color:#B9F3E4;}
+:root[data-theme="light"] code.inline{background:#EFF1F9;}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#D3D7E8;}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover{background:var(--purple);}
 </style>
 </head>
 <body>
@@ -1033,6 +1218,25 @@ function markReqAsNotifiedRevisi(r){
   notifiedRevisiKeys.add(reqKey(r));
   saveNotifiedRevisiKeys();
 }
+/* FIX DUPLIKASI: sebelumnya, penanda "request ini sudah dikonversi jadi konten"
+   (r.convertedToVideo) cuma hidup di memori — begitu REQUESTS dibangun ulang dari
+   hasil pull spreadsheet (yang terjadi tiap auto-sync, 10 detik sekali), penanda itu
+   ikut hilang. Akibatnya request berstatus "Selesai" yang sama dianggap "belum pernah
+   dikonversi" lagi tiap 10 detik, lalu convertRequestToVideo() dipanggil ULANG TERUS,
+   bikin baris konten yang sama numpuk puluhan/ratusan kali. Simpan penanda ini di
+   localStorage (persisten, seperti notifiedFinishedKeys) supaya tidak hilang lagi. */
+let convertedReqKeys = new Set();
+try{ convertedReqKeys = new Set(JSON.parse(localStorage.getItem('creativeOpsConvertedReqKeys')||'[]')); }catch(e){}
+function saveConvertedReqKeys(){
+  try{
+    const arr = Array.from(convertedReqKeys).slice(-1000);
+    localStorage.setItem('creativeOpsConvertedReqKeys', JSON.stringify(arr));
+  }catch(e){}
+}
+function markReqAsConverted(r){
+  convertedReqKeys.add(reqKey(r));
+  saveConvertedReqKeys();
+}
 // Preload daftar suara TTS lebih awal (di sebagian browser baru terisi async)
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=> speechSynthesis.getVoices(); }
 
@@ -1167,7 +1371,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
 /* ============== REQUEST KONTEN ============== */
 function convertRequestToVideo(idx){
   const r = REQUESTS[idx];
-  if(!r || r.convertedToVideo) return false;
+  if(!r || r.convertedToVideo || convertedReqKeys.has(reqKey(r))) return false;
   // QTY menentukan berapa baris konten produksi yang dibuat, supaya jumlah konten
   // yang benar-benar diproduksi bisa dihitung dari Daftar Konten (bukan cuma 1 per request).
   const qty = Math.max(1, parseInt(r.qty, 10) || 1);
@@ -1185,6 +1389,7 @@ function convertRequestToVideo(idx){
     pushOneToSheet({sheetType:'video', ...rec});
   }
   r.convertedToVideo = true;
+  markReqAsConverted(r);
   return true;
 }
 function renderRequests(){
@@ -3135,7 +3340,7 @@ async function pullFromSheet(silent){
     // atau memang sudah "Selesai" duluan di spreadsheet), kontennya nggak pernah otomatis
     // masuk Daftar Konten. Loop ini juga otomatis benerin request lama yang kejebak.
     REQUESTS.forEach((r, i)=>{
-      if(r.status === 'Selesai' && !r.convertedToVideo){
+      if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r))){
         convertRequestToVideo(i);
       }
     });
