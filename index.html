@@ -804,7 +804,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, hookRate, kunjunganLP, konversiLP) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">hookRate</code>, <code class="inline">kunjunganLP</code> dan <code class="inline">konversiLP</code> di paling kanan (kolom M sampai R) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">hookRate</code> diisi langsung sebagai persentase Hook Rate konten Tipe=Video (diambil dari Insight native platform, misal TikTok/Instagram). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N).</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, hookRate, kunjunganLP, konversiLP) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">hookRate</code>, <code class="inline">kunjunganLP</code> dan <code class="inline">konversiLP</code> di paling kanan (kolom M sampai R) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">hookRate</code> diisi langsung sebagai persentase Hook Rate konten Tipe=Video (diambil dari Insight native platform, misal TikTok/Instagram). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N). Kolom <code class="inline">converted</code> (kolom O) dibuat &amp; diisi <b>otomatis</b> oleh script begitu sebuah request pertama kali dikonversi jadi konten — jangan diisi manual — ini yang membuat penanda "sudah dikonversi" tersimpan permanen di spreadsheet (bukan cuma di browser), supaya tidak ada lagi konten yang terduplikat kalau dashboard dibuka dari beberapa device.</div>
 
       <div class="card" style="background:var(--panel-2);border-color:var(--yellow);margin-bottom:16px;">
         <div class="panel-title" style="color:var(--yellow);">🧹 Bersihkan Duplikat (Sheet Produksi)</div>
@@ -1386,7 +1386,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
 /* ============== REQUEST KONTEN ============== */
 function convertRequestToVideo(idx){
   const r = REQUESTS[idx];
-  if(!r || r.convertedToVideo || convertedReqKeys.has(reqKey(r))) return false;
+  if(!r || r.convertedToVideo || convertedReqKeys.has(reqKey(r)) || String(r.converted||'').trim().toUpperCase()==='YES') return false;
   // QTY menentukan berapa baris konten produksi yang dibuat, supaya jumlah konten
   // yang benar-benar diproduksi bisa dihitung dari Daftar Konten (bukan cuma 1 per request).
   const qty = Math.max(1, parseInt(r.qty, 10) || 1);
@@ -1404,7 +1404,11 @@ function convertRequestToVideo(idx){
     pushOneToSheet({sheetType:'video', ...rec});
   }
   r.convertedToVideo = true;
+  r.converted = 'YES';
   markReqAsConverted(r);
+  // Tandai juga di SPREADSHEET (bukan cuma localStorage browser), supaya kalau
+  // dashboard dibuka dari device/browser lain, request ini tidak dikonversi lagi.
+  pushOneToSheet({sheetType:'request_mark_converted', ts: r.ts||'', judul: r.judul, tanggal: r.tanggal});
   return true;
 }
 function renderRequests(){
@@ -2992,7 +2996,46 @@ function normalizeTanggal(v) {
 function handleWrite(data) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  if (data.sheetType === 'video') {
+  if (data.sheetType === 'request_mark_converted') {
+    // Menandai permanen di SPREADSHEET (bukan cuma di browser) bahwa request ini
+    // sudah dikonversi jadi konten, di kolom "converted" (dibuat otomatis kalau
+    // belum ada). Ini mencegah konversi dobel kalau dashboard dibuka dari
+    // device/browser lain yang localStorage-nya belum tahu request ini sudah
+    // pernah diproses.
+    var sh = ss.getSheetByName('RequestKonten');
+    if (!sh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
+    var lastRow = sh.getLastRow();
+    if (lastRow === 0) return { status: 'ok' }; // tidak ada apa-apa untuk ditandai
+
+    // Pastikan header kolom "converted" ada di kolom O (15). Kalau sheet lama
+    // cuma punya 14 kolom, header & isi kolom ini otomatis dibuat.
+    var headerRange = sh.getRange(1, 1, 1, Math.max(15, sh.getLastColumn()));
+    var headerVals  = headerRange.getValues()[0];
+    if (String(headerVals[14] || '').trim().toLowerCase() !== 'converted') {
+      sh.getRange(1, 15).setValue('converted');
+    }
+
+    var rows = sh.getRange(1, 1, lastRow, 13).getValues();
+    var hasTs = !!(data.ts && String(data.ts).trim());
+    var targetRow = -1;
+    if (hasTs) {
+      for (var i = 1; i < rows.length; i++) {
+        if (String(rows[i][12] || '').trim() === String(data.ts).trim()) { targetRow = i; break; }
+      }
+    }
+    if (targetRow < 0) {
+      for (var j = 1; j < rows.length; j++) {
+        if (String(rows[j][1]).trim() === String(data.judul).trim() &&
+            normalizeTanggal(rows[j][0]) === normalizeTanggal(data.tanggal)) { targetRow = j; break; }
+      }
+    }
+    if (targetRow >= 0) {
+      sh.getRange(targetRow + 1, 15).setValue('YES');
+      return { status: 'ok', marked: true };
+    }
+    return { status: 'ok', marked: false };
+
+  } else if (data.sheetType === 'video') {
     var sh = ss.getSheetByName('Produksi');
     sh.appendRow([
       data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
@@ -3298,7 +3341,9 @@ function jsonOutput(obj) {
 // "Kreator"  : nama
 // "Produk"   : nama
 // "Akun_List": nama | platform
-// "RequestKonten": tanggal | judul | requester | pic | produk | platform | deadline | prioritas | status | brief | link | tipe | ts | qty
+// "RequestKonten": tanggal | judul | requester | pic | produk | platform | deadline | prioritas | status | brief | link | tipe | ts | qty | converted
+// (kolom "converted" dibuat & diisi OTOMATIS oleh action=write sheetType=request_mark_converted
+//  saat sebuah request pertama kali dikonversi jadi konten — tidak perlu dibuat manual)
 // (Sheet Kreator, Produk, Akun_List, RequestKonten dibuat otomatis jika belum ada)
 //
 // action=test   -> read-only, hanya hitung jumlah baris per sheet (untuk tombol Test Koneksi)
@@ -3432,7 +3477,7 @@ async function pullFromSheet(silent){
     // atau memang sudah "Selesai" duluan di spreadsheet), kontennya nggak pernah otomatis
     // masuk Daftar Konten. Loop ini juga otomatis benerin request lama yang kejebak.
     REQUESTS.forEach((r, i)=>{
-      if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r))){
+      if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r)) && String(r.converted||'').trim().toUpperCase()!=='YES'){
         convertRequestToVideo(i);
       }
     });
