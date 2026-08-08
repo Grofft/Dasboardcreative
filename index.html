@@ -664,7 +664,6 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
           <div class="perf-metrics-row">
             <div class="field"><label>Tanggal Posting <span style="color:var(--cyan);font-weight:600;" title="Tanggal konten ini tayang/diposting — dipakai untuk filter & hitung performa per platform. Terisi otomatis hari ini saat pertama kali disimpan, tidak berubah lagi walau kamu update angka performa berulang kali.">ⓘ</span></label><input type="date" id="inPerfTanggalPosting"></div>
             <div class="field"><label>Tanggal Update</label><input type="date" id="inPerfTanggal"></div>
-            <div class="field"><label>Status Konten <span style="color:var(--cyan);font-weight:600;" title="Ubah ke sini kalau konten kena banned/take down, dihapus platform, di-private-kan, atau kena shadowban. Bisa juga diubah langsung dari dropdown di kolom Status Konten pada tabel Daftar Konten tanpa buka form ini.">ⓘ</span></label><select id="inPerfStatus"></select></div>
             <div class="field"><label>Views</label><input type="number" id="inPerfViews" placeholder="0" min="0"></div>
             <div class="field"><label>Likes</label><input type="number" id="inPerfLikes" placeholder="0" min="0"></div>
             <div class="field"><label>Komentar</label><input type="number" id="inPerfComments" placeholder="0" min="0"></div>
@@ -702,7 +701,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Hook/Konversi Rate</th><th>Status Konten</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Hook/Konversi Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
           <tbody id="tblVideos"></tbody>
           <tfoot><tr><td colspan="8" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="Save" id="ftSaves">0</td><td data-label="Repost" id="ftReposts">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
         </table>
@@ -858,13 +857,38 @@ function showToast(title, sub, type){
 /* ============== DATA DASAR ============== */
 let TEAM = [];
 let ACCOUNTS = [];
-const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','Meta Ads','CS','CRM'];
+const PLATFORMS = ['TikTok','Instagram','Facebook','YouTube','Marketplace','CS','CRM'];
 const TIPE_KONTEN = ['Video','Foto/Gambar','Banner','Carousel','Landing Page'];
-const STATUS_KONTEN = ['Aktif','Kena Banned','Dihapus Platform','Private/Disembunyikan','Shadowban'];
-const STATUS_KONTEN_COLORS = {'Aktif':'#34D399','Kena Banned':'#F87171','Dihapus Platform':'#F87171','Private/Disembunyikan':'#FBBF24','Shadowban':'#FB923C'};
 let PRODUCTS = [];
+// FIX DUPLIKAT NAMA (Produk/Kreator/Akun): sebelumnya pengecekan "sudah ada belum"
+// pakai exact match (case-sensitive & sensitif spasi), jadi "Sabun Cair" vs
+// "sabun cair " dianggap 2 produk berbeda -> pill/daftar terus nambah tiap kali
+// ada variasi kapitalisasi/spasi, dan itu ikut ditulis ke sheet (Produk/Kreator/
+// Akun_List) karena sheet itu ditimpa penuh dari isi array lokal. normName()
+// dipakai untuk membandingkan nama secara "sama walau beda kapital/spasi",
+// tapi ejaan asli yang pertama kali diketik tetap yang disimpan & ditampilkan.
+function normName(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function includesName(list, v){ const n = normName(v); return list.some(x=>normName(x)===n); }
+function findByNama(list, v){ const n = normName(v); return list.find(x=>normName(x.nama)===n); }
+// Membersihkan duplikat yang SUDAH TERLANJUR ada di PRODUCTS/TEAM/ACCOUNTS
+// (misal dari sebelum fix ini, atau sudah kebawa ke sheet). Yang dipertahankan
+// adalah ejaan yang PERTAMA kali muncul. Mengembalikan true kalau ada perubahan,
+// supaya caller tahu perlu push ulang list yang sudah bersih ke sheet.
+function dedupeNameLists(){
+  let changed = false;
+  const seenP = new Set(); const cleanProducts = [];
+  PRODUCTS.forEach(p=>{ const n=normName(p); if(!n) return; if(seenP.has(n)){ changed=true; return; } seenP.add(n); cleanProducts.push(p); });
+  PRODUCTS = cleanProducts;
+  const seenT = new Set(); const cleanTeam = [];
+  TEAM.forEach(t=>{ const n=normName(t); if(!n) return; if(seenT.has(n)){ changed=true; return; } seenT.add(n); cleanTeam.push(t); });
+  TEAM = cleanTeam;
+  const seenA = new Set(); const cleanAcc = [];
+  ACCOUNTS.forEach(a=>{ const n=normName(a.nama); if(!n) return; if(seenA.has(n)){ changed=true; return; } seenA.add(n); cleanAcc.push(a); });
+  ACCOUNTS = cleanAcc;
+  return changed;
+}
 
-let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts, hookRate, kunjunganLP, konversiLP, statusKonten}
+let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts, hookRate, kunjunganLP, konversiLP}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, qty, deadline, prioritas, status, brief, ts}
 const REQ_PAGE_SIZE = 50;
@@ -1280,7 +1304,7 @@ function loadLocalState(){
 /* ============== SELECT POPULATION ============== */
 function fillSelect(el, items, withEmpty){
   const cur = el.value;
-  el.innerHTML = (withEmpty?'<option value="">Pilih...</option>':'') + items.map(i=>`<option value="${i}">${i}</option>`).join('');
+  el.innerHTML = (withEmpty?'<option value="">Pilih...</option>':'') + items.map(i=>`<option value="${escapeHtml(i)}">${escapeHtml(i)}</option>`).join('');
   if(items.includes(cur)) el.value = cur;
 }
 function refreshSelectors(){
@@ -1301,7 +1325,6 @@ function refreshSelectors(){
   fillSelect(document.getElementById('inReqStatus'), REQ_STATUS_OPTS, false);
   fillSelect(document.getElementById('filterReqStatus'), REQ_STATUS_OPTS, true);
   fillSelect(document.getElementById('filterReqPIC'), TEAM, true);
-  fillSelect(document.getElementById('inPerfStatus'), STATUS_KONTEN, false);
 }
 
 /* ============== TEAM & ACCOUNT MANAGEMENT ============== */
@@ -1311,7 +1334,7 @@ function renderTeamList(){
   TEAM.forEach(nm=>{
     const pill = document.createElement('div');
     pill.className = 'acc-item'; pill.style.display='flex'; pill.style.gap='8px'; pill.style.alignItems='center';
-    pill.innerHTML = `<span>${nm}</span><button class="icon-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>`;
+    pill.innerHTML = `<span>${escapeHtml(nm)}</span><button class="icon-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>`;
     pill.querySelector('button').onclick = ()=>{ TEAM = TEAM.filter(t=>t!==nm); saveLocalState(); renderTeamList(); refreshSelectors(); pushOneToSheet({sheetType:'kreator_list', list: TEAM}); };
     wrap.appendChild(pill);
   });
@@ -1319,7 +1342,7 @@ function renderTeamList(){
 document.getElementById('btnAddTeam').onclick = ()=>{
   const v = document.getElementById('newTeamName').value.trim();
   if(!v) return;
-  if(!TEAM.includes(v)) TEAM.push(v);
+  if(!includesName(TEAM, v)) TEAM.push(v);
   document.getElementById('newTeamName').value='';
   saveLocalState(); renderTeamList(); refreshSelectors(); refreshSummaryFilters();
   pushOneToSheet({sheetType:'kreator_list', list: TEAM});
@@ -1331,7 +1354,7 @@ function renderProductList(){
   PRODUCTS.forEach(pr=>{
     const pill = document.createElement('div');
     pill.style.display='flex'; pill.style.gap='8px'; pill.style.alignItems='center';
-    pill.innerHTML = `<span class="tag purple" style="font-size:12px;padding:4px 10px;">${pr}</span><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;">✕</button>`;
+    pill.innerHTML = `<span class="tag purple" style="font-size:12px;padding:4px 10px;">${escapeHtml(pr)}</span><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;">✕</button>`;
     pill.querySelector('button').onclick = ()=>{ PRODUCTS = PRODUCTS.filter(p=>p!==pr); saveLocalState(); renderProductList(); refreshSelectors(); pushOneToSheet({sheetType:'produk_list', list: PRODUCTS}); };
     wrap.appendChild(pill);
   });
@@ -1339,7 +1362,7 @@ function renderProductList(){
 document.getElementById('btnAddProduct').onclick = ()=>{
   const v = document.getElementById('newProductName').value.trim();
   if(!v) return;
-  if(!PRODUCTS.includes(v)) PRODUCTS.push(v);
+  if(!includesName(PRODUCTS, v)) PRODUCTS.push(v);
   document.getElementById('newProductName').value='';
   saveLocalState(); renderProductList(); refreshSelectors(); refreshSummaryFilters();
   pushOneToSheet({sheetType:'produk_list', list: PRODUCTS});
@@ -1351,7 +1374,7 @@ function renderAccList(){
   ACCOUNTS.forEach(acc=>{
     const pill = document.createElement('div');
     pill.className = 'acc-item'; pill.style.display='flex'; pill.style.gap='8px'; pill.style.alignItems='center';
-    pill.innerHTML = `<span>${acc.nama} <span class="muted-note">(${acc.platform})</span></span><button class="icon-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>`;
+    pill.innerHTML = `<span>${escapeHtml(acc.nama)} <span class="muted-note">(${escapeHtml(acc.platform)})</span></span><button class="icon-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>`;
     pill.querySelector('button').onclick = ()=>{ ACCOUNTS = ACCOUNTS.filter(a=>a.nama!==acc.nama); saveLocalState(); renderAccList(); refreshSelectors(); refreshPerfAkunSelect(); render(); pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS}); };
     wrap.appendChild(pill);
   });
@@ -1360,7 +1383,7 @@ document.getElementById('btnAddAcc').onclick = ()=>{
   const v = document.getElementById('newAccName').value.trim();
   const p = document.getElementById('newAccPlatform').value;
   if(!v) return;
-  if(!ACCOUNTS.find(a=>a.nama===v)) ACCOUNTS.push({nama:v, platform:p});
+  if(!findByNama(ACCOUNTS, v)) ACCOUNTS.push({nama:v, platform:p});
   document.getElementById('newAccName').value='';
   saveLocalState(); renderAccList(); refreshSelectors(); refreshPerfAkunSelect(); render();
   pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS});
@@ -1368,6 +1391,14 @@ document.getElementById('btnAddAcc').onclick = ()=>{
 
 /* ============== INPUT VIDEO ============== */
 document.getElementById('btnSaveVideo').onclick = async ()=>{
+  const btn = document.getElementById('btnSaveVideo');
+  // FIX DUPLIKASI: tombol ini SEBELUMNYA tidak dikunci saat proses kirim berjalan.
+  // Simpan konten baru selalu appendRow (bukan update-kalau-ada), jadi kalau tombol
+  // di-klik/tap dua kali dengan cepat (sering kejadian di HP saat koneksi lambat),
+  // dua permintaan simpan terkirim sebelum yang pertama selesai -> 2 baris konten
+  // identik ke-appendRow di sheet Produksi. Kunci tombol selama proses kirim
+  // berjalan supaya klik ganda tidak mungkin bikin duplikat.
+  if(btn.disabled) return;
   const tanggal = document.getElementById('inVidTanggal').value;
   const judul = document.getElementById('inVidJudul').value.trim();
   const nama = document.getElementById('inVidNama').value;
@@ -1376,15 +1407,20 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   const produk = document.getElementById('inVidProduk').value;
   const msg = document.getElementById('videoSaveMsg');
   if(!tanggal || !judul){ msg.textContent='Isi tanggal & judul terlebih dahulu.'; msg.style.color='var(--red)'; return; }
-  const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Aktif'};
-  VIDEOS.push(rec);
-  saveLocalState(); render(); refreshPerfSelect();
-  msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
-  const status = await pushOneToSheet({sheetType:'video', ...rec});
-  if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; setTimeout(()=>pullFromSheet(true), 1500); showToast('Konten selesai diperbarui', judul, 'success'); }
-  else if(status==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; showToast('Konten tersimpan di dashboard', judul, 'warn'); }
-  else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
-  document.getElementById('inVidJudul').value='';
+  btn.disabled = true;
+  try{
+    const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', hookRate:0, kunjunganLP:0, konversiLP:0};
+    VIDEOS.push(rec);
+    saveLocalState(); render(); refreshPerfSelect();
+    msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
+    const status = await pushOneToSheet({sheetType:'video', ...rec});
+    if(status==='ok'){ msg.textContent='✅ Tersimpan & terkirim ke spreadsheet: '+judul; msg.style.color='var(--cyan)'; setTimeout(()=>pullFromSheet(true), 1500); showToast('Konten selesai diperbarui', judul, 'success'); }
+    else if(status==='no-url'){ msg.textContent='Tersimpan di dashboard. Belum terhubung ke spreadsheet (isi URL Apps Script di tab Integrasi).'; msg.style.color='var(--yellow)'; showToast('Konten tersimpan di dashboard', judul, 'warn'); }
+    else { msg.textContent='Tersimpan di dashboard, tapi gagal mengirim ke spreadsheet.'; msg.style.color='var(--red)'; }
+    document.getElementById('inVidJudul').value='';
+  } finally {
+    btn.disabled = false;
+  }
 };
 
 /* ============== REQUEST KONTEN ============== */
@@ -1402,7 +1438,7 @@ function convertRequestToVideo(idx){
       tipe: r.tipe || TIPE_KONTEN[0],
       produk: r.produk || '',
       platform: r.platform || (PLATFORMS[0]||''),
-      views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', statusKonten:'Aktif'
+      views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:''
     };
     VIDEOS.push(rec);
     pushOneToSheet({sheetType:'video', ...rec});
@@ -1699,7 +1735,7 @@ function refreshPerfSelect(){
   if(cur !== '' && VIDEOS[parseInt(cur)]) sel.value = cur;
 }
 
-const PERF_PLATFORM_COLORS = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', 'Meta Ads':'#1877F2', CS:'#3DDC97', CRM:'#5FA8FF'};
+const PERF_PLATFORM_COLORS = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
 let selectedPerfAkun = new Set();
 function refreshPerfAkunSelect(){
   const wrap = document.getElementById('inPerfAkunChips');
@@ -1742,7 +1778,6 @@ document.getElementById('inPerfKonten').addEventListener('change', function(){
   document.getElementById('inPerfKunjunganLP').value = v.kunjunganLP||0;
   document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
-  document.getElementById('inPerfStatus').value = v.statusKonten || 'Aktif';
   togglePerfMetricFields(v.tipe);
   // auto-select akun if already saved on this video
   setPerfAkunFromString(v.akunPosting);
@@ -1756,7 +1791,7 @@ document.getElementById('btnDuplikatKonten').onclick = ()=>{
   const clone = {
     tanggal: src.tanggal, judul: src.judul, nama: src.nama, tipe: src.tipe, produk: src.produk, platform: src.platform,
     views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'',
-    hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Aktif'
+    hookRate:0, kunjunganLP:0, konversiLP:0
   };
   VIDEOS.push(clone);
   saveLocalState(); refreshPerfSelect();
@@ -1800,7 +1835,6 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   VIDEOS[idx].lastUpdated = tanggalUpdate;
   VIDEOS[idx].akunPosting = akunPosting;
   VIDEOS[idx].tanggalPosting = tanggalPosting;
-  VIDEOS[idx].statusKonten = document.getElementById('inPerfStatus').value || 'Aktif';
   // Ikutkan Platform sesuai akun posting yang dipilih, supaya kolom Platform
   // tidak "nyangkut" di nilai lama saat konten yang sama diposting ke platform lain.
   const firstAkunNama = Array.from(selectedPerfAkun)[0];
@@ -1826,7 +1860,6 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   document.getElementById('inPerfHookRate').value='';
   document.getElementById('inPerfKunjunganLP').value='';
   document.getElementById('inPerfKonversiLP').value='';
-  document.getElementById('inPerfStatus').value='Aktif';
   togglePerfMetricFields('');
 };
 
@@ -1844,7 +1877,6 @@ function fillPerfForm(idx){
   document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
   document.getElementById('inPerfTanggal').value  = fmtISO(new Date());
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
-  document.getElementById('inPerfStatus').value = v.statusKonten || 'Aktif';
   togglePerfMetricFields(v.tipe);
   setPerfAkunFromString(v.akunPosting);
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
@@ -2164,7 +2196,7 @@ function renderSummary(range){
   document.getElementById('rangeLabel3').textContent = label;
 
   // ── PLATFORM BREAKDOWN CARDS ──
-  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)', 'Meta Ads':'#1877F2', CS:'#3DDC97', CRM:'#5FA8FF'};
+  const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)', CS:'#3DDC97', CRM:'#5FA8FF'};
   const activePlatforms = f.platform ? [f.platform] : PLATFORMS;
   document.getElementById('platformCards').innerHTML = activePlatforms.map(plat=>{
     const pvids  = vidsPosted.filter(v=>v.platform===plat);
@@ -2474,7 +2506,7 @@ function tipeTagClass(tipe){
   return 'yellow'; // Foto/Gambar
 }
 function platformPill(p){
-  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', 'Meta Ads':'#1877F2', CS:'#3DDC97', CRM:'#5FA8FF'};
+  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
   return `<span class="platform-pill"><span class="dot" style="background:${colors[p]||'#888'}"></span>${p||'-'}</span>`;
 }
 function platformPillEditable(v, globalIdx){
@@ -2487,20 +2519,6 @@ async function changeVideoPlatform(globalIdx, newPlatform){
   saveLocalState(); render();
   const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[globalIdx]});
   if(status==='ok'){ showToast('Platform diperbarui', VIDEOS[globalIdx].judul, 'success'); setTimeout(()=>pullFromSheet(true), 1500); }
-}
-function statusPillEditable(v, globalIdx){
-  const cur = v.statusKonten || 'Aktif';
-  const color = STATUS_KONTEN_COLORS[cur] || 'var(--muted)';
-  const opts = STATUS_KONTEN.map(s=>`<option value="${escapeHtml(s)}" ${cur===s?'selected':''}>${escapeHtml(s)}</option>`).join('');
-  return `<select onchange="changeVideoStatus(${globalIdx}, this.value)" style="background:var(--panel-2);color:${color};font-weight:700;border:1px solid ${color};border-radius:6px;padding:3px 6px;font-size:11.5px;">${opts}</select>`;
-}
-async function changeVideoStatus(globalIdx, newStatus){
-  if(!VIDEOS[globalIdx]) return;
-  VIDEOS[globalIdx].statusKonten = newStatus;
-  saveLocalState(); render();
-  const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[globalIdx]});
-  if(status==='ok'){ showToast('Status konten diperbarui', VIDEOS[globalIdx].judul+' → '+newStatus, newStatus==='Aktif'?'success':'warn'); setTimeout(()=>pullFromSheet(true), 1500); }
-  else if(status==='no-url'){ showToast('Status konten diperbarui (lokal)', VIDEOS[globalIdx].judul+' → '+newStatus, 'warn'); }
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function getMuted(){ return getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#8E87A8'; }
@@ -2554,11 +2572,10 @@ function renderVideoTable(range, resetPage){
       <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td>
       <td data-label="Engagement Rate">${engagementRate(v).toFixed(2)}%</td>
       <td data-label="Hook/Konversi Rate">${v.tipe==='Video' ? 'Hook '+hookRate(v).toFixed(2)+'%' : (v.tipe==='Landing Page' ? 'Konv '+conversionRate(v).toFixed(2)+'%' : '—')}</td>
-      <td data-label="Status Konten">${statusPillEditable(v, globalIdx)}</td>
       <td data-label="Terakhir Update">${lastUpd}</td>
       <td data-label=""><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="19" data-label="" class="muted-note" style="padding:16px;">Tidak ada konten yang cocok dengan filter.</td></tr>';
+  }).join('') || '<tr><td colspan="14" data-label="" class="muted-note" style="padding:16px;">Tidak ada konten yang cocok dengan filter.</td></tr>';
 
   // Footer totals (all filtered, not just page)
   document.getElementById('ftViews').textContent    = numFmt(vids.reduce((s,v)=>s+(v.views||0),0));
@@ -2822,7 +2839,7 @@ function renderHealth(range){
           <input type="text" id="akun_note_${safeId}" value="${escapeHtml(curNote)}" placeholder="Catatan tambahan..." class="acc-field-input">
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${acc.nama.replace(/'/g,"\\'")}')">💾 Update</button>
+          <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${escapeHtml(acc.nama).replace(/'/g,"\\'")}')">💾 Update</button>
           <span id="akun_msg_${safeId}" style="font-size:11px;"></span>
         </div>
       </div>
@@ -3066,8 +3083,7 @@ function handleWrite(data) {
       data.comments || 0, data.shares || 0,
       data.lastUpdated || '', data.akunPosting || '',
       data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
-      data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-      data.statusKonten || 'Aktif'
+      data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0
     ]);
 
   } else if (data.sheetType === 'video_update') {
@@ -3075,7 +3091,7 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var found = false;
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 19).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 18).getValues() : [];
     var newAkun = String(data.akunPosting || '').trim();
 
     // TAHAP 1: cocokkan judul + tanggal + akunPosting PERSIS SAMA, supaya konten
@@ -3085,15 +3101,14 @@ function handleWrite(data) {
       if (String(rows[i][1]).trim() === String(data.judul).trim() &&
           normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal) &&
           String(rows[i][11] || '').trim() === newAkun) {
-        sh.getRange(i + 1, 1, 1, 19).setValues([[
+        sh.getRange(i + 1, 1, 1, 18).setValues([[
           data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
           data.platform, data.views || 0, data.likes || 0,
           data.comments || 0, data.shares || 0,
           data.lastUpdated || '', data.akunPosting || '',
           data.saves || 0, data.reposts || 0,
           data.tanggalPosting || normalizeTanggal(rows[i][14]) || '',
-          data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-          data.statusKonten || rows[i][18] || 'Aktif'
+          data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0
         ]]);
         found = true;
         break;
@@ -3110,15 +3125,14 @@ function handleWrite(data) {
         if (String(rows[j][1]).trim() === String(data.judul).trim() &&
             normalizeTanggal(rows[j][0]) === normalizeTanggal(data.tanggal) &&
             String(rows[j][11] || '').trim() === '') {
-          sh.getRange(j + 1, 1, 1, 19).setValues([[
+          sh.getRange(j + 1, 1, 1, 18).setValues([[
             data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
             data.platform, data.views || 0, data.likes || 0,
             data.comments || 0, data.shares || 0,
             data.lastUpdated || '', data.akunPosting || '',
             data.saves || 0, data.reposts || 0,
             data.tanggalPosting || normalizeTanggal(rows[j][14]) || '',
-            data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-            data.statusKonten || rows[j][18] || 'Aktif'
+            data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0
           ]]);
           found = true;
           break;
@@ -3133,8 +3147,7 @@ function handleWrite(data) {
         data.comments || 0, data.shares || 0,
         data.lastUpdated || '', data.akunPosting || '',
         data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
-        data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-        data.statusKonten || 'Aktif'
+        data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0
       ]);
     }
 
@@ -3363,7 +3376,7 @@ function jsonOutput(obj) {
 
 // ============================================================
 // STRUKTUR SHEET:
-// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting | hookRate | kunjunganLP | konversiLP | statusKonten
+// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting | hookRate | kunjunganLP | konversiLP
 // "Akun"     : tanggal | nama  | platform | status | followers | note | salesUnit | salesOmzet
 // "Kreator"  : nama
 // "Produk"   : nama
@@ -3395,7 +3408,14 @@ document.getElementById('btnCopyScript').onclick = ()=>{
   });
 };
 
-async function pullFromSheet(silent){
+// isBackgroundAutoSync = true HANYA kalau dipanggil dari timer auto-sync 10 detik
+// (lihat startAutoSync di bawah). Kalau true, fungsi ini murni TARIK & TAMPILKAN
+// data — tidak boleh menulis apa pun balik ke spreadsheet (auto-convert request
+// "Selesai" jadi konten & self-cleanup nama Produk/Kreator/Akun DILEWATI). Aksi
+// tulis itu tetap jalan seperti biasa untuk pull manual (klik tombol/baru buka
+// dashboard/setelah simpan data sendiri) — supaya auto-sync latar belakang tidak
+// pernah jadi sumber tulis-balik yang tidak diminta user secara eksplisit.
+async function pullFromSheet(silent, isBackgroundAutoSync){
   const url = getAppsScriptUrl();
   const msg = document.getElementById('sheetSyncMsg');
   if(!url){ if(!silent){ msg.textContent='Isi URL Web App Apps Script terlebih dahulu.'; msg.style.color='var(--red)'; } return; }
@@ -3415,9 +3435,8 @@ async function pullFromSheet(silent){
         saves: parseFloat(r.saves)||0, reposts: parseFloat(r.reposts)||0, lastUpdated: r.lastupdated||'', akunPosting: r.akunposting||'',
         tanggalPosting: dPost ? fmtISO(dPost) : '',
         hookRate: parseFloat(r.hookrate)||0,
-        kunjunganLP: parseFloat(r.kunjunganlp)||0, konversiLP: parseFloat(r.konversilp)||0,
-        statusKonten: r.statuskonten || 'Aktif' });
-      if(r.nama && !TEAM.includes(r.nama)) TEAM.push(r.nama);
+        kunjunganLP: parseFloat(r.kunjunganlp)||0, konversiLP: parseFloat(r.konversilp)||0 });
+      if(r.nama && !includesName(TEAM, r.nama)) TEAM.push(r.nama);
       countVideo++;
     });
     // Ambil semua baris akun untuk history lengkap
@@ -3427,24 +3446,34 @@ async function pullFromSheet(silent){
       AKUN_LOG.push({ tanggal: fmtISO(d), nama: r.nama, platform: r.platform, status: r.status||'Aktif',
         followers: parseFloat(r.followers)||0, note: r.note||'',
         salesUnit: parseFloat(r.salesunit)||0, salesOmzet: parseFloat(r.salesomzet)||0 });
-      if(!ACCOUNTS.find(a=>a.nama===r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
+      if(!findByNama(ACCOUNTS, r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
       countAkun++;
     });
     // Sort AKUN_LOG by tanggal ascending agar entry terbaru selalu di paling akhir
     AKUN_LOG.sort((a,b)=> new Date(a.tanggal) - new Date(b.tanggal));
     // Sync kreator dari sheet
     if((json.kreator||[]).length > 0){
-      (json.kreator||[]).forEach(r=>{ if(r.nama && !TEAM.includes(r.nama)) TEAM.push(r.nama); });
+      (json.kreator||[]).forEach(r=>{ if(r.nama && !includesName(TEAM, r.nama)) TEAM.push(r.nama); });
     }
     // Sync produk dari sheet
     if((json.produk||[]).length > 0){
-      (json.produk||[]).forEach(r=>{ if(r.nama && !PRODUCTS.includes(r.nama)) PRODUCTS.push(r.nama); });
+      (json.produk||[]).forEach(r=>{ if(r.nama && !includesName(PRODUCTS, r.nama)) PRODUCTS.push(r.nama); });
     }
     // Sync akun_list dari sheet (override lokal agar semua device sama)
     if((json.akun_list||[]).length > 0){
       json.akun_list.forEach(r=>{
-        if(r.nama && !ACCOUNTS.find(a=>a.nama===r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
+        if(r.nama && !findByNama(ACCOUNTS, r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
       });
+    }
+    // Rapikan duplikat produk/kreator/akun yang mungkin sudah kadung ada (dari
+    // sebelum fix normalisasi nama, atau sudah kebawa ke sheet) — kalau ada
+    // perubahan, langsung timpa ulang sheet-nya dengan versi yang sudah bersih.
+    // DILEWATI saat auto-sync latar belakang (lihat penjelasan isBackgroundAutoSync
+    // di atas) supaya timer 10 detik itu murni baca, tidak pernah menulis sendiri.
+    if(!isBackgroundAutoSync && dedupeNameLists()){
+      pushOneToSheet({sheetType:'produk_list', list: PRODUCTS});
+      pushOneToSheet({sheetType:'kreator_list', list: TEAM});
+      pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS});
     }
     // Simpan status request SEBELUM ditimpa data baru, buat bandingin mana yang baru jadi "Selesai"
     const prevStatusByKey = {};
@@ -3466,7 +3495,16 @@ async function pullFromSheet(silent){
         if(!r.judul) return;
         const rec = { tanggal: r.tanggal||fmtISO(new Date()), judul: r.judul, requester: r.requester||'', pic: r.pic||'',
           produk: r.produk||'', tipe: r.tipe||TIPE_KONTEN[0], platform: r.platform||'', qty: parseInt(r.qty,10)||1, deadline: r.deadline||'', prioritas: r.prioritas||'Normal',
-          status: r.status||'Baru', brief: r.brief||'', link: r.link||'', ts: r.ts||'' };
+          status: r.status||'Baru', brief: r.brief||'', link: r.link||'', ts: r.ts||'',
+          // FIX DUPLIKASI KONTEN: field ini SEBELUMNYA TIDAK ikut disalin dari data sheet,
+          // padahal dipakai persis di bawah untuk mengecek "request ini sudah pernah di-convert
+          // jadi konten belum". Karena selalu kosong/undefined, pengecekan itu SELALU lolos
+          // (dianggap belum pernah convert) walau di sheet kolom converted-nya sudah 'YES' —
+          // jadi tiap auto-sync (10 detik sekali) & tiap dashboard dibuka di device/browser
+          // lain, request yang sama otomatis convert ULANG jadi baris konten baru di sheet
+          // Produksi. Ini akar penyebab sheet Produksi isinya jauh lebih banyak dari jumlah
+          // konten yang sebenarnya diproduksi.
+          converted: r.converted||'' };
         const k = reqKey(rec);
         serverKeys.add(k);
         if(recentLocalReqDeletes.has(k)) return; // baru aja dihapus lokal, spreadsheet belum nyusul — jangan dimunculin lagi dulu
@@ -3504,11 +3542,16 @@ async function pullFromSheet(silent){
     // dashboard ini, jadi kalau status "Selesai" datang dari sync (diubah di device lain,
     // atau memang sudah "Selesai" duluan di spreadsheet), kontennya nggak pernah otomatis
     // masuk Daftar Konten. Loop ini juga otomatis benerin request lama yang kejebak.
-    REQUESTS.forEach((r, i)=>{
-      if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r)) && String(r.converted||'').trim().toUpperCase()!=='YES'){
-        convertRequestToVideo(i);
-      }
-    });
+    // DILEWATI saat auto-sync latar belakang — supaya timer 10 detik tidak pernah bikin
+    // baris konten baru sendiri tanpa diminta; convert tetap jalan otomatis saat pull manual,
+    // baru buka dashboard, atau tepat setelah user sendiri menyimpan/mengubah data.
+    if(!isBackgroundAutoSync){
+      REQUESTS.forEach((r, i)=>{
+        if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r)) && String(r.converted||'').trim().toUpperCase()!=='YES'){
+          convertRequestToVideo(i);
+        }
+      });
+    }
     saveLocalState();
 
     // Cuma render ulang (rebuild chart, tabel, dll — yang bikin dashboard "berkedip")
@@ -3655,7 +3698,7 @@ function startAutoSync(){
     // Beri jeda aman beberapa detik setelah perubahan lokal terakhir, karena Google Apps Script
     // butuh sedikit waktu untuk benar-benar menyimpan baris baru sebelum bisa terbaca lagi saat pull.
     if(Date.now() - lastLocalEditAt < 4000) return;
-    await pullFromSheet(true);
+    await pullFromSheet(true, true); // true,true = silent + background-only (murni refresh, tidak menulis apa pun)
     updateSyncBadge();
   }, AUTO_SYNC_MS);
 }
