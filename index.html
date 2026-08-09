@@ -1,6 +1,35 @@
 <!--
   CHANGELOG
   =========
+  v5 — 9 Agustus 2026
+  - FIX akar masalah duplikasi Kemungkinan 2 (race condition kalau dashboard dibuka
+    dari beberapa device/tab bersamaan): proses "convert Request jadi Konten" sekarang
+    dieksekusi ATOMIK di server (Apps Script) pakai LockService — action baru
+    "convert_request_atomic". Sebelumnya, client (browser) yang memutuskan "request ini
+    sudah dikonversi belum" berdasarkan data yang bisa saja sudah basi kalau ditarik
+    hampir bersamaan dari device lain, sehingga 2-3 device bisa sama-sama lolos
+    mengonversi request yang sama (persis kasus "feed ig 08 10 2026" yang jadi 3x lipat).
+    Sekarang keputusan itu dipindah sepenuhnya ke server: server mengunci proses,
+    baca ulang status "converted" LANGSUNG dari sheet, dan cuma device yang pertama
+    kali sampai yang diizinkan menulis baris konten baru — device lain otomatis dapat
+    jawaban "sudah dikonversi duluan" dan tidak ikut menulis apa pun.
+  - FIX bug kecil yang tidak sengaja ikut kebawa saat menambahkan tool v4 kemarin:
+    deklarasi function sheetToObjects sempat hilang, sudah diperbaiki & dicek ulang
+    sintaksnya (Node --check lolos).
+  - WAJIB redeploy Apps Script ke kode versi ini supaya fix di atas aktif.
+
+  v4 — 8 Agustus 2026
+  - Tambah tool baru di tab Integrasi: "Bersihkan Konten Kosong Duplikat (Judul Sama,
+    Tanggal Beda)". Ini melengkapi tool dedupe yang sudah ada (yang cuma nangkep
+    duplikat dengan tanggal PERSIS SAMA) — kasus seperti "Moment Kuartal" (baris asli
+    tanggal 04 Juli sudah ada performanya, tapi ada baris "hantu" kedua tanggal 07
+    Agustus yang 100% kosong/0) sekarang bisa ketangkep & dibersihkan lewat tool ini.
+    Baris yang dihapus HANYA yang: (a) judulnya persis sama dengan baris lain yang
+    SUDAH ada datanya, DAN (b) semua angka performanya masih 0/kosong tanpa akun
+    posting/tanggal posting. Baris kosong yang judulnya unik (belum pernah diisi
+    siapa pun) tidak disentuh. Selalu jalankan "Cek Dulu (Preview)" dulu & backup
+    sheet sebelum klik hapus.
+
   v3 — 8 Agustus 2026
   - Tambah field "Status Konten" per-konten (Tayang / Ditakedown / Banned / Lainnya),
     diisi/diubah lewat form "Update Performa Konten". Perilakunya:
@@ -851,6 +880,23 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
         <div class="muted-note" id="dedupeMsg"></div>
       </div>
 
+      <div class="card" style="background:var(--panel-2);border-color:var(--yellow);margin-bottom:16px;">
+        <div class="panel-title" style="color:var(--yellow);">🧹 Bersihkan Konten Kosong Duplikat (Judul Sama, Tanggal Beda)</div>
+        <div class="panel-desc" style="margin-bottom:12px;">
+          Tool di atas cuma nangkep duplikat yang tanggalnya PERSIS SAMA. Kalau ada baris "hantu" akibat bug convert
+          berulang — judul sama persis dengan baris lain yang SUDAH ada datanya, tapi baris ini tanggalnya beda dan
+          semua angkanya masih 0/kosong (belum pernah diisi performa sama sekali) — pakai tool ini. Baris yang
+          ditandai HANYA yang 100% kosong (views/likes/comments/shares/saves/reposts = 0, akun posting & tanggal
+          posting belum diisi) DAN ada baris lain berjudul sama yang datanya sudah terisi. Baris kosong yang judulnya
+          unik (belum pernah diisi siapa pun) TIDAK akan disentuh.
+        </div>
+        <div class="filterbar" style="margin-bottom:8px;">
+          <button class="btn" id="btnOrphanPreview">🔍 Cek Dulu (Preview, Aman — Tidak Menghapus)</button>
+          <button class="btn" id="btnOrphanRun" style="background:var(--red,#ef4444);color:#fff;" disabled>🗑️ Hapus Baris Kosong Duplikat</button>
+        </div>
+        <div class="muted-note" id="orphanMsg"></div>
+      </div>
+
       <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
       <button class="btn" id="btnCopyScript">Copy Kode</button>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
@@ -1466,14 +1512,33 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
 };
 
 /* ============== REQUEST KONTEN ============== */
-function convertRequestToVideo(idx){
+// Kirim permintaan konversi ke SERVER (bukan browser) yang memutuskan boleh/tidaknya
+// secara atomik pakai LockService — supaya kalau dashboard dibuka dari beberapa
+// device/tab bersamaan, cuma SATU yang berhasil menulis baris konten baru; yang
+// lain otomatis dapat jawaban "sudah dikonversi duluan" dan tidak ikut menulis.
+async function pushConvertRequestAtomic(r, videos){
+  const url = getAppsScriptUrl();
+  if(!url) return {status:'error', message:'URL Apps Script belum diisi'};
+  const payload = { reqTs: r.ts||'', reqJudul: r.judul||'', reqTanggal: r.tanggal||'', videos };
+  try{
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    const res  = await fetch(url+'?action=convert_request_atomic&data='+encoded, {cache:'no-store'});
+    const text = await res.text();
+    let json; try{ json = JSON.parse(text); }catch(e){ return {status:'error', message:'Respons server tidak valid (kode Apps Script mungkin belum versi terbaru)'}; }
+    return json;
+  }catch(e){
+    return {status:'error', message: e.message || 'Gagal terhubung'};
+  }
+}
+async function convertRequestToVideo(idx){
   const r = REQUESTS[idx];
   if(!r || r.convertedToVideo || convertedReqKeys.has(reqKey(r)) || String(r.converted||'').trim().toUpperCase()==='YES') return false;
   // QTY menentukan berapa baris konten produksi yang dibuat, supaya jumlah konten
   // yang benar-benar diproduksi bisa dihitung dari Daftar Konten (bukan cuma 1 per request).
   const qty = Math.max(1, parseInt(r.qty, 10) || 1);
+  const records = [];
   for(let n = 1; n <= qty; n++){
-    const rec = {
+    records.push({
       tanggal: fmtISO(new Date()),
       judul: qty > 1 ? `${r.judul} (${n}/${qty})` : r.judul,
       nama: r.pic || (TEAM[0]||''),
@@ -1481,17 +1546,29 @@ function convertRequestToVideo(idx){
       produk: r.produk || '',
       platform: r.platform || (PLATFORMS[0]||''),
       views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', statusKonten:'Tayang'
-    };
-    VIDEOS.push(rec);
-    pushOneToSheet({sheetType:'video', ...rec});
+    });
+  }
+  // Tandai lokal DULU sebelum menunggu jawaban server, supaya loop auto-convert
+  // yang jalan hampir bersamaan di TAB yang sama tidak ikut mencoba convert lagi.
+  markReqAsConverted(r);
+  const result = await pushConvertRequestAtomic(r, records);
+  if(result.status === 'error'){
+    // Gagal terhubung ke server -> batalkan penandaan lokal supaya bisa dicoba lagi nanti
+    convertedReqKeys.delete(reqKey(r)); saveConvertedReqKeys();
+    lastPushErrorMsg = result.message || 'Tidak diketahui';
+    return false;
   }
   r.convertedToVideo = true;
   r.converted = 'YES';
-  markReqAsConverted(r);
-  // Tandai juga di SPREADSHEET (bukan cuma localStorage browser), supaya kalau
-  // dashboard dibuka dari device/browser lain, request ini tidak dikonversi lagi.
-  pushOneToSheet({sheetType:'request_mark_converted', ts: r.ts||'', judul: r.judul, tanggal: r.tanggal});
-  return true;
+  if(!result.skipped){
+    // Server yang menulis baris ini -> aman ditambahkan juga ke state lokal biar
+    // langsung kelihatan di dashboard tanpa perlu nunggu pull berikutnya.
+    records.forEach(rec=> VIDEOS.push(rec));
+  }
+  // Kalau result.skipped === true, berarti device/tab LAIN sudah lebih dulu
+  // mengonversi request ini — sengaja TIDAK menambahkan records ke VIDEOS di sini
+  // supaya tidak dobel; baris aslinya akan muncul lewat pull data berikutnya.
+  return !result.skipped;
 }
 function renderRequests(){
   renderDeadlineTicker();
@@ -1605,7 +1682,7 @@ function renderRequests(){
       if(justRevisi){ notifyRevisiKonten(REQUESTS[idx].pic); markReqAsNotifiedRevisi(REQUESTS[idx]); } // sama alasannya: dipicu di dalam gesture klik biar suara tidak diblokir browser
       let converted = false;
       if(this.value === 'Selesai' && prevStatus !== 'Selesai' && !REQUESTS[idx].convertedToVideo){
-        converted = convertRequestToVideo(idx);
+        converted = await convertRequestToVideo(idx);
       }
       saveLocalState(); renderRequests();
       const pushResult = await pushOneToSheet({sheetType:'request_update', ...REQUESTS[idx]});
@@ -3030,6 +3107,40 @@ function doGet(e) {
     }
   }
 
+  // BERSIHKAN "KONTEN KOSONG DUPLIKAT" — judul sama dengan baris lain yang sudah
+  // ada datanya, tapi baris ini tanggalnya beda & masih 100% kosong. dryRun=1
+  // (default) cuma preview, dryRun=0 baru benar-benar menghapus.
+  if (action === 'dedupe_orphan') {
+    try {
+      var dryRun2 = e.parameter.dryRun !== '0';
+      var result2 = findAndCleanOrphanDuplicates(dryRun2);
+      return jsonOutput(result2);
+    } catch(err) {
+      return jsonOutput({status:'error', message: err.toString()});
+    }
+  }
+
+  // KONVERSI ATOMIK Request -> Konten. Dipakai supaya kalau dashboard dibuka dari
+  // beberapa device/tab BERSAMAAN, request yang sama TIDAK BISA dikonversi dua kali
+  // sekaligus — LockService memastikan cuma 1 proses convert yang jalan di satu waktu
+  // untuk seluruh spreadsheet ini, dan pengecekan "sudah dikonversi belum" dibaca
+  // ulang dari sheet SETELAH lock didapat (bukan dari data yang mungkin sudah basi
+  // di browser client), jadi device kedua yang telat beberapa detik akan otomatis
+  // tahu "oh sudah dikonversi duluan" dan tidak ikut menulis baris baru.
+  if (action === 'convert_request_atomic') {
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(30000); // tunggu sampai 30 detik kalau ada proses convert lain yang sedang jalan
+      var payload = JSON.parse(e.parameter.data || '{}');
+      var result3 = convertRequestAtomic(payload);
+      return jsonOutput(result3);
+    } catch (err) {
+      return jsonOutput({status:'error', message: err.toString()});
+    } finally {
+      try { lock.releaseLock(); } catch(e2) {}
+    }
+  }
+
   // WRITE via GET — menghindari masalah CORS pada POST
   if (action === 'write') {
     try {
@@ -3411,6 +3522,134 @@ function dedupeProduksiSheet(dryRun) {
   return out;
 }
 
+// Menangkap kasus duplikat "hantu" yang TIDAK terdeteksi oleh dedupeProduksiSheet:
+// judul PERSIS SAMA dengan baris lain yang sudah punya data, tapi baris ini
+// tanggalnya BEDA (biasanya bertanggal hari dashboard dibuka saat bug convert-ulang
+// masih aktif) dan SEMUA angkanya masih kosong/0 — belum pernah diisi performa
+// sama sekali. Baris seperti ini hampir pasti hasil auto-convert ulang, bukan
+// konten asli. Baris kosong yang judulnya UNIK (tidak ada baris lain berjudul sama
+// yang sudah terisi) TIDAK disentuh, supaya konten yang memang belum sempat diisi
+// performanya (baru saja dibuat, wajar masih 0) tidak ikut kehapus.
+function findAndCleanOrphanDuplicates(dryRun) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Produksi');
+  if (!sh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
+
+  var data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { status: 'ok', totalRows: 0, removed: 0, dryRun: !!dryRun, samples: [] };
+
+  var idx = { tanggal:0, judul:1, nama:2, tipe:3, produk:4, platform:5,
+              views:6, likes:7, comments:8, shares:9, lastUpdated:10, akunPosting:11,
+              saves:12, reposts:13, tanggalPosting:14 };
+
+  function normJudul(row) { return String(row[idx.judul] || '').trim().toLowerCase(); }
+  function isBlank(row) {
+    var scoreZero = ['views','likes','comments','shares','saves','reposts'].every(function(k){
+      return (Number(row[idx[k]]) || 0) === 0;
+    });
+    var noAkun = String(row[idx.akunPosting] || '').trim() === '';
+    var noTanggalPosting = String(row[idx.tanggalPosting] || '').trim() === '';
+    return scoreZero && noAkun && noTanggalPosting;
+  }
+
+  // Group semua baris (index asli di sheet) per judul
+  var byJudul = {};
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[idx.judul]) continue;
+    var key = normJudul(row);
+    (byJudul[key] = byJudul[key] || []).push(i);
+  }
+
+  var rowsToDelete = [];
+  var samples = [];
+  Object.keys(byJudul).forEach(function(key){
+    var rowIdxs = byJudul[key];
+    if (rowIdxs.length < 2) return; // judul unik, tidak ada kandidat duplikat
+    var hasNonBlank = rowIdxs.some(function(ri){ return !isBlank(data[ri]); });
+    if (!hasNonBlank) return; // semua baris kosong -> kemungkinan memang belum diisi semua, jangan sentuh
+    rowIdxs.forEach(function(ri){
+      if (isBlank(data[ri])) {
+        rowsToDelete.push(ri + 1); // +1 -> nomor baris di sheet
+        if (samples.length < 20) {
+          samples.push({ row: ri + 1, tanggal: normalizeTanggal(data[ri][idx.tanggal]), judul: data[ri][idx.judul] });
+        }
+      }
+    });
+  });
+
+  var out = { status: 'ok', totalRows: data.length - 1, removed: rowsToDelete.length, dryRun: !!dryRun, samples: samples };
+
+  if (!dryRun && rowsToDelete.length > 0) {
+    rowsToDelete.sort(function(a, b){ return b - a; }); // hapus dari bawah ke atas
+    for (var d = 0; d < rowsToDelete.length; d++) sh.deleteRow(rowsToDelete[d]);
+  }
+
+  return out;
+}
+
+// Dipakai oleh action=convert_request_atomic — HARUS dipanggil di dalam LockService
+// lock (lihat doGet). Menggabungkan "cek sudah dikonversi belum" + "tulis baris
+// konten baru" + "tandai converted=YES" jadi SATU operasi atomik, supaya dua
+// device/tab yang kirim request convert di waktu hampir bersamaan tidak bisa
+// dua-duanya lolos — yang kedua akan baca kolom "converted" yang SUDAH ditulis
+// oleh yang pertama (karena lock memastikan urutan eksekusi, bukan paralel).
+function convertRequestAtomic(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var reqSh = ss.getSheetByName('RequestKonten');
+  var prodSh = ss.getSheetByName('Produksi');
+  if (!reqSh) return { status: 'error', message: 'Sheet RequestKonten tidak ditemukan' };
+  if (!prodSh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
+
+  var lastRow = reqSh.getLastRow();
+  if (lastRow === 0) return { status: 'ok', skipped: true, reason: 'request tidak ditemukan' };
+
+  var headerRange = reqSh.getRange(1, 1, 1, Math.max(15, reqSh.getLastColumn()));
+  var headerVals  = headerRange.getValues()[0];
+  if (String(headerVals[14] || '').trim().toLowerCase() !== 'converted') {
+    reqSh.getRange(1, 15).setValue('converted');
+  }
+
+  var rows = reqSh.getRange(1, 1, lastRow, 15).getValues();
+  var hasTs = !!(data.reqTs && String(data.reqTs).trim());
+  var targetRow = -1;
+  if (hasTs) {
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][12] || '').trim() === String(data.reqTs).trim()) { targetRow = i; break; }
+    }
+  }
+  if (targetRow < 0) {
+    for (var j = 1; j < rows.length; j++) {
+      if (String(rows[j][1]).trim() === String(data.reqJudul).trim() &&
+          normalizeTanggal(rows[j][0]) === normalizeTanggal(data.reqTanggal)) { targetRow = j; break; }
+    }
+  }
+  if (targetRow < 0) return { status: 'ok', skipped: true, reason: 'request tidak ditemukan di sheet' };
+
+  // Sudah dikonversi sebelumnya (oleh proses/device lain) -> SKIP, jangan tulis apa pun lagi
+  if (String(rows[targetRow][14] || '').trim().toUpperCase() === 'YES') {
+    return { status: 'ok', skipped: true, reason: 'sudah dikonversi sebelumnya' };
+  }
+
+  // Belum pernah dikonversi -> tulis semua baris konten sekaligus, lalu tandai converted=YES
+  var videos = data.videos || [];
+  for (var k = 0; k < videos.length; k++) {
+    var v = videos[k];
+    prodSh.appendRow([
+      v.tanggal, v.judul, v.nama, v.tipe, v.produk || '',
+      v.platform, v.views || 0, v.likes || 0,
+      v.comments || 0, v.shares || 0,
+      v.lastUpdated || '', v.akunPosting || '',
+      v.saves || 0, v.reposts || 0, v.tanggalPosting || '',
+      v.hookRate || 0, v.kunjunganLP || 0, v.konversiLP || 0,
+      v.statusKonten || 'Tayang'
+    ]);
+  }
+  reqSh.getRange(targetRow + 1, 15).setValue('YES');
+
+  return { status: 'ok', skipped: false, written: videos.length };
+}
+
 function sheetToObjects(sheet) {
   if (!sheet) return [];
   var rows    = sheet.getDataRange().getValues();
@@ -3603,11 +3842,12 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
     // baris konten baru sendiri tanpa diminta; convert tetap jalan otomatis saat pull manual,
     // baru buka dashboard, atau tepat setelah user sendiri menyimpan/mengubah data.
     if(!isBackgroundAutoSync){
-      REQUESTS.forEach((r, i)=>{
+      for(let i = 0; i < REQUESTS.length; i++){
+        const r = REQUESTS[i];
         if(r.status === 'Selesai' && !r.convertedToVideo && !convertedReqKeys.has(reqKey(r)) && String(r.converted||'').trim().toUpperCase()!=='YES'){
-          convertRequestToVideo(i);
+          await convertRequestToVideo(i);
         }
-      });
+      }
     }
     saveLocalState();
 
@@ -3878,6 +4118,72 @@ document.getElementById('btnDedupeRun').onclick = async ()=>{
     msg.innerHTML = '✅ Selesai. <b>'+json.removed+'</b> baris duplikat sudah dihapus. Tersisa <b>'+json.uniqueRows+'</b> baris unik. Menarik ulang data ke dashboard...';
     msg.style.color='var(--cyan)';
     lastDedupePreviewOk = false;
+    await pullFromSheet(true);
+    updateSyncBadge();
+  }catch(err){
+    msg.textContent = '❌ Gagal terhubung: '+err.message;
+    msg.style.color='var(--red)';
+  }
+};
+
+let lastOrphanPreviewOk = false;
+document.getElementById('btnOrphanPreview').onclick = async ()=>{
+  const url = getAppsScriptUrl();
+  const msg = document.getElementById('orphanMsg');
+  const btnRun = document.getElementById('btnOrphanRun');
+  lastOrphanPreviewOk = false;
+  btnRun.disabled = true;
+  if(!url){ msg.textContent='❌ URL Apps Script belum diisi.'; msg.style.color='var(--red)'; return; }
+  msg.textContent = '🔄 Mencari baris kosong duplikat (judul sama, tanggal beda)...'; msg.style.color='var(--muted)';
+  try{
+    const res = await fetch(url+'?action=dedupe_orphan&dryRun=1', {cache:'no-store'});
+    const text = await res.text();
+    let json; try{ json = JSON.parse(text); }catch(e){
+      msg.textContent = '❌ Respons bukan JSON. Kode Apps Script kamu belum versi terbaru (belum ada action=dedupe_orphan) — salin ulang kode di bawah lalu Deploy → New deployment.';
+      msg.style.color='var(--red)'; return;
+    }
+    if(json.status === 'error'){
+      msg.textContent = '❌ Gagal: '+(json.message||'tidak diketahui')+'. Kalau pesannya soal "findAndCleanOrphanDuplicates is not defined", berarti kode Apps Script kamu belum versi terbaru — salin ulang & deploy ulang.';
+      msg.style.color='var(--red)'; return;
+    }
+    if(json.removed === 0){
+      msg.textContent = '✅ Tidak ada baris kosong duplikat ditemukan. Total '+json.totalRows+' baris.';
+      msg.style.color='var(--cyan)';
+      return;
+    }
+    const sampleList = (json.samples||[]).slice(0,10).map(s=>`Baris ${s.row}: "${s.judul}" (${s.tanggal})`).join('<br>');
+    msg.innerHTML = '⚠️ Ditemukan <b>'+json.removed+'</b> baris kosong duplikat dari total <b>'+json.totalRows+'</b> baris. Ini baru PREVIEW, belum ada yang dihapus.<br><br>Contoh baris yang akan dihapus:<br>'+sampleList+(json.removed>10?'<br>...dan '+(json.removed-10)+' baris lainnya.':'')+'<br><br>Kalau sudah yakin (dan sudah backup Sheet-nya), klik tombol "Hapus Baris Kosong Duplikat".';
+    msg.style.color = 'var(--yellow)';
+    lastOrphanPreviewOk = true;
+    btnRun.disabled = false;
+  }catch(err){
+    msg.textContent = '❌ Gagal terhubung: '+err.message;
+    msg.style.color='var(--red)';
+  }
+};
+document.getElementById('btnOrphanRun').onclick = async ()=>{
+  const url = getAppsScriptUrl();
+  const msg = document.getElementById('orphanMsg');
+  if(!url){ msg.textContent='❌ URL Apps Script belum diisi.'; msg.style.color='var(--red)'; return; }
+  if(!lastOrphanPreviewOk){ msg.textContent='Klik "Cek Dulu (Preview)" terlebih dahulu.'; msg.style.color='var(--yellow)'; return; }
+  const sure = confirm('Ini akan MENGHAPUS baris kosong duplikat langsung di Google Sheet kamu secara permanen. Pastikan kamu sudah backup (File → Make a copy) sebelum lanjut.\n\nLanjutkan hapus sekarang?');
+  if(!sure) return;
+  msg.textContent = '🔄 Menghapus baris kosong duplikat, mohon tunggu...'; msg.style.color='var(--muted)';
+  document.getElementById('btnOrphanRun').disabled = true;
+  try{
+    const res = await fetch(url+'?action=dedupe_orphan&dryRun=0', {cache:'no-store'});
+    const text = await res.text();
+    let json; try{ json = JSON.parse(text); }catch(e){
+      msg.textContent = '❌ Respons bukan JSON — cek langsung di Google Sheet apakah datanya berubah, dan cek Executions log di Apps Script.';
+      msg.style.color='var(--red)'; return;
+    }
+    if(json.status === 'error'){
+      msg.textContent = '❌ Gagal: '+(json.message||'tidak diketahui');
+      msg.style.color='var(--red)'; return;
+    }
+    msg.innerHTML = '✅ Selesai. <b>'+json.removed+'</b> baris kosong duplikat sudah dihapus. Menarik ulang data ke dashboard...';
+    msg.style.color='var(--cyan)';
+    lastOrphanPreviewOk = false;
     await pullFromSheet(true);
     updateSyncBadge();
   }catch(err){
