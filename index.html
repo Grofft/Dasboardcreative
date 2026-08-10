@@ -1,6 +1,64 @@
 <!--
   CHANGELOG
   =========
+  v10 — 9 Agustus 2026
+  - Hapus opsi target "default" (fallback semua bulan) dari v9 — sekarang target KPI
+    MURNI per-bulan saja. Tiap kartu KPI cuma punya 1 link "✏️ atur target [Nama Bulan]"
+    yang otomatis ikut bulan dari periode/filter tanggal yang lagi ditampilkan. Kalau
+    bulan yang dilihat belum punya target, kartunya nampilin "Belum ada target" (tidak
+    ada fallback ke bulan lain). Target lama yang sempat diatur sebagai "default" di v9
+    (kalau ada) tidak lagi terpakai — perlu diatur ulang per-bulan lewat link ini.
+
+  v9 — 9 Agustus 2026
+  - Target KPI sekarang bisa diatur PER BULAN, bukan cuma 1 angka flat untuk semua
+    periode. Tiap kartu KPI sekarang punya 2 link kecil di baris target:
+      • "✏️ [Nama Bulan]" — atur target KHUSUS untuk bulan yang sedang ditampilkan
+        di dashboard (ikut bulan dari awal periode/filter tanggal yang dipilih).
+      • "default" — atur target UMUM yang berlaku untuk semua bulan yang belum
+        punya target khusus sendiri.
+    Kalau bulan yang sedang dilihat punya target khusus, itu yang dipakai & ditampilkan
+    (labelnya kelihatan "(Nama Bulan)"); kalau belum, otomatis jatuh balik ke target
+    default (labelnya "(default)"). Kosongkan target manapun untuk menghapus override-nya.
+    Tetap SHARED lewat sheet Settings seperti v8 — semua device/tim lihat angka yang sama.
+
+  v8 — 9 Agustus 2026
+  - Target KPI sekarang SHARED lewat spreadsheet (sebelumnya cuma tersimpan per-browser
+    di localStorage, jadi kalau diatur di 1 device, device/anggota tim lain nggak lihat
+    angka yang sama). Perubahan teknis:
+      • Sheet baru "Settings" (kolom: key, value) dibuat otomatis begitu target pertama
+        diatur — menyimpan semua target KPI (key diawali "kpiTarget_").
+      • Klik "✏️ atur target" tetap sama caranya, tapi sekarang tersimpan ke spreadsheet
+        (dilindungi LockService biar aman kalau 2 orang ubah target bersamaan) — device
+        lain otomatis lihat target yang sama begitu pull data berikutnya.
+      • localStorage tetap dipakai sebagai CACHE (biar target langsung tampil instan
+        sebelum pull data selesai / kalau lagi offline), tapi begitu berhasil tarik data
+        dari sheet, cache lokal digantikan oleh data sheet — sheet Settings jadi sumber
+        kebenaran utama.
+  - WAJIB redeploy Apps Script ke kode versi ini supaya target KPI bisa sinkron ke sheet.
+
+  v7 — 9 Agustus 2026
+  - Sistem target KPI (sebelumnya cuma di kartu Avg CTR) sekarang DIGENERALISIR ke
+    SEMUA 7 KPI card di "Ringkasan Periode": Total Konten Diproduksi, Total Views,
+    Total Engagement, Avg Engagement Rate, Avg Hook Rate, Avg Konversi Rate, dan
+    Avg CTR. Tiap kartu sekarang punya baris "✏️ atur target" sendiri-sendiri —
+    klik untuk isi angka target, otomatis kasih badge ✅ tercapai / ⚠️ di bawah
+    target begitu ada data di periode terpilih. Semua target disimpan per-browser
+    (localStorage), independen antar KPI.
+
+  v6 — 9 Agustus 2026
+  - Tambah pendataan CTR untuk konten Tipe="Foto/Gambar" (KPI target tim desain grafis):
+      • Field baru "CTR (%)" di form Update Performa, muncul otomatis kalau tipe kontennya
+        Foto/Gambar. Diisi MANUAL dari data CTR yang sudah ada di platform Ads (Meta Ads
+        Manager / TikTok Ads Manager) — bukan dihitung otomatis dari klik/impresi.
+      • Kolom baru "ctr" di paling kanan sheet Produksi (kolom U/21).
+      • KPI card baru "Avg CTR — Foto/Gambar" di bagian atas dashboard (Ringkasan Periode),
+        lengkap dengan TARGET yang bisa diatur sendiri (klik "✏️ atur" di kartunya) — badge
+        otomatis kasih tau ✅ tercapai / ⚠️ di bawah target. Target disimpan per-browser.
+      • Kolom "Hook/Konversi Rate" di tabel Daftar Konten diganti jadi "Hook/Konversi/CTR"
+        supaya ikut nampilin CTR untuk baris Foto/Gambar.
+    Kalau sheet Produksi kamu dibuat sebelum update ini, tambahkan kolom "ctr" manual
+    di paling kanan sheet (setelah statusKonten) — lihat catatan di tab Integrasi.
+
   v5 — 9 Agustus 2026
   - FIX akar masalah duplikasi Kemungkinan 2 (race condition kalau dashboard dibuka
     dari beberapa device/tab bersamaan): proses "convert Request jadi Konten" sekarang
@@ -614,15 +672,21 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 
     <div class="section-header"><h2>Ringkasan Periode</h2><div class="muted-note" id="rangeLabel2"></div></div>
     <div class="grid grid-4">
-      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi <span style="font-weight:400;opacity:.7;" title="Sum QTY dari Request Konten berstatus Selesai, basis tanggal request">(QTY Selesai)</span></div><div class="value" id="kpiTotalVideo">-</div></div>
-      <div class="card kpi"><div class="bar-accent" style="background:var(--purple)"></div><div class="label">Total Views</div><div class="value" id="kpiTotalViews">-</div></div>
-      <div class="card kpi"><div class="bar-accent" style="background:var(--cyan)"></div><div class="label">Total Engagement</div><div class="value" id="kpiTotalEngagement">-</div></div>
-      <div class="card kpi"><div class="bar-accent" style="background:var(--yellow)"></div><div class="label">Avg Engagement Rate</div><div class="value" id="kpiAvgER">-</div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi <span style="font-weight:400;opacity:.7;" title="Sum QTY dari Request Konten berstatus Selesai, basis tanggal request">(QTY Selesai)</span></div><div class="value" id="kpiTotalVideo">-</div><div class="muted-note kpi-target-line" id="kpiTotalVideo_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--purple)"></div><div class="label">Total Views</div><div class="value" id="kpiTotalViews">-</div><div class="muted-note kpi-target-line" id="kpiTotalViews_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--cyan)"></div><div class="label">Total Engagement</div><div class="value" id="kpiTotalEngagement">-</div><div class="muted-note kpi-target-line" id="kpiTotalEngagement_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--yellow)"></div><div class="label">Avg Engagement Rate</div><div class="value" id="kpiAvgER">-</div><div class="muted-note kpi-target-line" id="kpiAvgER_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
     </div>
 
-    <div class="grid" style="grid-template-columns:repeat(2,1fr);margin-top:14px;">
-      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Avg Hook Rate (Video)</div><div class="value" id="kpiAvgHookRate">-</div></div>
-      <div class="card kpi"><div class="bar-accent" style="background:var(--blue)"></div><div class="label">Avg Konversi Rate (Landing Page)</div><div class="value" id="kpiAvgKonversiRate">-</div></div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:14px;">
+      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Avg Hook Rate (Video)</div><div class="value" id="kpiAvgHookRate">-</div><div class="muted-note kpi-target-line" id="kpiAvgHookRate_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--blue)"></div><div class="label">Avg Konversi Rate (Landing Page)</div><div class="value" id="kpiAvgKonversiRate">-</div><div class="muted-note kpi-target-line" id="kpiAvgKonversiRate_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi">
+        <div class="bar-accent" style="background:var(--yellow)"></div>
+        <div class="label">Avg CTR — Foto/Gambar <span title="KPI target tim desain grafis. Diisi manual dari data CTR platform Ads (Meta/TikTok Ads Manager) lewat form Update Performa.">ⓘ</span></div>
+        <div class="value" id="kpiAvgCtr">-</div>
+        <div class="muted-note kpi-target-line" id="kpiAvgCtr_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div>
+      </div>
     </div>
 
     <!-- BREAKDOWN PER PLATFORM -->
@@ -745,6 +809,12 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
             <div class="field"><label>Jumlah Konversi</label><input type="number" id="inPerfKonversiLP" placeholder="0" min="0"></div>
           </div>
         </div>
+        <div class="field" id="perfCtrFields" style="grid-column:1/-1;margin-top:4px;display:none;">
+          <label style="margin-bottom:6px;display:block;">CTR (khusus Foto/Gambar) <span style="color:var(--cyan);font-weight:600;" title="Isi langsung angka CTR (%) dari platform Ads (Meta Ads Manager / TikTok Ads Manager) untuk gambar/creative ini. Dipakai untuk KPI target tim desain grafis.">ⓘ</span></label>
+          <div class="perf-metrics-row">
+            <div class="field"><label>CTR (%)</label><input type="number" id="inPerfCtr" placeholder="0" min="0" max="100" step="0.01"></div>
+          </div>
+        </div>
       </div>
       <button class="btn primary" id="btnSavePerf">💾 Update Performa</button>
       <div class="muted-note" id="perfSaveMsg" style="margin-top:8px;"></div>
@@ -761,7 +831,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Status</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Hook/Konversi Rate</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal</th><th>Judul</th><th>Kreator/Editor</th><th>Tipe</th><th>Produk</th><th>Platform</th><th>Status</th><th>Akun Posting</th><th>Tanggal Posting</th><th>Views</th><th>Likes</th><th>Komentar</th><th>Share</th><th>Save</th><th>Repost</th><th>Engagement Rate</th><th>Hook/Konversi/CTR</th><th>Terakhir Update</th><th>Aksi</th></tr></thead>
           <tbody id="tblVideos"></tbody>
           <tfoot><tr><td colspan="9" data-label="">Total (semua data terfilter)</td><td data-label="Views" id="ftViews">0</td><td data-label="Likes" id="ftLikes">0</td><td data-label="Komentar" id="ftComments">0</td><td data-label="Share" id="ftShares">0</td><td data-label="Save" id="ftSaves">0</td><td data-label="Repost" id="ftReposts">0</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td><td data-label="">-</td></tr></tfoot>
         </table>
@@ -864,7 +934,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
         <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
       </div>
       <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, hookRate, kunjunganLP, konversiLP, statusKonten) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">hookRate</code>, <code class="inline">kunjunganLP</code>, <code class="inline">konversiLP</code> dan <code class="inline">statusKonten</code> di paling kanan (kolom M sampai S) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">statusKonten</code> diisi otomatis <code class="inline">Tayang</code> untuk konten baru, dan bisa diubah jadi <code class="inline">Ditakedown</code>/<code class="inline">Banned</code>/<code class="inline">Lainnya</code> lewat form Update Performa kalau kontennya bermasalah — otomatis dikecualikan dari total Views/Engagement & grafik performa per platform, tapi tetap dihitung di Total Konten Diproduksi. Kolom <code class="inline">hookRate</code> diisi langsung sebagai persentase Hook Rate konten Tipe=Video (diambil dari Insight native platform, misal TikTok/Instagram). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N). Kolom <code class="inline">converted</code> (kolom O) dibuat &amp; diisi <b>otomatis</b> oleh script begitu sebuah request pertama kali dikonversi jadi konten — jangan diisi manual — ini yang membuat penanda "sudah dikonversi" tersimpan permanen di spreadsheet (bukan cuma di browser), supaya tidak ada lagi konten yang terduplikat kalau dashboard dibuka dari beberapa device.</div>
+      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, hookRate, kunjunganLP, konversiLP, statusKonten, ctr) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">hookRate</code>, <code class="inline">kunjunganLP</code>, <code class="inline">konversiLP</code>, <code class="inline">statusKonten</code> dan <code class="inline">ctr</code> di paling kanan (kolom M sampai T) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">statusKonten</code> diisi otomatis <code class="inline">Tayang</code> untuk konten baru, dan bisa diubah jadi <code class="inline">Ditakedown</code>/<code class="inline">Banned</code>/<code class="inline">Lainnya</code> lewat form Update Performa kalau kontennya bermasalah — otomatis dikecualikan dari total Views/Engagement & grafik performa per platform, tapi tetap dihitung di Total Konten Diproduksi. Kolom <code class="inline">ctr</code> khusus konten Tipe=Foto/Gambar — diisi manual dari data CTR yang sudah kamu punya di platform Ads (Meta Ads Manager/TikTok Ads Manager), dipakai untuk KPI target tim desain grafis (rata-rata CTR & progress terhadap target di bagian atas dashboard). Kolom <code class="inline">hookRate</code> diisi langsung sebagai persentase Hook Rate konten Tipe=Video (diambil dari Insight native platform, misal TikTok/Instagram). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N). Kolom <code class="inline">converted</code> (kolom O) dibuat &amp; diisi <b>otomatis</b> oleh script begitu sebuah request pertama kali dikonversi jadi konten — jangan diisi manual — ini yang membuat penanda "sudah dikonversi" tersimpan permanen di spreadsheet (bukan cuma di browser), supaya tidak ada lagi konten yang terduplikat kalau dashboard dibuka dari beberapa device. Sheet <code class="inline">Settings</code> (kolom: key, value) juga dibuat otomatis begitu ada target KPI pertama yang diatur — dipakai untuk simpan target KPI (di kartu "Ringkasan Periode", klik "✏️ atur target") secara <b>SHARED</b>, supaya semua device/anggota tim yang buka dashboard ini lihat angka target yang sama, bukan cuma tersimpan di browser masing-masing.</div>
 
       <div class="card" style="background:var(--panel-2);border-color:var(--yellow);margin-bottom:16px;">
         <div class="panel-title" style="color:var(--yellow);">🧹 Bersihkan Duplikat (Sheet Produksi)</div>
@@ -965,7 +1035,11 @@ function dedupeNameLists(){
   return changed;
 }
 
-let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts, hookRate, kunjunganLP, konversiLP, statusKonten}
+let VIDEOS = []; // {tanggal, judul, nama, tipe, platform, views, likes, comments, shares, saves, reposts, hookRate, kunjunganLP, konversiLP, statusKonten, ctr}
+// Target KPI (SHARED lewat sheet "Settings", key diawali "kpiTarget_") — di-cache juga
+// di localStorage supaya tetap tampil instan sebelum pull data selesai / kalau offline.
+let KPI_TARGETS = {};
+try{ KPI_TARGETS = JSON.parse(localStorage.getItem('creativeOpsKpiTargetsCache')||'{}'); }catch(e){}
 let AKUN_LOG = []; // {tanggal, nama, platform, status, followers, note}
 let REQUESTS = []; // {tanggal, judul, requester, pic, produk, tipe, platform, qty, deadline, prioritas, status, brief, ts}
 const REQ_PAGE_SIZE = 50;
@@ -1497,7 +1571,7 @@ document.getElementById('btnSaveVideo').onclick = async ()=>{
   if(!tanggal || !judul){ msg.textContent='Isi tanggal & judul terlebih dahulu.'; msg.style.color='var(--red)'; return; }
   btn.disabled = true;
   try{
-    const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Tayang'};
+    const rec = {tanggal, judul, nama, tipe, produk, platform, views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Tayang', ctr:0};
     VIDEOS.push(rec);
     saveLocalState(); render(); refreshPerfSelect();
     msg.textContent = 'Tersimpan: '+judul+' — mengirim ke spreadsheet...'; msg.style.color='var(--muted)';
@@ -1545,7 +1619,7 @@ async function convertRequestToVideo(idx){
       tipe: r.tipe || TIPE_KONTEN[0],
       produk: r.produk || '',
       platform: r.platform || (PLATFORMS[0]||''),
-      views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', statusKonten:'Tayang'
+      views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'', statusKonten:'Tayang', ctr:0
     });
   }
   // Tandai lokal DULU sebelum menunggu jawaban server, supaya loop auto-convert
@@ -1881,6 +1955,7 @@ function setPerfAkunFromString(str){
 function togglePerfMetricFields(tipe){
   document.getElementById('perfHookRateFields').style.display  = (tipe==='Video') ? '' : 'none';
   document.getElementById('perfKonversiFields').style.display  = (tipe==='Landing Page') ? '' : 'none';
+  document.getElementById('perfCtrFields').style.display       = (tipe==='Foto/Gambar') ? '' : 'none';
 }
 
 document.getElementById('inPerfKonten').addEventListener('change', function(){
@@ -1896,6 +1971,7 @@ document.getElementById('inPerfKonten').addEventListener('change', function(){
   document.getElementById('inPerfHookRate').value    = v.hookRate||0;
   document.getElementById('inPerfKunjunganLP').value = v.kunjunganLP||0;
   document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
+  document.getElementById('inPerfCtr').value = v.ctr||0;
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
   document.getElementById('inPerfStatusKonten').value = statusKontenOf(v);
   togglePerfMetricFields(v.tipe);
@@ -1911,7 +1987,7 @@ document.getElementById('btnDuplikatKonten').onclick = ()=>{
   const clone = {
     tanggal: src.tanggal, judul: src.judul, nama: src.nama, tipe: src.tipe, produk: src.produk, platform: src.platform,
     views:0, likes:0, comments:0, shares:0, saves:0, reposts:0, lastUpdated:'', akunPosting:'', tanggalPosting:'',
-    hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Tayang'
+    hookRate:0, kunjunganLP:0, konversiLP:0, statusKonten:'Tayang', ctr:0
   };
   VIDEOS.push(clone);
   saveLocalState(); refreshPerfSelect();
@@ -1953,6 +2029,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   VIDEOS[idx].hookRate    = parseFloat(document.getElementById('inPerfHookRate').value)||0;
   VIDEOS[idx].kunjunganLP = parseFloat(document.getElementById('inPerfKunjunganLP').value)||0;
   VIDEOS[idx].konversiLP  = parseFloat(document.getElementById('inPerfKonversiLP').value)||0;
+  VIDEOS[idx].ctr         = parseFloat(document.getElementById('inPerfCtr').value)||0;
   VIDEOS[idx].lastUpdated = tanggalUpdate;
   VIDEOS[idx].akunPosting = akunPosting;
   VIDEOS[idx].tanggalPosting = tanggalPosting;
@@ -1983,6 +2060,7 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   document.getElementById('inPerfHookRate').value='';
   document.getElementById('inPerfKunjunganLP').value='';
   document.getElementById('inPerfKonversiLP').value='';
+  document.getElementById('inPerfCtr').value='';
   togglePerfMetricFields('');
 };
 
@@ -1998,6 +2076,7 @@ function fillPerfForm(idx){
   document.getElementById('inPerfHookRate').value    = v.hookRate||0;
   document.getElementById('inPerfKunjunganLP').value = v.kunjunganLP||0;
   document.getElementById('inPerfKonversiLP').value  = v.konversiLP||0;
+  document.getElementById('inPerfCtr').value = v.ctr||0;
   document.getElementById('inPerfTanggal').value  = fmtISO(new Date());
   document.getElementById('inPerfTanggalPosting').value = v.tanggalPosting || '';
   document.getElementById('inPerfStatusKonten').value = statusKontenOf(v);
@@ -2157,6 +2236,79 @@ function conversionRate(v){
   if(denom<=0) return 0;
   return ((v.konversiLP||0)/denom)*100;
 }
+// ===== SISTEM TARGET KPI (GENERIK — dipakai semua KPI card) =====
+// Definisi tiap KPI card: id elemen value, label buat prompt, satuan (percent/number),
+// dan arah "bagus" (higher = makin tinggi makin baik; lower = makin rendah makin baik,
+// tidak dipakai saat ini tapi disiapkan untuk KPI semacam bounce rate di masa depan).
+const KPI_TARGET_DEFS = [
+  { id:'kpiTotalVideo',      label:'Total Konten Diproduksi',        unit:'number',  dir:'higher' },
+  { id:'kpiTotalViews',      label:'Total Views',                    unit:'number',  dir:'higher' },
+  { id:'kpiTotalEngagement', label:'Total Engagement',               unit:'number',  dir:'higher' },
+  { id:'kpiAvgER',           label:'Avg Engagement Rate',            unit:'percent', dir:'higher' },
+  { id:'kpiAvgHookRate',     label:'Avg Hook Rate (Video)',          unit:'percent', dir:'higher' },
+  { id:'kpiAvgKonversiRate', label:'Avg Konversi Rate (Landing Page)', unit:'percent', dir:'higher' },
+  { id:'kpiAvgCtr',          label:'Avg CTR (Foto/Gambar)',          unit:'percent', dir:'higher' },
+];
+let lastKpiRange = null;
+function monthKeyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabelID(d){ return d.toLocaleDateString('id-ID', {month:'long', year:'numeric'}); }
+
+function getAllKpiTargets(){
+  return KPI_TARGETS;
+}
+// Cari target KHUSUS bulan `monthKey` (format 'YYYY-MM') untuk KPI `id`. Tidak ada
+// fallback ke target umum — tiap bulan targetnya berdiri sendiri.
+function getKpiTarget(id, monthKey){
+  const specific = KPI_TARGETS[id+'@'+monthKey];
+  if(typeof specific === 'number' && !isNaN(specific)) return {value: specific};
+  return null;
+}
+function setKpiTargetValue(storageKey, n){
+  // Update lokal dulu (optimistic) supaya UI langsung berubah tanpa nunggu network.
+  if(n===null) delete KPI_TARGETS[storageKey]; else KPI_TARGETS[storageKey] = n;
+  try{ localStorage.setItem('creativeOpsKpiTargetsCache', JSON.stringify(KPI_TARGETS)); }catch(e){}
+  // Kirim ke sheet "Settings" supaya SEMUA device/anggota tim lihat target yang sama —
+  // fire-and-forget (tidak menahan UI), tapi kalau gagal, target tetap kepakai lokal
+  // sampai berhasil terkirim di kesempatan berikutnya.
+  pushOneToSheet({ sheetType:'kpi_target', key:'kpiTarget_'+storageKey, value: (n===null ? '' : n) });
+}
+// value: angka aktual KPI ini di periode terpilih. hasData: apakah ada data yang valid
+// untuk dibandingkan (kalau tidak, target tetap ditampilkan tapi tanpa status tercapai/tidak).
+function renderKpiTargetLine(def, value, hasData){
+  const el = document.getElementById(def.id+'_targetLine');
+  if(!el) return;
+  const monthKey   = lastKpiRange ? monthKeyOf(lastKpiRange[0]) : monthKeyOf(new Date());
+  const monthLabel = lastKpiRange ? monthLabelID(lastKpiRange[0]) : monthLabelID(new Date());
+  const found  = getKpiTarget(def.id, monthKey);
+  const fmtVal = (n)=> def.unit==='percent' ? n.toFixed(2)+'%' : numFmt(Math.round(n));
+  const editLink = ` <span class="kpi-edit-month" data-id="${def.id}" style="text-decoration:underline;cursor:pointer;">✏️ atur target ${monthLabel}</span>`;
+  if(found===null){
+    el.innerHTML = 'Belum ada target'+editLink;
+    el.style.color = 'var(--muted)';
+  } else {
+    const met = hasData && (def.dir==='higher' ? value >= found.value : value <= found.value);
+    el.innerHTML = 'Target: '+fmtVal(found.value)+' ('+monthLabel+') '+(hasData ? (met ? '✅ tercapai' : '⚠️ di bawah target') : '')+editLink;
+    el.style.color = hasData ? (met ? 'var(--cyan)' : 'var(--yellow)') : 'var(--muted)';
+  }
+}
+document.addEventListener('click', (ev)=>{
+  const monthEl = ev.target.closest('.kpi-edit-month');
+  if(!monthEl) return;
+  const id  = monthEl.dataset.id;
+  const def = KPI_TARGET_DEFS.find(d=>d.id===id);
+  if(!def) return;
+  const monthKey   = lastKpiRange ? monthKeyOf(lastKpiRange[0]) : monthKeyOf(new Date());
+  const monthLabel = lastKpiRange ? monthLabelID(lastKpiRange[0]) : monthLabelID(new Date());
+  const current = KPI_TARGETS[id+'@'+monthKey];
+  const input = prompt('Target "'+def.label+'" untuk bulan '+monthLabel+(def.unit==='percent' ? ' (dalam %)' : '')+':\n(Kosongkan untuk hapus target bulan ini)', (typeof current==='number' && !isNaN(current)) ? current : '');
+  if(input===null) return;
+  const trimmed = input.trim();
+  if(trimmed===''){ setKpiTargetValue(id+'@'+monthKey, null); render(); return; }
+  const n = parseFloat(trimmed);
+  if(isNaN(n) || n<0){ alert('Isi angka yang valid (contoh: '+(def.unit==='percent' ? '1.5' : '100')+').'); return; }
+  setKpiTargetValue(id+'@'+monthKey, n);
+  render();
+});
 function latestStatusPerAccount(){
   const map = {};
   AKUN_LOG.forEach(r=>{
@@ -2195,6 +2347,9 @@ document.getElementById('rsReset').addEventListener('click', ()=>{
 
 function renderSummary(range){
   const f = getSummaryFilters();
+  // Disimpan global supaya klik "atur target" (listener dipasang sekali di luar render())
+  // tahu target itu untuk bulan apa — mengikuti bulan awal dari periode yang lagi dilihat.
+  lastKpiRange = range;
 
   // current period videos — berdasarkan TANGGAL PRODUKSI, dipakai khusus untuk
   // KPI "Total Konten Diproduksi", chart "Produksi Konten Harian" & "Kontribusi per Tim".
@@ -2303,6 +2458,10 @@ function renderSummary(range){
   document.getElementById('kpiTotalViews').innerHTML      = numFmt(totalViews)      + kpiDeltaHtml(totalViews, prevTotalViews);
   document.getElementById('kpiTotalEngagement').innerHTML = numFmt(totalEngagement) + kpiDeltaHtml(totalEngagement, prevTotalEngagement);
   document.getElementById('kpiAvgER').innerHTML           = avgER                   + kpiDeltaHtml(avgERVal, prevAvgERVal);
+  renderKpiTargetLine(KPI_TARGET_DEFS[0], totalVideo,      true);
+  renderKpiTargetLine(KPI_TARGET_DEFS[1], totalViews,      true);
+  renderKpiTargetLine(KPI_TARGET_DEFS[2], totalEngagement, true);
+  renderKpiTargetLine(KPI_TARGET_DEFS[3], avgERVal,        totalViews>0);
 
   // Avg Hook Rate (khusus Tipe=Video): rata-rata sederhana dari persen yang diinput
   // langsung per konten (platform sudah menyediakan angka Hook Rate-nya).
@@ -2317,6 +2476,16 @@ function renderSummary(range){
   const avgKonversiRateVal = totalKunjunganLP>0 ? (totalKonversiLP/totalKunjunganLP*100) : 0;
   document.getElementById('kpiAvgHookRate').textContent      = videoRows.length ? avgHookRateVal.toFixed(2)+'%' : '—';
   document.getElementById('kpiAvgKonversiRate').textContent  = totalKunjunganLP>0 ? avgKonversiRateVal.toFixed(2)+'%' : '—';
+  renderKpiTargetLine(KPI_TARGET_DEFS[4], avgHookRateVal,     videoRows.length>0);
+  renderKpiTargetLine(KPI_TARGET_DEFS[5], avgKonversiRateVal, totalKunjunganLP>0);
+
+  // Avg CTR (khusus Tipe=Foto/Gambar, basis TANGGAL PRODUKSI/vids — bukan vidsPosted —
+  // karena CTR diinput manual dari platform Ads dan bisa saja belum ada "tanggal posting"
+  // yang jelas untuk gambar statis, jadi disamakan basisnya dengan KPI produksi lain).
+  const gambarRows = vids.filter(v=>v.tipe==='Foto/Gambar' && !isStatusExcludedFromPerforma(v) && (v.ctr||0)>0);
+  const avgCtrVal  = gambarRows.length ? gambarRows.reduce((s,v)=>s+(v.ctr||0),0)/gambarRows.length : 0;
+  document.getElementById('kpiAvgCtr').textContent = gambarRows.length ? avgCtrVal.toFixed(2)+'%' : '—';
+  renderKpiTargetLine(KPI_TARGET_DEFS[6], avgCtrVal, gambarRows.length>0);
 
   const label = fmtDateID(range[0])+' — '+fmtDateID(range[1]);
   document.getElementById('rangeLabel').textContent  = label;
@@ -2700,7 +2869,7 @@ function renderVideoTable(range, resetPage){
       <td data-label="Tanggal Posting">${v.tanggalPosting ? `<span style="color:var(--cyan);font-size:11px;">✓ ${fmtDateID(parseDate(v.tanggalPosting))}</span>` : `<span style="color:var(--muted);font-size:11px;">Belum posting</span>`}</td>
       <td data-label="Views">${numFmt(v.views)}</td><td data-label="Likes">${numFmt(v.likes)}</td><td data-label="Komentar">${numFmt(v.comments)}</td><td data-label="Share">${numFmt(v.shares)}</td><td data-label="Save">${numFmt(v.saves)}</td><td data-label="Repost">${numFmt(v.reposts)}</td>
       <td data-label="Engagement Rate">${engagementRate(v).toFixed(2)}%</td>
-      <td data-label="Hook/Konversi Rate">${v.tipe==='Video' ? 'Hook '+hookRate(v).toFixed(2)+'%' : (v.tipe==='Landing Page' ? 'Konv '+conversionRate(v).toFixed(2)+'%' : '—')}</td>
+      <td data-label="Hook/Konversi/CTR">${v.tipe==='Video' ? 'Hook '+hookRate(v).toFixed(2)+'%' : (v.tipe==='Landing Page' ? 'Konv '+conversionRate(v).toFixed(2)+'%' : (v.tipe==='Foto/Gambar' ? 'CTR '+(v.ctr||0).toFixed(2)+'%' : '—'))}</td>
       <td data-label="Terakhir Update">${lastUpd}</td>
       <td data-label=""><button class="btn" style="padding:4px 10px;font-size:11px;" onclick="fillPerfForm(${globalIdx})">✏️ Update</button></td>
     </tr>`;
@@ -3082,7 +3251,7 @@ function doGet(e) {
   if (action === 'test') {
     try {
       var ss = SpreadsheetApp.getActiveSpreadsheet();
-      var names = ['Produksi', 'Akun', 'Kreator', 'Produk', 'Akun_List', 'RequestKonten'];
+      var names = ['Produksi', 'Akun', 'Kreator', 'Produk', 'Akun_List', 'RequestKonten', 'Settings'];
       var info = {};
       names.forEach(function(n){
         var sh = ss.getSheetByName(n);
@@ -3164,13 +3333,15 @@ function doGet(e) {
   var produkSheet = ss.getSheetByName('Produk');
   var akunListSh  = ss.getSheetByName('Akun_List');
   var reqSheet    = ss.getSheetByName('RequestKonten');
+  var settingsSh  = ss.getSheetByName('Settings');
   return jsonOutput({
     videos     : sheetToObjects(videoSheet),
     akun       : sheetToObjects(akunSheet),
     kreator    : sheetToObjects(kreatorSheet),
     produk     : sheetToObjects(produkSheet),
     akun_list  : sheetToObjects(akunListSh),
-    requests   : sheetToObjects(reqSheet)
+    requests   : sheetToObjects(reqSheet),
+    settings   : sheetToObjects(settingsSh)
   });
 }
 
@@ -3198,6 +3369,40 @@ function normalizeTanggal(v) {
 
 function handleWrite(data) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  if (data.sheetType === 'kpi_target') {
+    // Simpan target KPI SHARED (bukan per-browser) di sheet "Settings" (key|value),
+    // supaya semua device/anggota tim yang buka dashboard lihat target yang sama.
+    // Dipakai LockService supaya aman kalau 2 orang ubah target di waktu bersamaan.
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(15000);
+      var sh = ss.getSheetByName('Settings');
+      if (!sh) {
+        sh = ss.insertSheet('Settings');
+        sh.appendRow(['key', 'value']);
+      }
+      var lastRow = sh.getLastRow();
+      var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 2).getValues() : [];
+      var targetRow = -1;
+      for (var i = 1; i < rows.length; i++) {
+        if (String(rows[i][0]).trim() === String(data.key).trim()) { targetRow = i; break; }
+      }
+      if (data.value === null || data.value === '') {
+        // Hapus target (dikosongkan)
+        if (targetRow >= 0) sh.deleteRow(targetRow + 1);
+      } else if (targetRow >= 0) {
+        sh.getRange(targetRow + 1, 2).setValue(data.value);
+      } else {
+        sh.appendRow([data.key, data.value]);
+      }
+      return { status: 'ok' };
+    } catch (err) {
+      return { status: 'error', message: err.toString() };
+    } finally {
+      try { lock.releaseLock(); } catch(e2) {}
+    }
+  }
 
   if (data.sheetType === 'request_mark_converted') {
     // Menandai permanen di SPREADSHEET (bukan cuma di browser) bahwa request ini
@@ -3247,7 +3452,7 @@ function handleWrite(data) {
       data.lastUpdated || '', data.akunPosting || '',
       data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
       data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-      data.statusKonten || 'Tayang'
+      data.statusKonten || 'Tayang', data.ctr || 0
     ]);
 
   } else if (data.sheetType === 'video_update') {
@@ -3255,7 +3460,7 @@ function handleWrite(data) {
     if (!sh) return { status: 'error', message: 'Sheet Produksi tidak ditemukan' };
     var lastRow = sh.getLastRow();
     var found = false;
-    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 19).getValues() : [];
+    var rows = lastRow > 0 ? sh.getRange(1, 1, lastRow, 20).getValues() : [];
     var newAkun = String(data.akunPosting || '').trim();
 
     // TAHAP 1: cocokkan judul + tanggal + akunPosting PERSIS SAMA, supaya konten
@@ -3265,7 +3470,7 @@ function handleWrite(data) {
       if (String(rows[i][1]).trim() === String(data.judul).trim() &&
           normalizeTanggal(rows[i][0]) === normalizeTanggal(data.tanggal) &&
           String(rows[i][11] || '').trim() === newAkun) {
-        sh.getRange(i + 1, 1, 1, 19).setValues([[
+        sh.getRange(i + 1, 1, 1, 20).setValues([[
           data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
           data.platform, data.views || 0, data.likes || 0,
           data.comments || 0, data.shares || 0,
@@ -3273,7 +3478,7 @@ function handleWrite(data) {
           data.saves || 0, data.reposts || 0,
           data.tanggalPosting || normalizeTanggal(rows[i][14]) || '',
           data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-          data.statusKonten || 'Tayang'
+          data.statusKonten || 'Tayang', data.ctr || 0
         ]]);
         found = true;
         break;
@@ -3290,7 +3495,7 @@ function handleWrite(data) {
         if (String(rows[j][1]).trim() === String(data.judul).trim() &&
             normalizeTanggal(rows[j][0]) === normalizeTanggal(data.tanggal) &&
             String(rows[j][11] || '').trim() === '') {
-          sh.getRange(j + 1, 1, 1, 19).setValues([[
+          sh.getRange(j + 1, 1, 1, 20).setValues([[
             data.tanggal, data.judul, data.nama, data.tipe, data.produk || '',
             data.platform, data.views || 0, data.likes || 0,
             data.comments || 0, data.shares || 0,
@@ -3298,7 +3503,7 @@ function handleWrite(data) {
             data.saves || 0, data.reposts || 0,
             data.tanggalPosting || normalizeTanggal(rows[j][14]) || '',
             data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-            data.statusKonten || 'Tayang'
+            data.statusKonten || 'Tayang', data.ctr || 0
           ]]);
           found = true;
           break;
@@ -3314,7 +3519,7 @@ function handleWrite(data) {
         data.lastUpdated || '', data.akunPosting || '',
         data.saves || 0, data.reposts || 0, data.tanggalPosting || '',
         data.hookRate || 0, data.kunjunganLP || 0, data.konversiLP || 0,
-        data.statusKonten || 'Tayang'
+        data.statusKonten || 'Tayang', data.ctr || 0
       ]);
     }
 
@@ -3642,7 +3847,7 @@ function convertRequestAtomic(data) {
       v.lastUpdated || '', v.akunPosting || '',
       v.saves || 0, v.reposts || 0, v.tanggalPosting || '',
       v.hookRate || 0, v.kunjunganLP || 0, v.konversiLP || 0,
-      v.statusKonten || 'Tayang'
+      v.statusKonten || 'Tayang', v.ctr || 0
     ]);
   }
   reqSh.getRange(targetRow + 1, 15).setValue('YES');
@@ -3671,7 +3876,7 @@ function jsonOutput(obj) {
 
 // ============================================================
 // STRUKTUR SHEET:
-// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting | hookRate | kunjunganLP | konversiLP | statusKonten
+// "Produksi" : tanggal | judul | nama | tipe | produk | platform | views | likes | comments | shares | lastUpdated | akunPosting | saves | reposts | tanggalPosting | hookRate | kunjunganLP | konversiLP | statusKonten | ctr
 // "Akun"     : tanggal | nama  | platform | status | followers | note | salesUnit | salesOmzet
 // "Kreator"  : nama
 // "Produk"   : nama
@@ -3731,7 +3936,8 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
         tanggalPosting: dPost ? fmtISO(dPost) : '',
         hookRate: parseFloat(r.hookrate)||0,
         kunjunganLP: parseFloat(r.kunjunganlp)||0, konversiLP: parseFloat(r.konversilp)||0,
-        statusKonten: STATUS_KONTEN_OPTS.includes(r.statuskonten) ? r.statuskonten : 'Tayang' });
+        statusKonten: STATUS_KONTEN_OPTS.includes(r.statuskonten) ? r.statuskonten : 'Tayang',
+        ctr: parseFloat(r.ctr)||0 });
       if(r.nama && !includesName(TEAM, r.nama)) TEAM.push(r.nama);
       countVideo++;
     });
@@ -3832,6 +4038,22 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
         }
       });
       REQUESTS = [...Array.from(dedupMap.values()), ...passthrough];
+    }
+
+    // Sync target KPI dari sheet "Settings" (key diawali "kpiTarget_") — ini SUMBER
+    // KEBENARAN bersama untuk semua device/anggota tim, menggantikan cache localStorage
+    // begitu berhasil ditarik.
+    if(json.settings !== undefined){
+      const newTargets = {};
+      (json.settings||[]).forEach(row=>{
+        const key = String(row.key||'').trim();
+        if(!key.startsWith('kpiTarget_')) return;
+        const n = parseFloat(row.value);
+        if(isNaN(n)) return;
+        newTargets[key.slice('kpiTarget_'.length)] = n;
+      });
+      KPI_TARGETS = newTargets;
+      try{ localStorage.setItem('creativeOpsKpiTargetsCache', JSON.stringify(KPI_TARGETS)); }catch(e){}
     }
     // Auto-convert request yang statusnya sudah "Selesai" tapi belum pernah masuk ke Daftar
     // Konten — sebelumnya convert cuma jalan kalau status diubah lewat klik dropdown di
