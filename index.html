@@ -1017,6 +1017,13 @@ let PRODUCTS = [];
 function normName(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 function includesName(list, v){ const n = normName(v); return list.some(x=>normName(x)===n); }
 function findByNama(list, v){ const n = normName(v); return list.find(x=>normName(x.nama)===n); }
+// Sama seperti findByNama, tapi platform juga harus cocok — dipakai khusus untuk
+// ACCOUNTS supaya nama akun yang sama persis di 2 platform berbeda (mis. "Jossvit.id"
+// di Instagram & TikTok) dianggap 2 akun berbeda, bukan 1 akun yang saling menutupi.
+function findByNamaPlatform(list, v, platform){
+  const n = normName(v); const p = normName(platform);
+  return list.find(x=>normName(x.nama)===n && normName(x.platform)===p);
+}
 // Membersihkan duplikat yang SUDAH TERLANJUR ada di PRODUCTS/TEAM/ACCOUNTS
 // (misal dari sebelum fix ini, atau sudah kebawa ke sheet). Yang dipertahankan
 // adalah ejaan yang PERTAMA kali muncul. Mengembalikan true kalau ada perubahan,
@@ -1030,7 +1037,7 @@ function dedupeNameLists(){
   TEAM.forEach(t=>{ const n=normName(t); if(!n) return; if(seenT.has(n)){ changed=true; return; } seenT.add(n); cleanTeam.push(t); });
   TEAM = cleanTeam;
   const seenA = new Set(); const cleanAcc = [];
-  ACCOUNTS.forEach(a=>{ const n=normName(a.nama); if(!n) return; if(seenA.has(n)){ changed=true; return; } seenA.add(n); cleanAcc.push(a); });
+  ACCOUNTS.forEach(a=>{ const n=normName(a.nama)+'|'+normName(a.platform); if(normName(a.nama)==='') return; if(seenA.has(n)){ changed=true; return; } seenA.add(n); cleanAcc.push(a); });
   ACCOUNTS = cleanAcc;
   return changed;
 }
@@ -1081,10 +1088,10 @@ function parseDate(v){ if(!v) return null; const d = new Date(v); return isNaN(d
 // Fungsi ini menambahkan checksum dari nama ASLI (sebelum dibersihkan, jadi
 // titik vs spasi tetap menghasilkan angka checksum yang beda) supaya ID akhir
 // dijamin unik per akun walau nama-nama mereka mirip.
-function safeIdFor(nama){
+function safeIdFor(nama, platform){
   const base = String(nama).replace(/[^a-zA-Z0-9]/g,'_');
+  const s = String(nama) + '|' + String(platform||'');
   let hash = 0;
-  const s = String(nama);
   for(let i=0;i<s.length;i++){ hash = ((hash<<5) - hash + s.charCodeAt(i)) | 0; }
   return base + '_' + Math.abs(hash).toString(36);
 }
@@ -1537,7 +1544,7 @@ function renderAccList(){
     const pill = document.createElement('div');
     pill.className = 'acc-item'; pill.style.display='flex'; pill.style.gap='8px'; pill.style.alignItems='center';
     pill.innerHTML = `<span>${escapeHtml(acc.nama)} <span class="muted-note">(${escapeHtml(acc.platform)})</span></span><button class="icon-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>`;
-    pill.querySelector('button').onclick = ()=>{ ACCOUNTS = ACCOUNTS.filter(a=>a.nama!==acc.nama); saveLocalState(); renderAccList(); refreshSelectors(); refreshPerfAkunSelect(); render(); pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS}); };
+    pill.querySelector('button').onclick = ()=>{ ACCOUNTS = ACCOUNTS.filter(a=>!(normName(a.nama)===normName(acc.nama) && normName(a.platform)===normName(acc.platform))); saveLocalState(); renderAccList(); refreshSelectors(); refreshPerfAkunSelect(); render(); pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS}); };
     wrap.appendChild(pill);
   });
 }
@@ -1545,7 +1552,8 @@ document.getElementById('btnAddAcc').onclick = ()=>{
   const v = document.getElementById('newAccName').value.trim();
   const p = document.getElementById('newAccPlatform').value;
   if(!v) return;
-  if(!findByNama(ACCOUNTS, v)) ACCOUNTS.push({nama:v, platform:p});
+  if(findByNamaPlatform(ACCOUNTS, v, p)){ alert('Akun "'+v+'" di platform '+p+' sudah ada di daftar.'); return; }
+  ACCOUNTS.push({nama:v, platform:p});
   document.getElementById('newAccName').value='';
   saveLocalState(); renderAccList(); refreshSelectors(); refreshPerfAkunSelect(); render();
   pushOneToSheet({sheetType:'akun_list', list: ACCOUNTS});
@@ -2085,16 +2093,14 @@ function fillPerfForm(idx){
   document.getElementById('inPerfKonten').closest('.card').scrollIntoView({behavior:'smooth', block:'center'});
 }
 /* ============== UPDATE AKUN (inline per card) ============== */
-function updateAkunInline(nama){
-  const safeId    = safeIdFor(nama);
+function updateAkunInline(nama, platform){
+  const safeId    = safeIdFor(nama, platform);
   const followers = parseFloat(document.getElementById('akun_followers_'+safeId).value)||0;
   const status    = document.getElementById('akun_status_'+safeId).value;
   const note      = document.getElementById('akun_note_'+safeId).value.trim();
   const salesUnit  = parseFloat(document.getElementById('akun_salesunit_'+safeId).value)||0;
   const salesOmzet = parseFloat(document.getElementById('akun_salesomzet_'+safeId).value)||0;
   const tanggal   = new Date().toISOString(); // datetime penuh agar entry terbaru selalu terdeteksi
-  const acc       = ACCOUNTS.find(a=>a.nama===nama);
-  const platform  = acc ? acc.platform : '';
 
   // Mode APPEND — setiap update selalu tambah entry baru (untuk history)
   const rec = {tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet};
@@ -2967,7 +2973,7 @@ function renderHealth(range){
     const curSalesOmzet = r.salesOmzet != null ? r.salesOmzet : '';
     const lastUpd      = r.tanggal   ? `<span style="font-size:10px;color:var(--muted);">Update: ${r.tanggal}</span>` : `<span style="font-size:10px;color:var(--muted);">Belum ada data</span>`;
     const tagClass     = r.status ? statusTagClass(r.status) : 'blue';
-    const safeId       = safeIdFor(acc.nama);
+    const safeId       = safeIdFor(acc.nama, acc.platform);
 
     // Follower growth badge
     const growth = followerGrowthPct(acc.nama);
@@ -3137,7 +3143,7 @@ function renderHealth(range){
           <input type="text" id="akun_note_${safeId}" value="${escapeHtml(curNote)}" placeholder="Catatan tambahan..." class="acc-field-input">
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${escapeHtml(acc.nama).replace(/'/g,"\\'")}')">💾 Update</button>
+          <button class="btn primary" style="padding:6px 16px;font-size:12px;" onclick="updateAkunInline('${escapeHtml(acc.nama).replace(/'/g,"\\'")}', '${escapeHtml(acc.platform).replace(/'/g,"\\'")}')">💾 Update</button>
           <span id="akun_msg_${safeId}" style="font-size:11px;"></span>
         </div>
       </div>
@@ -3941,6 +3947,16 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
       if(r.nama && !includesName(TEAM, r.nama)) TEAM.push(r.nama);
       countVideo++;
     });
+    // Sync akun_list dari sheet LEBIH DULU — ini daftar akun "resmi" yang dikelola
+    // manual lewat menu Kelola Daftar Akun, jadi ini SUMBER UTAMA untuk nama+platform.
+    // Diproses sebelum histori tab Akun supaya kalau ada nama yang sama persis dipakai
+    // di 2 platform berbeda (mis. "Jossvit.id" di Instagram & TikTok), keduanya tetap
+    // muncul dan tidak saling menutupi/tertimpa saat sync balik ke sheet.
+    if((json.akun_list||[]).length > 0){
+      json.akun_list.forEach(r=>{
+        if(r.nama && !findByNamaPlatform(ACCOUNTS, r.nama, r.platform)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
+      });
+    }
     // Ambil semua baris akun untuk history lengkap
     (json.akun||[]).forEach(r=>{
       const d = parseDate(r.tanggal);
@@ -3948,7 +3964,9 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
       AKUN_LOG.push({ tanggal: fmtISO(d), nama: r.nama, platform: r.platform, status: r.status||'Aktif',
         followers: parseFloat(r.followers)||0, note: r.note||'',
         salesUnit: parseFloat(r.salesunit)||0, salesOmzet: parseFloat(r.salesomzet)||0 });
-      if(!findByNama(ACCOUNTS, r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
+      // Fallback saja: kalau kombinasi nama+platform ini belum tercatat lewat Akun_List
+      // (mis. data lama), baru ditambahkan dari histori sebagai akun baru.
+      if(!findByNamaPlatform(ACCOUNTS, r.nama, r.platform)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
       countAkun++;
     });
     // Sort AKUN_LOG by tanggal ascending agar entry terbaru selalu di paling akhir
@@ -3960,12 +3978,6 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
     // Sync produk dari sheet
     if((json.produk||[]).length > 0){
       (json.produk||[]).forEach(r=>{ if(r.nama && !includesName(PRODUCTS, r.nama)) PRODUCTS.push(r.nama); });
-    }
-    // Sync akun_list dari sheet (override lokal agar semua device sama)
-    if((json.akun_list||[]).length > 0){
-      json.akun_list.forEach(r=>{
-        if(r.nama && !findByNama(ACCOUNTS, r.nama)) ACCOUNTS.push({nama:r.nama, platform:r.platform||'TikTok'});
-      });
     }
     // Rapikan duplikat produk/kreator/akun yang mungkin sudah kadung ada (dari
     // sebelum fix normalisasi nama, atau sudah kebawa ke sheet) — kalau ada
