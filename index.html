@@ -1,6 +1,21 @@
 <!--
   CHANGELOG
   =========
+  v13 — 13 Oktober 2026
+  - Fitur BARU "Pemakaian" di tab Request Konten: untuk request berstatus Selesai, sekarang
+    ada dropdown "Belum Dipakai / Sudah Dipakai" (default Belum Dipakai). Begitu diubah ke
+    "Sudah Dipakai", tanggal dipakai tercatat otomatis (tampil "sejak ...").
+  - Filter baru "Semua Pemakaian" di atas tabel + 2 kartu ringkasan baru: QTY "Selesai · Sudah
+    Dipakai" dan "Selesai · Belum Dipakai" (ikut filter yang aktif) — buat cek cepat konten
+    jadi yang masih nganggur / belum dipasang di ads.
+  - Disimpan SHARED di spreadsheet: kolom baru "dipakai" (P) & "tanggalDipakai" (Q) di sheet
+    RequestKonten, header dibuat OTOMATIS saat status pemakaian pertama kali diubah.
+  - Begitu "Sudah Dipakai", muncul isian "Dipakai oleh siapa?" (ada saran nama yang pernah diisi)
+    — tersimpan di kolom baru "dipakaiOleh" (R) dan ikut bisa dicari lewat kolom "Cari judul / pemakai".
+    Balik ke "Belum Dipakai" otomatis mengosongkan nama pemakai.
+  - WAJIB redeploy Apps Script ke kode versi ini supaya status pemakaian tersinkron ke sheet.
+  - Request lama yang sudah Selesai otomatis dianggap "Belum Dipakai" — perlu ditandai manual.
+
   v10 — 9 Agustus 2026
   - Hapus opsi target "default" (fallback semua bulan) dari v9 — sekarang target KPI
     MURNI per-bulan saja. Tiap kartu KPI cuma punya 1 link "✏️ atur target [Nama Bulan]"
@@ -896,7 +911,8 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
       <div class="filterbar" style="margin-bottom:12px;">
         <select id="filterReqStatus"><option value="">Semua Status</option></select>
         <select id="filterReqPIC"><option value="">Semua PIC</option></select>
-        <input type="text" id="filterReqJudul" placeholder="Cari judul...">
+        <select id="filterReqPakai"><option value="">Semua Pemakaian</option><option value="belum">Selesai · Belum Dipakai</option><option value="sudah">Selesai · Sudah Dipakai</option></select>
+        <input type="text" id="filterReqJudul" placeholder="Cari judul / pemakai...">
         <span class="range-label">Deadline:</span>
         <input type="date" id="filterReqTglDari" title="Dari tanggal">
         <span class="range-label">s/d</span>
@@ -905,7 +921,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
       </div>
       <div class="table-scroll">
         <table class="mobile-cards">
-          <thead><tr><th>Tanggal Request</th><th>Judul</th><th>Diminta Oleh</th><th>PIC</th><th>Produk</th><th>Tipe</th><th>Platform</th><th>QTY</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Brief</th><th>Link</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tanggal Request</th><th>Judul</th><th>Diminta Oleh</th><th>PIC</th><th>Produk</th><th>Tipe</th><th>Platform</th><th>QTY</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Pemakaian</th><th>Brief</th><th>Link</th><th>Aksi</th></tr></thead>
           <tbody id="tblRequests"></tbody>
         </table>
       </div>
@@ -1652,6 +1668,8 @@ async function convertRequestToVideo(idx){
   // supaya tidak dobel; baris aslinya akan muncul lewat pull data berikutnya.
   return !result.skipped;
 }
+// Status pemakaian konten (hanya bermakna untuk request berstatus Selesai)
+function isReqDipakai(r){ return String(r.dipakai||'').trim().toUpperCase()==='YES'; }
 function renderRequests(){
   renderDeadlineTicker();
   const tbody = document.getElementById('tblRequests');
@@ -1664,7 +1682,10 @@ function renderRequests(){
   let rows = REQUESTS.map((r,i)=>({...r, _idx:i}));
   if(fStatus) rows = rows.filter(r=>r.status===fStatus);
   if(fPIC) rows = rows.filter(r=>r.pic===fPIC);
-  if(fJudul) rows = rows.filter(r=>(r.judul||'').toLowerCase().includes(fJudul));
+  const fPakai = (document.getElementById('filterReqPakai')||{}).value || '';
+  if(fPakai==='belum') rows = rows.filter(r=>r.status==='Selesai' && !isReqDipakai(r));
+  if(fPakai==='sudah') rows = rows.filter(r=>r.status==='Selesai' && isReqDipakai(r));
+  if(fJudul) rows = rows.filter(r=>(r.judul||'').toLowerCase().includes(fJudul) || String(r.dipakaiOleh||'').toLowerCase().includes(fJudul));
   if(fTglDari) rows = rows.filter(r=>(r.deadline||'') >= fTglDari);
   if(fTglSampai) rows = rows.filter(r=>(r.deadline||'') <= fTglSampai);
   // Urutkan berdasarkan kapan & jam berapa request dibuat (paling lama di atas),
@@ -1680,7 +1701,9 @@ function renderRequests(){
     const chip = (label, val, color) => `<div style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">${label}</div><div style="font-size:19px;font-weight:800;color:${color};">${val}</div></div>`;
     qtySummaryEl.innerHTML = chip('Total QTY Diminta', totalQtyDiminta, 'var(--text)')
       + chip('QTY Selesai Diproduksi', totalQtySelesai, 'var(--pink)')
-      + chip('QTY Masih Berjalan', totalQtyProses, 'var(--yellow)');
+      + chip('QTY Masih Berjalan', totalQtyProses, 'var(--yellow)')
+      + chip('Selesai · Sudah Dipakai', sumQty(rows.filter(r=>r.status==='Selesai' && isReqDipakai(r))), 'var(--cyan)')
+      + chip('Selesai · Belum Dipakai', sumQty(rows.filter(r=>r.status==='Selesai' && !isReqDipakai(r))), 'var(--red)');
   }
   const totalRows = rows.length;
   const totalPages = Math.max(1, Math.ceil(totalRows / REQ_PAGE_SIZE));
@@ -1698,6 +1721,9 @@ function renderRequests(){
   const btnNext = document.getElementById('btnReqNextPage');
   if(btnPrev) btnPrev.disabled = reqCurrentPage <= 1;
   if(btnNext) btnNext.disabled = reqCurrentPage >= totalPages;
+  let dl = document.getElementById('dlPemakai');
+  if(!dl){ dl = document.createElement('datalist'); dl.id = 'dlPemakai'; document.body.appendChild(dl); }
+  dl.innerHTML = Array.from(new Set(REQUESTS.map(r=>String(r.dipakaiOleh||'').trim()).filter(Boolean))).map(n=>`<option value="${escapeHtml(n)}">`).join('');
   const statusColor = {Baru:'var(--blue)', Diproses:'var(--yellow)', Revisi:'var(--red)', Selesai:'var(--pink)', Ditolak:'var(--muted)'};
   tbody.innerHTML = pageRows.map(r=>`
     <tr>
@@ -1716,6 +1742,12 @@ function renderRequests(){
           ${REQ_STATUS_OPTS.map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
         </select>
         ${r.convertedToVideo?'<div style="font-size:10px;color:var(--pink);margin-top:3px;">✓ masuk Daftar Konten</div>':''}
+      </td>
+      <td data-label="Pemakaian">
+        ${r.status==='Selesai' ? `<select data-idx="${r._idx}" class="reqPakaiSelect" style="color:${isReqDipakai(r)?'var(--cyan)':'var(--yellow)'};font-weight:600;">
+          <option value="" ${!isReqDipakai(r)?'selected':''}>Belum Dipakai</option>
+          <option value="YES" ${isReqDipakai(r)?'selected':''}>Sudah Dipakai</option>
+        </select>${isReqDipakai(r)?`<input type="text" class="reqPakaiOleh" data-idx="${r._idx}" list="dlPemakai" value="${escapeHtml(r.dipakaiOleh||'')}" placeholder="Dipakai oleh siapa?" style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 8px;font-size:11px;width:100%;min-width:130px;margin-top:5px;">${r.tanggalDipakai?`<div style="font-size:10px;color:var(--muted);margin-top:3px;">sejak ${escapeHtml(r.tanggalDipakai)}</div>`:''}`:''}` : '<span style="color:var(--muted);font-size:11px;">—</span>'}
       </td>
       <td data-label="Brief" style="max-width:170px;">
         ${(()=>{
@@ -1788,6 +1820,40 @@ function renderRequests(){
       }
     });
   });
+  tbody.querySelectorAll('.reqPakaiSelect').forEach(sel=>{
+    sel.addEventListener('change', async function(){
+      const idx = parseInt(this.dataset.idx);
+      const r = REQUESTS[idx];
+      r.dipakai = this.value; // 'YES' atau ''
+      r.tanggalDipakai = this.value==='YES' ? fmtISO(new Date()) : '';
+      if(this.value!=='YES') r.dipakaiOleh = '';
+      markLocalReqChange(r);
+      saveLocalState(); renderRequests();
+      const pushResult = await pushOneToSheet({sheetType:'request_update', ...r});
+      if(pushResult !== 'ok'){
+        showToast('⚠️ Status pemakaian gagal tersimpan ke spreadsheet', '"'+r.judul+'": '+lastPushErrorMsg, 'warn');
+      } else {
+        showToast(r.dipakai==='YES' ? 'Ditandai sudah dipakai' : 'Ditandai belum dipakai', r.judul, 'success');
+      }
+    });
+  });
+  tbody.querySelectorAll('.reqPakaiOleh').forEach(inp=>{
+    inp.addEventListener('input', function(){
+      REQUESTS[parseInt(this.dataset.idx)].dipakaiOleh = this.value; // simpan lokal tiap ketikan biar tidak hilang kalau ada render ulang
+      saveLocalState();
+    });
+    inp.addEventListener('change', async function(){
+      const r = REQUESTS[parseInt(this.dataset.idx)];
+      r.dipakaiOleh = this.value.trim();
+      markLocalReqChange(r);
+      saveLocalState();
+      const pushResult = await pushOneToSheet({sheetType:'request_update', ...r});
+      if(pushResult !== 'ok'){
+        showToast('⚠️ Nama pemakai gagal tersimpan ke spreadsheet', '"'+r.judul+'": '+lastPushErrorMsg, 'warn');
+      }
+      renderRequests();
+    });
+  });
   tbody.querySelectorAll('.brief-copy').forEach(btn=>{
     btn.addEventListener('click', function(){
       const realIdx = parseInt(this.dataset.idx);
@@ -1844,7 +1910,7 @@ function renderRequests(){
     });
   });
 }
-['filterReqStatus','filterReqPIC','filterReqJudul','filterReqTglDari','filterReqTglSampai'].forEach(id=>{
+['filterReqStatus','filterReqPIC','filterReqPakai','filterReqJudul','filterReqTglDari','filterReqTglSampai'].forEach(id=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', ()=>{ reqCurrentPage = 1; renderRequests(); });
 });
@@ -3622,6 +3688,14 @@ function handleWrite(data) {
         data.prioritas || '', data.status || 'Baru', data.brief || '', data.link || '', data.tipe || '', data.ts || rows[primary][12] || '',
         data.qty || rows[primary][13] || 1
       ]]);
+      // Status pemakaian konten (kolom P = dipakai, Q = tanggalDipakai) — header dibuat otomatis kalau belum ada.
+      if (data.dipakai !== undefined) {
+        var hdr = sh.getRange(1, 16, 1, 3).getValues()[0];
+        if (String(hdr[0] || '').trim().toLowerCase() !== 'dipakai') sh.getRange(1, 16).setValue('dipakai');
+        if (String(hdr[1] || '').trim().toLowerCase() !== 'tanggaldipakai') sh.getRange(1, 17).setValue('tanggalDipakai');
+        if (String(hdr[2] || '').trim().toLowerCase() !== 'dipakaioleh') sh.getRange(1, 18).setValue('dipakaiOleh');
+        sh.getRange(primary + 1, 16, 1, 3).setValues([[data.dipakai || '', data.dipakai ? forceText(data.tanggalDipakai || '') : '', data.dipakai ? (data.dipakaiOleh || '') : '']]);
+      }
       // Hapus baris duplikat HANYA kalau ts-nya identik persis dengan yang barusan diupdate
       // (bukti kuat itu baris kembar dari request yang sama, bukan request lain yang beda).
       var extras = exactTsMatches.filter(function(idx){ return idx !== primary; });
@@ -4018,7 +4092,10 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
           // lain, request yang sama otomatis convert ULANG jadi baris konten baru di sheet
           // Produksi. Ini akar penyebab sheet Produksi isinya jauh lebih banyak dari jumlah
           // konten yang sebenarnya diproduksi.
-          converted: r.converted||'' };
+          converted: r.converted||'',
+          dipakai: String(r.dipakai||'').trim().toUpperCase()==='YES' ? 'YES' : '',
+          tanggalDipakai: String(r.tanggaldipakai||'').replace(/^'/,'').slice(0,10),
+          dipakaiOleh: String(r.dipakaioleh||'').trim() };
         const k = reqKey(rec);
         serverKeys.add(k);
         if(recentLocalReqDeletes.has(k)) return; // baru aja dihapus lokal, spreadsheet belum nyusul — jangan dimunculin lagi dulu
