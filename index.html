@@ -619,6 +619,19 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 :root[data-theme="light"] code.inline{background:#EFF1F9;}
 :root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#D3D7E8;}
 :root[data-theme="light"] ::-webkit-scrollbar-thumb:hover{background:var(--purple);}
+
+/* ===== Kolom Pemakaian (Request Konten): lebar seragam, tersusun rapi ke bawah ===== */
+.pakai-cell{display:flex;flex-direction:column;gap:6px;width:170px;white-space:normal;}
+.pakai-cell select,.pakai-cell input{width:100%;box-sizing:border-box;border-radius:7px;font-size:12px;padding:6px 9px;background:var(--panel-2);border:1px solid var(--line);color:var(--text);}
+.pakai-cell select{font-weight:700;cursor:pointer;}
+.pakai-cell select.is-yes{color:var(--cyan);border-color:var(--cyan);}
+.pakai-cell select.is-no{color:var(--yellow);border-color:var(--yellow);}
+.pakai-cell input{font-size:11.5px;}
+.pakai-cell input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,124,246,.18);}
+.pakai-since{font-size:10px;color:var(--muted);padding-left:2px;}
+#tblRequests td{vertical-align:middle;}
+.reqStatusSelect{width:140px;box-sizing:border-box;}
+@media(max-width:760px){.pakai-cell{width:100%;}.reqStatusSelect{width:100%;}}
 </style>
 </head>
 <body>
@@ -1744,10 +1757,13 @@ function renderRequests(){
         ${r.convertedToVideo?'<div style="font-size:10px;color:var(--pink);margin-top:3px;">✓ masuk Daftar Konten</div>':''}
       </td>
       <td data-label="Pemakaian">
-        ${r.status==='Selesai' ? `<select data-idx="${r._idx}" class="reqPakaiSelect" style="color:${isReqDipakai(r)?'var(--cyan)':'var(--yellow)'};font-weight:600;">
-          <option value="" ${!isReqDipakai(r)?'selected':''}>Belum Dipakai</option>
-          <option value="YES" ${isReqDipakai(r)?'selected':''}>Sudah Dipakai</option>
-        </select>${isReqDipakai(r)?`<input type="text" class="reqPakaiOleh" data-idx="${r._idx}" list="dlPemakai" value="${escapeHtml(r.dipakaiOleh||'')}" placeholder="Dipakai oleh siapa?" style="background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 8px;font-size:11px;width:100%;min-width:130px;margin-top:5px;">${r.tanggalDipakai?`<div style="font-size:10px;color:var(--muted);margin-top:3px;">sejak ${escapeHtml(r.tanggalDipakai)}</div>`:''}`:''}` : '<span style="color:var(--muted);font-size:11px;">—</span>'}
+        ${r.status==='Selesai' ? `<div class="pakai-cell">
+          <select data-idx="${r._idx}" class="reqPakaiSelect ${isReqDipakai(r)?'is-yes':'is-no'}">
+            <option value="" ${!isReqDipakai(r)?'selected':''}>Belum Dipakai</option>
+            <option value="YES" ${isReqDipakai(r)?'selected':''}>Sudah Dipakai</option>
+          </select>
+          ${isReqDipakai(r)?`<input type="text" class="reqPakaiOleh" data-idx="${r._idx}" list="dlPemakai" value="${escapeHtml(r.dipakaiOleh||'')}" placeholder="Dipakai oleh siapa?">${r.tanggalDipakai?`<div class="pakai-since">sejak ${escapeHtml(fmtDateID(parseDate(r.tanggalDipakai)||new Date()))}</div>`:''}`:''}
+        </div>` : '<span style="color:var(--muted);font-size:11px;">—</span>'}
       </td>
       <td data-label="Brief" style="max-width:170px;">
         ${(()=>{
