@@ -1,6 +1,15 @@
 <!--
   CHANGELOG
   =========
+  v14 — 22 Oktober 2026
+  - Status baru "QC" di Daftar Request Konten (dan form Ajukan Request). Urutan alur:
+    Baru > Diproses > Revisi > QC > Selesai (Ditolak di akhir). Dipakai untuk konten yang
+    sudah selesai dikerjakan editor tapi masih menunggu pengecekan kualitas.
+  - QC dianggap "masih berjalan": ikut hitungan "QTY Masih Berjalan", masih muncul di ticker
+    deadline, dan BELUM masuk Total Konten Diproduksi / Daftar Konten sampai status Selesai.
+  - Filter status otomatis ikut punya opsi QC. Warna status QC = ungu.
+  - Tidak perlu ubah/redeploy Apps Script: status disimpan sebagai teks biasa di kolom status.
+
   v13 — 13 Oktober 2026
   - Fitur BARU "Pemakaian" di tab Request Konten: untuk request berstatus Selesai, sekarang
     ada dropdown "Belum Dipakai / Sudah Dipakai" (default Belum Dipakai). Begitu diubah ke
@@ -1090,7 +1099,7 @@ let lastLocalEditAt = 0; // waktu terakhir user mengubah status/link secara loka
 let akunDirtyFields = {};
 let lastPushErrorMsg = ''; // pesan error terakhir dari Apps Script, supaya bisa ditampilkan ke user
 const PRIORITAS_OPTS = ['Rendah','Normal','Tinggi','Urgent'];
-const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','Selesai','Ditolak'];
+const REQ_STATUS_OPTS = ['Baru','Diproses','Revisi','QC','Selesai','Ditolak'];
 
 let charts = {};
 let currentPeriod = 'month';
@@ -1737,7 +1746,7 @@ function renderRequests(){
   let dl = document.getElementById('dlPemakai');
   if(!dl){ dl = document.createElement('datalist'); dl.id = 'dlPemakai'; document.body.appendChild(dl); }
   dl.innerHTML = Array.from(new Set(REQUESTS.map(r=>String(r.dipakaiOleh||'').trim()).filter(Boolean))).map(n=>`<option value="${escapeHtml(n)}">`).join('');
-  const statusColor = {Baru:'var(--blue)', Diproses:'var(--yellow)', Revisi:'var(--red)', Selesai:'var(--pink)', Ditolak:'var(--muted)'};
+  const statusColor = {Baru:'var(--blue)', Diproses:'var(--yellow)', Revisi:'var(--red)', QC:'var(--purple)', Selesai:'var(--pink)', Ditolak:'var(--muted)'};
   tbody.innerHTML = pageRows.map(r=>`
     <tr>
       <td data-label="Tanggal Request">${escapeHtml(r.ts ? new Date(r.ts).toLocaleString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (r.tanggal||''))}</td>
@@ -4131,7 +4140,7 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
       // (ts identik persis — bukti pasti itu duplikat literal, misal dari retry jaringan),
       // jangan sampai keduanya tampil di dashboard. Request lain yang cuma kebetulan
       // judul+tanggalnya mirip TIDAK disentuh, supaya tidak ada request asli yang hilang.
-      const statusRank = {Selesai:4, Revisi:3, Diproses:2, Baru:1, Ditolak:0};
+      const statusRank = {Selesai:5, QC:4, Revisi:3, Diproses:2, Baru:1, Ditolak:0};
       const dedupMap = new Map();
       const passthrough = [];
       newReqs.forEach(r=>{
