@@ -209,11 +209,11 @@
 :root{
   --bg:#0A0B12; --panel:#12141F; --panel-2:#191C29; --line:#262A3C;
   --text:#EEEFF7; --muted:#8D92AC;
-  --pink:#34D399; --pinkdark:#0EA872; --purple:#8B7CF6; --cyan:#22D3EE; --yellow:#FBBF24; --red:#F87171; --blue:#5B9DFF;
+  --pink:#34D399; --pinkdark:#0EA872; --purple:#3B82F6; --cyan:#22D3EE; --yellow:#FBBF24; --red:#F87171; --blue:#5B9DFF;
   --scrollbar:#363B54; --td-border:#20232F; --footer-text:#575C78; --code-bg:#0D0F17;
   --chart-grid:#20232F; --chart-tick:#6D7292;
   --th-text:#052A1D;
-  --row-odd:rgba(255,255,255,.018); --row-hover:rgba(139,124,246,.09);
+  --row-odd:rgba(255,255,255,.018); --row-hover:rgba(59,130,246,.09);
   --soft-white:rgba(255,255,255,.05);
   --overlay-bg:rgba(4,5,10,.65);
   --header-bg:rgba(10,11,18,.88); --tabs-bg:rgba(10,11,18,.92);
@@ -226,11 +226,11 @@
 :root[data-theme="light"]{
   --bg:#F5F6FB; --panel:#FFFFFF; --panel-2:#F2F3F9; --line:#E5E7F1;
   --text:#1B1E2C; --muted:#6A7089;
-  --pink:#0FA968; --pinkdark:#0A8654; --purple:#6D5AE0; --cyan:#0A9FBF; --yellow:#C6870C; --red:#DC3A4E; --blue:#2E6FE0;
+  --pink:#0FA968; --pinkdark:#0A8654; --purple:#EA7A1C; --cyan:#0A9FBF; --yellow:#C6870C; --red:#DC3A4E; --blue:#2E6FE0;
   --scrollbar:#D6D9E8; --td-border:#ECEEF6; --footer-text:#9AA0BC; --code-bg:#EEF0F8;
   --chart-grid:#ECEEF6; --chart-tick:#8790AC;
   --th-text:#FFFFFF;
-  --row-odd:rgba(30,32,60,.02); --row-hover:rgba(109,90,224,.06);
+  --row-odd:rgba(30,32,60,.02); --row-hover:rgba(37,99,235,.06);
   --soft-white:rgba(30,32,60,.04);
   --overlay-bg:rgba(15,17,30,.45);
   --header-bg:rgba(255,255,255,.86); --tabs-bg:rgba(255,255,255,.92);
@@ -256,7 +256,7 @@ header.top{
 
 /* ===== DEADLINE TICKER (running text) ===== */
 .deadline-ticker{
-  flex-basis:100%;order:99;overflow:hidden;background:linear-gradient(90deg,#3a1220,#2a1030);
+  flex-basis:100%;order:99;overflow:hidden;background:linear-gradient(90deg,#3a1220,#0A2330);
   margin:14px -28px -18px;white-space:nowrap;display:none;
 }
 :root[data-theme="light"] .deadline-ticker{background:linear-gradient(90deg,#ffe4e9,#ffeede);}
@@ -334,7 +334,7 @@ main{padding:24px 28px 60px;max-width:1680px;margin:0 auto;min-width:0;}
 
 #pageTabs{display:flex;gap:6px;background:var(--tabs-bg);border:1px solid var(--line);border-radius:10px;padding:4px;margin-bottom:22px;position:sticky;top:var(--header-h,78px);z-index:9;backdrop-filter:blur(6px);flex-wrap:wrap;}
 .page-tab{flex:1;min-width:140px;text-align:center;padding:10px 14px;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;letter-spacing:.02em;}
-.page-tab.active{background:linear-gradient(135deg,var(--pink),#7C3AED);color:#fff;}
+.page-tab.active{background:linear-gradient(135deg,var(--pink),#2563EB);color:#fff;}
 .page-view{display:none;}
 .page-view.active{display:block;}
 
@@ -394,7 +394,7 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 .tag.red{background:rgba(240,86,108,.15);color:var(--red);}
 .tag.blue{background:rgba(76,141,255,.15);color:var(--blue);}
 .tag.yellow{background:rgba(242,193,46,.18);color:var(--yellow);}
-.tag.purple{background:rgba(156,107,255,.18);color:var(--purple);}
+.tag.purple{background:rgba(251,146,60,.18);color:var(--purple);}
 
 .platform-pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;}
 .platform-pill .dot{width:7px;height:7px;border-radius:50%;}
@@ -426,7 +426,7 @@ tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:none;col
 .btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 .btn:hover{border-color:var(--pink);}
-.btn.primary{background:linear-gradient(135deg,var(--pink),#7C3AED);border:none;color:#fff;padding:9px 16px;font-weight:700;font-size:12.5px;}
+.btn.primary{background:linear-gradient(135deg,var(--pink),#2563EB);border:none;color:#fff;padding:9px 16px;font-weight:700;font-size:12.5px;}
 .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 16px;font-weight:700;font-size:12.5px;}
 
 .input-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
@@ -515,8 +515,8 @@ pre#scriptCode{background:var(--code-bg);border:1px solid var(--line);border-rad
 html{scroll-behavior:smooth;}
 body{
   background:
-    radial-gradient(1100px 520px at 12% -8%, rgba(139,124,246,.10), transparent 60%),
-    radial-gradient(900px 480px at 96% 0%, rgba(217,70,239,.08), transparent 55%),
+    radial-gradient(1100px 520px at 12% -8%, rgba(59,130,246,.10), transparent 60%),
+    radial-gradient(900px 480px at 96% 0%, rgba(56,189,248,.08), transparent 55%),
     var(--bg);
   letter-spacing:.005em;
   line-height:1.5;
@@ -542,8 +542,8 @@ header.top{
 
 .theme-toggle, .period-btns, .filterbar select, .filterbar input, .range-trigger{box-shadow:var(--shadow-sm);}
 .theme-toggle-btn, .period-btn{transition:background .18s ease,color .18s ease,transform .12s ease;}
-.theme-toggle-btn.active{box-shadow:0 4px 14px rgba(217,70,239,.35);}
-.period-btn.active{box-shadow:0 4px 14px rgba(217,70,239,.3);}
+.theme-toggle-btn.active{box-shadow:0 4px 14px rgba(56,189,248,.35);}
+.period-btn.active{box-shadow:0 4px 14px rgba(56,189,248,.3);}
 .range-trigger{transition:border-color .15s ease,transform .12s ease,box-shadow .15s ease;}
 .range-trigger:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
 .range-picker-panel{box-shadow:var(--shadow-lg);border-radius:16px;}
@@ -563,7 +563,7 @@ main{padding:28px 30px 70px;}
 .page-tab:hover:not(.active){background:var(--row-hover);color:var(--text);}
 .page-tab.active{
   background:linear-gradient(135deg,var(--pink),var(--cyan));
-  color:#04241A;box-shadow:0 6px 18px rgba(217,70,239,.28);
+  color:#04241A;box-shadow:0 6px 18px rgba(56,189,248,.28);
 }
 
 /* ---------- Cards ---------- */
@@ -590,8 +590,8 @@ main{padding:28px 30px 70px;}
 }
 .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-md);}
 .btn:active:not(:disabled){transform:translateY(0);}
-.btn.primary{border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--cyan));box-shadow:0 8px 20px rgba(217,70,239,.28);color:#04241A;}
-.btn.primary:hover{box-shadow:0 10px 26px rgba(217,70,239,.4);}
+.btn.primary{border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--cyan));box-shadow:0 8px 20px rgba(56,189,248,.28);color:#04241A;}
+.btn.primary:hover{box-shadow:0 10px 26px rgba(56,189,248,.4);}
 .btn.secondary{border-radius:10px;}
 
 /* ---------- Tables ---------- */
@@ -612,7 +612,7 @@ tbody tr{transition:background .12s ease;}
   border-radius:9px;transition:border-color .15s ease, box-shadow .15s ease;
 }
 .filterbar input:focus, .filterbar select:focus, .input-panel .field input:focus, .input-panel .field select:focus, .acc-field-input:focus{
-  outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,124,246,.18);
+  outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(59,130,246,.18);
 }
 .input-panel .field label{letter-spacing:.05em;}
 
@@ -643,8 +643,8 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
    ========================================================================== */
 :root[data-theme="light"] body{
   background:
-    radial-gradient(1000px 480px at 10% -10%, rgba(192,38,211,.10), transparent 55%),
-    radial-gradient(900px 460px at 100% 0%, rgba(109,90,224,.09), transparent 55%),
+    radial-gradient(1000px 480px at 10% -10%, rgba(14,116,144,.10), transparent 55%),
+    radial-gradient(900px 460px at 100% 0%, rgba(37,99,235,.09), transparent 55%),
     radial-gradient(700px 420px at 50% 100%, rgba(10,159,191,.06), transparent 60%),
     var(--bg);
 }
@@ -663,14 +663,14 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 :root[data-theme="light"] .card.kpi:nth-of-type(1){border-top-color:var(--pink);}
 :root[data-theme="light"] .kpi .value{color:#111328;}
 :root[data-theme="light"] #pageTabs{background:#FFFFFF;border-color:#E3E6F1;box-shadow:0 1px 2px rgba(20,22,50,.04), 0 8px 20px rgba(20,22,50,.05);}
-:root[data-theme="light"] .page-tab.active{color:#04241A;box-shadow:0 6px 16px rgba(192,38,211,.22);}
-:root[data-theme="light"] .page-tab:hover:not(.active){background:rgba(109,90,224,.07);}
+:root[data-theme="light"] .page-tab.active{color:#04241A;box-shadow:0 6px 16px rgba(14,116,144,.22);}
+:root[data-theme="light"] .page-tab:hover:not(.active){background:rgba(37,99,235,.07);}
 :root[data-theme="light"] .btn{border-color:#DEE1EF;}
 :root[data-theme="light"] .btn:hover:not(:disabled){box-shadow:0 6px 16px rgba(20,22,50,.08);border-color:#CDD1E6;}
-:root[data-theme="light"] .btn.primary{box-shadow:0 8px 18px rgba(192,38,211,.22);}
-:root[data-theme="light"] .btn.primary:hover{box-shadow:0 12px 24px rgba(192,38,211,.3);}
+:root[data-theme="light"] .btn.primary{box-shadow:0 8px 18px rgba(14,116,144,.22);}
+:root[data-theme="light"] .btn.primary:hover{box-shadow:0 12px 24px rgba(14,116,144,.3);}
 :root[data-theme="light"] .table-scroll{border-color:#E3E6F1;box-shadow:0 1px 2px rgba(20,22,50,.04);}
-:root[data-theme="light"] tbody tr:hover{background:rgba(109,90,224,.05);}
+:root[data-theme="light"] tbody tr:hover{background:rgba(37,99,235,.05);}
 :root[data-theme="light"] tfoot td{background:#F1F3F9;}
 :root[data-theme="light"] .filterbar input, :root[data-theme="light"] .filterbar select,
 :root[data-theme="light"] .input-panel .field input, :root[data-theme="light"] .input-panel .field select,
@@ -692,7 +692,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 .pakai-cell select.is-yes{color:var(--cyan);border-color:var(--cyan);}
 .pakai-cell select.is-no{color:var(--yellow);border-color:var(--yellow);}
 .pakai-cell input{font-size:11.5px;}
-.pakai-cell input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,124,246,.18);}
+.pakai-cell input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(59,130,246,.18);}
 .pakai-since{font-size:10px;color:var(--muted);padding-left:2px;}
 #tblRequests td{vertical-align:middle;}
 .reqStatusSelect{width:140px;box-sizing:border-box;}
@@ -701,7 +701,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 /* ===== v15: interaktif & nyaman dibaca ===== */
 .qchip{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;user-select:none;}
 .qchip:hover{transform:translateY(-1px);border-color:var(--pink)!important;}
-.qchip.on{border-color:var(--pink)!important;box-shadow:0 0 0 2px rgba(217,70,239,.25);}
+.qchip.on{border-color:var(--pink)!important;box-shadow:0 0 0 2px rgba(56,189,248,.25);}
 .pipe{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
 .pipe-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;gap:7px;align-items:center;font-family:inherit;}
 .pipe-btn:hover{border-color:var(--pink);}
@@ -720,7 +720,7 @@ footer.note{padding:36px 20px 44px;font-size:11.5px;}
 .section-header.collapsed h2::after{transform:rotate(-90deg);}
 .section-header.collapsed{margin-bottom:6px;opacity:.85;}
 .sec-hidden{display:none!important;}
-.filter-on{border-color:var(--pink)!important;box-shadow:0 0 0 2px rgba(217,70,239,.18);}
+.filter-on{border-color:var(--pink)!important;box-shadow:0 0 0 2px rgba(56,189,248,.18);}
 th.sortable{cursor:pointer;user-select:none;}
 th.sortable:hover{filter:brightness(1.12);}
 th .sort-ind{opacity:.9;margin-left:4px;font-size:9px;}
@@ -919,7 +919,7 @@ body.compact .kpi{padding:10px 12px;}
 .subtabs{display:flex;gap:6px;padding:5px;margin:0 0 14px;background:var(--card,#fff);border:1px solid var(--border,rgba(120,120,160,.25));border-radius:12px;width:fit-content;max-width:100%;flex-wrap:wrap;}
 .subtab{padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;border:0;background:transparent;font-family:inherit;letter-spacing:.02em;transition:background .18s ease,color .18s ease;}
 .subtab:hover:not(.active){background:var(--row-hover);color:var(--text);}
-.subtab.active{background:linear-gradient(135deg,var(--pink),#7C3AED);color:#fff;}
+.subtab.active{background:linear-gradient(135deg,var(--pink),#2563EB);color:#fff;}
 .subtab .cnt{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:10.5px;background:rgba(255,255,255,.22);}
 .subtab:not(.active) .cnt{background:var(--row-hover);}
 .page-view[data-sub="master"] [data-sub-g="sheet"],
@@ -931,7 +931,7 @@ body.compact .kpi{padding:10px 12px;}
 :root{
   --text:#F2F3FB; --muted:#A9AEC9; --line:#2C3147; --td-border:#262B3D;
   --th-bg:#1D2133; --th-text2:#D5D9EE;
-  --nav-active-bg:rgba(217,70,239,.14); --nav-active-bd:rgba(217,70,239,.45); --nav-active-tx:#6EE7B7;
+  --nav-active-bg:rgba(56,189,248,.14); --nav-active-bd:rgba(56,189,248,.45); --nav-active-tx:#6EE7B7;
   --field-bd:#363C57; --placeholder:#7C82A0;
   --row-odd:rgba(255,255,255,.03);
 }
@@ -1007,50 +1007,50 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);}
 }
 
 /* ====================================================================
-   v21: TEMA UNGU–MAGENTA (referensi dashboard "Joint Payroll")
-   Gelap: ungu pekat + panel kaca berpendar. Terang: lavender + kartu putih.
+   v21: TEMA BIRU–TEAL (referensi dashboard "Joint Payroll")
+   Gelap: navy pekat + panel kaca berpendar. Terang: biru muda + kartu putih.
    Hijau tetap dipakai untuk status "bagus/selesai", merah untuk "turun".
    ==================================================================== */
 :root{
-  --bg:#0A0612; --panel:#150C26; --panel-2:#1F1338; --line:#37205E;
-  --text:#F5EFFF; --muted:#B9ABD8;
-  --pink:#D946EF; --pinkdark:#A21CAF; --purple:#8B5CF6; --cyan:#22D3EE; --blue:#60A5FA; --yellow:#FBBF24; --red:#FB7185;
+  --bg:#070B11; --panel:#0D1725; --panel-2:#152236; --line:#23395B;
+  --text:#F0F6FE; --muted:#ADBDD6;
+  --pink:#38BDF8; --pinkdark:#0369A1; --purple:#FB923C; --cyan:#22D3EE; --blue:#60A5FA; --yellow:#FBBF24; --red:#FB7185;
   --good:#34D399;
-  --scrollbar:#45296F; --td-border:#2C1B4C; --footer-text:#7E6FA3; --code-bg:#0F0820;
-  --chart-grid:#2C1B4C; --chart-tick:#A596C8;
-  --th-bg:#2A1650; --th-text2:#EEDFFF; --th-text:#fff;
-  --row-odd:rgba(168,85,247,.05); --row-hover:rgba(217,70,239,.12);
-  --header-bg:rgba(10,6,18,.86); --tabs-bg:rgba(18,10,34,.9);
-  --field-bd:#4A2D7A; --placeholder:#8A79B0;
-  --grad:linear-gradient(135deg,#7C3AED,#C026D3);
-  --nav-active-bg:linear-gradient(135deg,#7C3AED,#C026D3); --nav-active-bd:rgba(255,255,255,.22); --nav-active-tx:#fff; --nav-head-active:#E9D5FF;
+  --scrollbar:#2C466C; --td-border:#1D2F4A; --footer-text:#7284A0; --code-bg:#09121F;
+  --chart-grid:#1D2F4A; --chart-tick:#99ABC5;
+  --th-bg:#192E4D; --th-text2:#E1ECFD; --th-text:#fff;
+  --row-odd:rgba(56,189,248,.05); --row-hover:rgba(56,189,248,.12);
+  --header-bg:rgba(7,11,17,.86); --tabs-bg:rgba(11,20,33,.9);
+  --field-bd:#314D76; --placeholder:#7C90AD;
+  --grad:linear-gradient(135deg,#2563EB,#0E7490);
+  --nav-active-bg:linear-gradient(135deg,#2563EB,#0E7490); --nav-active-bd:rgba(255,255,255,.22); --nav-active-tx:#fff; --nav-head-active:#BAE6FD;
   --shadow-sm:0 1px 2px rgba(0,0,0,.35); --shadow-md:0 10px 28px rgba(5,2,14,.5); --shadow-lg:0 22px 50px rgba(5,2,14,.6);
 }
 :root[data-theme="light"]{
-  --bg:#E8ECFB; --panel:#FFFFFF; --panel-2:#F4F1FD; --line:#DAD7F0;
-  --text:#1A1633; --muted:#5A5580;
-  --pink:#C026D3; --pinkdark:#86198F; --purple:#6D28D9; --cyan:#0891B2; --blue:#2563EB; --yellow:#B7791F; --red:#DC3A4E;
+  --bg:#E8ECFB; --panel:#FFFFFF; --panel-2:#F2F6FC; --line:#D8E1EF;
+  --text:#172232; --muted:#57677E;
+  --pink:#0E7490; --pinkdark:#075985; --purple:#EA7A1C; --cyan:#0891B2; --blue:#2563EB; --yellow:#B7791F; --red:#DC3A4E;
   --good:#0A7A55;
-  --scrollbar:#CFC8EE; --td-border:#ECE9F8; --footer-text:#8F89B5; --code-bg:#EFEBFB;
-  --chart-grid:#ECE9F8; --chart-tick:#7A74A3;
-  --th-bg:#EFEAFD; --th-text2:#2E1A5E; --th-text:#fff;
-  --row-odd:rgba(109,40,217,.035); --row-hover:rgba(192,38,211,.07);
+  --scrollbar:#CAD8EC; --td-border:#EAEFF7; --footer-text:#8B9BB3; --code-bg:#ECF2FA;
+  --chart-grid:#EAEFF7; --chart-tick:#7687A1;
+  --th-bg:#EBF2FC; --th-text2:#1D365B; --th-text:#fff;
+  --row-odd:rgba(29,78,216,.035); --row-hover:rgba(14,116,144,.07);
   --header-bg:rgba(255,255,255,.82); --tabs-bg:rgba(255,255,255,.92);
-  --field-bd:#CFCAEA; --placeholder:#8F89B5;
-  --nav-head-active:#7E22CE;
-  --shadow-sm:0 1px 2px rgba(40,24,90,.06); --shadow-md:0 10px 28px rgba(40,24,90,.10); --shadow-lg:0 24px 56px rgba(40,24,90,.16);
+  --field-bd:#CCD7E8; --placeholder:#8B9BB3;
+  --nav-head-active:#0369A1; --nav-active-bg:#E0EEFD; --nav-active-bd:#9CC3F0; --nav-active-tx:#0B4F8A;
+  --shadow-sm:0 1px 2px rgba(27,51,87,.06); --shadow-md:0 10px 28px rgba(27,51,87,.10); --shadow-lg:0 24px 56px rgba(27,51,87,.16);
 }
 :root{--accent:var(--pink);--accent-dim:var(--pinkdark);}
-:root[data-theme="light"] .muted-note{color:#5F5A86;}
+:root[data-theme="light"] .muted-note{color:#5C6C84;}
 
 /* Latar halaman */
 body{background:
-  radial-gradient(1000px 520px at 8% -10%, rgba(139,92,246,.22), transparent 60%),
-  radial-gradient(900px 480px at 98% 2%, rgba(217,70,239,.16), transparent 55%),
+  radial-gradient(1000px 520px at 8% -10%, rgba(59,130,246,.22), transparent 60%),
+  radial-gradient(900px 480px at 98% 2%, rgba(56,189,248,.16), transparent 55%),
   radial-gradient(800px 500px at 50% 110%, rgba(34,211,238,.07), transparent 60%),
   var(--bg);}
 :root[data-theme="light"] body{background:
-  radial-gradient(900px 480px at 6% -8%, rgba(217,70,239,.13), transparent 58%),
+  radial-gradient(900px 480px at 6% -8%, rgba(56,189,248,.13), transparent 58%),
   radial-gradient(900px 480px at 100% 0%, rgba(34,211,238,.14), transparent 58%),
   linear-gradient(180deg,#EAEDFC 0%,#DFE4F9 100%);}
 
@@ -1058,41 +1058,41 @@ body{background:
 :root:not([data-theme="light"]) .card,
 :root:not([data-theme="light"]) .chart-card,
 :root:not([data-theme="light"]) .acc-card{
-  background:linear-gradient(155deg,rgba(40,22,76,.80),rgba(19,10,36,.94));
-  border:1px solid rgba(168,85,247,.28);
+  background:linear-gradient(155deg,rgba(25,44,73,.80),rgba(11,21,35,.94));
+  border:1px solid rgba(56,189,248,.28);
   box-shadow:0 12px 32px rgba(3,1,10,.5), inset 0 1px 0 rgba(255,255,255,.05);}
 :root:not([data-theme="light"]) .card:hover,
 :root:not([data-theme="light"]) .chart-card:hover,
 :root:not([data-theme="light"]) .acc-card:hover{
-  border-color:rgba(217,70,239,.55);
-  box-shadow:0 14px 36px rgba(3,1,10,.55), 0 0 22px rgba(217,70,239,.14), inset 0 1px 0 rgba(255,255,255,.06);}
+  border-color:rgba(56,189,248,.55);
+  box-shadow:0 14px 36px rgba(3,1,10,.55), 0 0 22px rgba(56,189,248,.14), inset 0 1px 0 rgba(255,255,255,.06);}
 :root[data-theme="light"] .card,:root[data-theme="light"] .chart-card,:root[data-theme="light"] .acc-card{
-  border-color:#DAD7F0;box-shadow:0 1px 2px rgba(40,24,90,.05), 0 12px 28px rgba(40,24,90,.07);}
+  border-color:#D8E1EF;box-shadow:0 1px 2px rgba(27,51,87,.05), 0 12px 28px rgba(27,51,87,.07);}
 :root[data-theme="light"] .card:hover,:root[data-theme="light"] .chart-card:hover,:root[data-theme="light"] .acc-card:hover{
-  border-color:#C9B8F2;box-shadow:0 4px 10px rgba(40,24,90,.08), 0 18px 38px rgba(124,58,237,.14);}
+  border-color:#BBD0EF;box-shadow:0 4px 10px rgba(27,51,87,.08), 0 18px 38px rgba(37,99,235,.14);}
 :root[data-theme="light"] .card.kpi{border-top:3px solid transparent;}
 .kpi .bar-accent{border-radius:3px;}
-:root:not([data-theme="light"]) .kpi .value{color:#fff;text-shadow:0 0 22px rgba(217,70,239,.35);}
-:root[data-theme="light"] .kpi .value{color:#1A1633;}
+:root:not([data-theme="light"]) .kpi .value{color:#fff;text-shadow:0 0 22px rgba(56,189,248,.35);}
+:root[data-theme="light"] .kpi .value{color:#172232;}
 
 /* Header & sidebar */
-:root:not([data-theme="light"]) .sidebar{background:linear-gradient(185deg,#1C1038 0%,#0F0822 100%);border-right:1px solid rgba(168,85,247,.28);}
-:root[data-theme="light"] .sidebar{background:linear-gradient(185deg,#FFFFFF 0%,#F3F0FD 100%);border-right:1px solid #DAD7F0;}
-:root:not([data-theme="light"]) header.top{border-bottom:1px solid rgba(168,85,247,.25);}
-.navbtn.active{background:var(--nav-active-bg);color:var(--nav-active-tx);border-color:var(--nav-active-bd);box-shadow:0 8px 20px rgba(124,58,237,.38);}
+:root:not([data-theme="light"]) .sidebar{background:linear-gradient(185deg,#122036 0%,#091321 100%);border-right:1px solid rgba(56,189,248,.28);}
+:root[data-theme="light"] .sidebar{background:linear-gradient(185deg,#FFFFFF 0%,#F1F5FC 100%);border-right:1px solid #D8E1EF;}
+:root:not([data-theme="light"]) header.top{border-bottom:1px solid rgba(56,189,248,.25);}
+.navbtn.active{background:var(--nav-active-bg);color:var(--nav-active-tx);border-color:var(--nav-active-bd);box-shadow:0 8px 20px rgba(37,99,235,.38);}
 .navbtn.active .nav-ic{color:var(--nav-active-tx);}
 .nav-group.has-active .nav-group-head{color:var(--nav-head-active);}
 .navbtn:hover:not(.active) .nav-ic{color:var(--pink);}
-.nav-search input:focus{box-shadow:0 0 0 3px rgba(217,70,239,.22);}
+.nav-search input:focus{box-shadow:0 0 0 3px rgba(56,189,248,.22);}
 
-/* Tombol & tab aktif: gradien ungu → magenta, teks putih */
+/* Tombol & tab aktif: gradien biru → teal, teks putih */
 .page-tab.active,:root[data-theme="light"] .page-tab.active,
 .subtab.active,.btn.primary,:root[data-theme="light"] .btn.primary,
 .period-btn.active,.theme-toggle-btn.active,.range-preset-btn.active,.range-btn-apply,
 .pipe-btn.on,.range-cal-day.range-start button,.range-cal-day.range-end button{
   background:var(--grad);color:#fff;border-color:transparent;}
-.page-tab.active,.subtab.active,.btn.primary,.period-btn.active,.theme-toggle-btn.active{box-shadow:0 8px 20px rgba(124,58,237,.34);}
-.btn.primary:hover:not(:disabled){box-shadow:0 12px 28px rgba(192,38,211,.45);filter:brightness(1.06);}
+.page-tab.active,.subtab.active,.btn.primary,.period-btn.active,.theme-toggle-btn.active{box-shadow:0 8px 20px rgba(37,99,235,.34);}
+.btn.primary:hover:not(:disabled){box-shadow:0 12px 28px rgba(14,116,144,.45);filter:brightness(1.06);}
 .subtab .cnt{background:rgba(255,255,255,.22);}
 .vq-chip.on{background:var(--grad);color:#fff;border-color:transparent;}
 
@@ -1100,12 +1100,12 @@ body{background:
 th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--pink);}
 :root[data-theme="light"] th{background:var(--th-bg);color:var(--th-text2);}
 .table-scroll{border-color:var(--line);}
-:root:not([data-theme="light"]) .table-scroll{box-shadow:inset 0 0 0 1px rgba(168,85,247,.12);}
+:root:not([data-theme="light"]) .table-scroll{box-shadow:inset 0 0 0 1px rgba(56,189,248,.12);}
 .filterbar input:focus,.filterbar select:focus,.input-panel .field input:focus,.input-panel .field select:focus,.acc-field-input:focus{
-  border-color:var(--pink);box-shadow:0 0 0 3px rgba(217,70,239,.20);}
-.section-header h2::before{background:linear-gradient(180deg,var(--pink),var(--purple));box-shadow:0 0 12px rgba(217,70,239,.45);}
+  border-color:var(--pink);box-shadow:0 0 0 3px rgba(56,189,248,.20);}
+.section-header h2::before{background:linear-gradient(180deg,var(--pink),var(--purple));box-shadow:0 0 12px rgba(56,189,248,.45);}
 .colmenu label.cm-i input{accent-color:var(--pink);}
-::selection{background:rgba(217,70,239,.35);}
+::selection{background:rgba(56,189,248,.35);}
 
 /* ============== v21: OVERVIEW ala "Joint Payroll" ============== */
 .ov-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-bottom:18px;}
@@ -1127,7 +1127,7 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
 .ov-pos .n{width:92px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ov-pos .dots{flex:1;display:flex;gap:4px;}
 .ov-pos .dots i{width:10px;height:10px;border-radius:50%;background:var(--line);}
-.ov-pos .dots i.on{background:var(--grad);box-shadow:0 0 8px rgba(217,70,239,.5);}
+.ov-pos .dots i.on{background:var(--grad);box-shadow:0 0 8px rgba(56,189,248,.5);}
 .ov-pos .p{width:42px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
 .ov-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12px;}
 .ov-cal .dw{font-size:10.5px;font-weight:800;color:var(--pink);padding-bottom:4px;}
@@ -1137,6 +1137,142 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
 .ov-hide{display:none !important;}
 .ov-fit{position:relative;width:100%;height:320px;margin-top:6px;}
 .ov-fit canvas{width:100% !important;height:100% !important;}
+
+/* ===== Integrasi Spreadsheet: tampilan lebih ringkas ===== */
+.int-status{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);font-size:13px;font-weight:600;}
+.int-dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px color-mix(in srgb,var(--cyan) 22%,transparent);}
+.int-hint{font-size:12px;color:var(--muted);margin:8px 0 16px;}
+.int-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px;}
+.int-actions .int-danger{margin-left:auto;background:transparent;color:var(--red);border:1px solid color-mix(in srgb,var(--red) 55%,transparent);}
+.int-actions .int-danger:hover:not(:disabled){background:color-mix(in srgb,var(--red) 14%,transparent);}
+.int-script-actions{margin:4px 0 0;padding-top:14px;border-top:1px solid var(--line);}
+.int-lbl{font-size:12px;font-weight:700;color:var(--muted);margin-right:4px;}
+@media(max-width:720px){.int-actions .int-danger{margin-left:0}}
+details.int-guide{margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:10px 14px;}
+details.int-guide>summary{cursor:pointer;font-weight:700;font-size:13px;}
+details.int-guide[open]>summary{margin-bottom:12px;}
+.int-guide-body{display:flex;flex-direction:column;gap:14px;}
+.int-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.55;}
+.int-sheet{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel);}
+.int-sheet-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:8px;font-size:14px;}
+.int-sheet-h span{font-size:11.5px;color:var(--muted);}
+.int-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.int-chips code.inline{font-size:11.5px;}
+.int-warn{margin-top:10px;padding:8px 10px;border-left:3px solid var(--yellow);background:color-mix(in srgb,var(--yellow) 10%,transparent);border-radius:6px;font-size:12px;line-height:1.5;}
+.int-note{margin-top:8px;font-size:12.5px;line-height:1.55;color:var(--muted);}
+.int-tbl{width:100%;margin-top:10px;border-collapse:collapse;font-size:12.5px;line-height:1.55;}
+.int-tbl td{padding:8px 10px;border-top:1px solid var(--td-border);vertical-align:top;}
+.int-tbl{table-layout:fixed;}
+.int-tbl td{white-space:normal !important;overflow-wrap:anywhere;}
+.int-tbl td:first-child{width:150px;}
+@media(max-width:720px){.int-tbl{table-layout:auto}.int-tbl td:first-child{width:auto}}
+
+/* ===== Leaderboard Performa per Akun: daftar peringkat yang bisa dibuka ===== */
+.lb-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 12px;}
+.lb-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto;}
+.lb-chip{border:1px solid var(--line);background:var(--panel-2);color:var(--muted);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.lb-chip b{margin-left:6px;font-variant-numeric:tabular-nums;opacity:.75;}
+.lb-chip:hover{color:var(--text);border-color:var(--pink);}
+.lb-chip.on{background:var(--grad);color:#fff;border-color:transparent;}
+.lb-tools{display:flex;align-items:center;gap:8px;}
+.lb-search{width:190px;padding:7px 12px;border-radius:9px;border:1px solid var(--field-bd,var(--line));background:var(--panel-2);color:var(--text);font-size:12.5px;font-family:inherit;}
+.lb-search:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px color-mix(in srgb,var(--pink) 22%,transparent);}
+.lb-summary{flex-basis:100%;font-size:12px;color:var(--muted);}
+.lb-list{padding:6px 8px !important;}
+.lb-head,.lb-row{display:grid;grid-template-columns:34px minmax(170px,1.1fr) minmax(180px,2fr) 70px 90px 18px;align-items:center;gap:12px;}
+.lb-head{padding:6px 10px 8px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line);}
+.lb-head .lb-num{font-size:11px;font-weight:700;color:var(--muted);}
+.lb-row{padding:10px;border-radius:10px;cursor:pointer;user-select:none;}
+.lb-row+.lb-panel+.lb-row{border-top:1px solid var(--td-border);border-top-left-radius:0;border-top-right-radius:0;}
+.lb-row:hover{background:var(--row-hover);}
+.lb-row:focus-visible{outline:2px solid var(--pink);outline-offset:-2px;}
+.lb-rank{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;font-size:12px;font-weight:800;background:var(--panel-2);color:var(--muted);font-variant-numeric:tabular-nums;}
+.lb-rank.r1{background:#F5B83D;color:#3A2600;}
+.lb-rank.r2{background:#C3CCDB;color:#1E2837;}
+.lb-rank.r3{background:#D98A4E;color:#2E1500;}
+.lb-name{display:flex;align-items:center;gap:8px;min-width:0;font-size:13.5px;}
+.lb-name .platform-pill{flex:none;}
+.lb-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-barwrap{display:flex;align-items:center;gap:10px;min-width:0;}
+.lb-bar{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
+.lb-bar i{display:block;height:100%;border-radius:99px;background:var(--grad);transition:width .35s ease;}
+.lb-val{min-width:66px;text-align:right;font-weight:800;font-size:13.5px;font-variant-numeric:tabular-nums;}
+.lb-num{text-align:right;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.lb-chev{font-size:18px;line-height:1;color:var(--muted);transition:transform .15s ease;}
+.lb-row[aria-expanded="true"] .lb-chev{transform:rotate(90deg);color:var(--pink);}
+.lb-panel{display:none;padding:2px 10px 14px 56px;}
+.lb-row[aria-expanded="true"]+.lb-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;}
+.lb-item{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:10px 12px;}
+.lb-item-t{font-size:12.5px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.lb-item-m{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.lb-big{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
+.lb-big i{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;}
+.lb-er{font-size:11.5px;font-weight:700;color:var(--purple);}
+.lb-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;border-top:1px solid var(--line);padding-top:8px;}
+.lb-stats span{display:flex;flex-direction:column;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+.lb-stats em{font-style:normal;font-size:10px;font-weight:500;color:var(--muted);}
+@media(max-width:760px){
+  .lb-head,.lb-row{grid-template-columns:28px minmax(0,1fr) minmax(110px,1.2fr) 16px;gap:8px;}
+  .lb-head span:nth-child(4),.lb-head span:nth-child(5),.lb-row>.lb-num{display:none;}
+  .lb-panel{padding-left:10px;}
+  .lb-search{width:100%;}.lb-tools{flex:1 1 100%;}
+}
+
+/* ===== Ringkasan Periode: kartu KPI lebih rapi ===== */
+.page-view[data-page="1"] .card.kpi{padding:14px 16px;}
+.page-view[data-page="1"] .card.kpi .bar-accent{margin-bottom:8px;}
+.page-view[data-page="1"] .card.kpi .value{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-top:6px;}
+.kpi-d{display:inline-flex;align-items:baseline;gap:6px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;letter-spacing:0;word-spacing:normal;white-space:nowrap;text-shadow:none;font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
+.kpi-d b{font-weight:700;}
+.kpi-d b i{font-style:normal;margin-right:3px;font-size:10px;}
+.kpi-d em{font-style:normal;font-weight:500;opacity:.75;}
+.kpi-d.up{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent);}
+.kpi-d.down{color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent);}
+.kpi-d.flat,.kpi-d.na{color:var(--muted);background:var(--soft-white,rgba(255,255,255,.05));}
+.page-view[data-page="1"] .kpi-target-line{margin-top:10px !important;font-size:11.5px !important;opacity:1;}
+.kpi-add{display:inline-block;color:var(--muted);font-weight:600;opacity:.75;cursor:pointer;}
+.kpi-add:hover{opacity:1;color:var(--pink);}
+.kpi-prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden;}
+.kpi-prog i{display:block;height:100%;border-radius:99px;background:var(--pink);transition:width .35s ease;}
+.kpi-prog.ok i{background:var(--good);} .kpi-prog.warn i{background:var(--yellow);}
+.kpi-prog-t{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;color:var(--muted);font-weight:600;}
+.kpi-prog-t.ok{color:var(--good);} .kpi-prog-t.warn{color:var(--yellow);}
+.kpi-prog-t .kpi-edit-month{cursor:pointer;opacity:.6;} .kpi-prog-t .kpi-edit-month:hover{opacity:1;}
+
+/* ===== Performa per Platform: tabel ===== */
+.pt-card{padding:6px 8px !important;}
+.pt-scroll{overflow-x:auto;}
+.pt-inner{min-width:720px;}
+.pt-row{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(100px,.8fr) minmax(230px,2.2fr) minmax(130px,1fr) minmax(120px,.9fr);gap:12px;align-items:center;}
+.pt-head{padding:6px 10px 8px;border-bottom:1px solid var(--line);}
+.pt-th{all:unset;cursor:pointer;font-size:11px;font-weight:700;color:var(--muted);display:inline-flex;gap:4px;align-items:center;padding:2px 0;}
+.pt-th:hover,.pt-th.on{color:var(--text);}
+.pt-th:focus-visible{outline:2px solid var(--pink);outline-offset:2px;border-radius:4px;}
+.pt-th i{font-style:normal;color:var(--pink);min-width:8px;}
+.pt-body{padding:10px;border-radius:10px;cursor:pointer;}
+.pt-body+.pt-body{border-top:1px solid var(--td-border);border-radius:0;}
+.pt-body:hover{background:var(--row-hover);}
+.pt-body:focus-visible{outline:2px solid var(--pink);outline-offset:-2px;}
+.pt-body.on{background:color-mix(in srgb,var(--pink) 12%,transparent);box-shadow:inset 3px 0 0 var(--pink);}
+.pt-name{display:flex;align-items:center;gap:8px;min-width:0;font-size:13.5px;}
+.pt-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pt-name em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--pink);white-space:nowrap;}
+.pt-dot{flex:none;width:9px;height:9px;border-radius:50%;}
+.pt-cell{display:flex;align-items:baseline;gap:8px;font-variant-numeric:tabular-nums;}
+.pt-cell b{font-size:14px;font-weight:700;}
+.pt-views{align-items:center;}
+.pt-bar{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;min-width:60px;}
+.pt-bar i{display:block;height:100%;border-radius:99px;transition:width .35s ease;}
+.pt-views b{min-width:62px;text-align:right;}
+.pt-d{font-size:11px;font-weight:700;white-space:nowrap;}
+.pt-d.up{color:var(--good);} .pt-d.down{color:var(--red);} .pt-d.flat,.pt-d.na{color:var(--muted);font-weight:600;}
+.pt-empty{opacity:.6;}
+.pt-none{grid-column:2 / -1;font-size:12px;color:var(--muted);}
+.pt-more{all:unset;display:block;margin:4px 10px 6px;padding:6px 0;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
+.pt-more:hover{color:var(--pink);}
+.pt-more:focus-visible{outline:2px solid var(--pink);border-radius:4px;}
+.pt-total{padding:10px;border-top:1px solid var(--line);margin-top:2px;}
+.pt-total .pt-name b{font-size:12.5px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -1226,8 +1362,8 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
     </div>
 
     <!-- BREAKDOWN PER PLATFORM -->
-    <div class="section-header"><h2>Performa per Platform</h2><div class="muted-note">Berdasarkan filter & periode terpilih (tanggal posting)</div></div>
-    <div class="grid grid-4" id="platformCards"></div>
+    <div class="section-header"><h2>Performa per Platform</h2><div class="muted-note">Berdasarkan tanggal posting · klik baris untuk memfilter, klik judul kolom untuk mengurutkan</div></div>
+    <div class="card pt-card" id="platformCards"></div>
 
     <div class="section-header"><h2>Tren</h2></div>
     <div class="two-col">
@@ -1284,7 +1420,15 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
         </div>
       </div>
     </div>
-    <div id="leaderboardAkunGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;"></div>
+    <div class="lb-toolbar">
+      <div class="lb-chips" id="lbChips" role="group" aria-label="Filter platform"></div>
+      <div class="lb-tools">
+        <input type="search" id="lbSearch" class="lb-search" placeholder="Cari akun…" aria-label="Cari akun" oninput="lbSetQuery(this.value)">
+        <button type="button" class="btn" id="lbToggleAll" onclick="lbToggleAll()">Buka semua</button>
+      </div>
+      <div class="lb-summary" id="lbSummary"></div>
+    </div>
+    <div id="leaderboardAkunGrid" class="card lb-list"></div>
   </div>
 
   <!-- ===================== PAGE 2: PRODUKSI & PERFORMA ===================== -->
@@ -1481,18 +1625,66 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
 
         <div class="section-header"><h2>Integrasi Spreadsheet (Google Apps Script)</h2><div class="muted-note">Tarik &amp; kirim data otomatis ke Google Sheets</div></div>
     <div class="card">
-      <div class="muted-note" style="margin-bottom:14px;">Auto-Sync Aktif: setiap kali halaman dibuka, dashboard otomatis menarik data terbaru dari spreadsheet (asal URL Apps Script sudah diisi).</div>
-      <div class="input-panel" style="grid-template-columns:1fr;">
+      <div class="int-status"><span class="int-dot"></span><div id="sheetSyncMsg" style="color:var(--cyan);">Belum disinkronkan.</div></div>
+
+      <div class="input-panel" style="grid-template-columns:1fr;margin-bottom:0;">
         <div class="field"><label>URL Web App Apps Script</label><input type="text" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/XXXX/exec"></div>
       </div>
-      <div class="filterbar" style="margin-bottom:10px;">
-        <button class="btn" id="btnPullSheet">Tarik Data dari Spreadsheet</button>
-        <button class="btn secondary" id="btnPushSheet">Kirim Semua Data ke Spreadsheet</button>
-        <button class="btn" id="btnTestConn" style="background:var(--purple,#7c3aed);color:#fff;">🔍 Test Koneksi</button>
-        <button class="btn" id="btnResetLocal" style="background:var(--red,#ef4444);color:#fff;">🗑️ Reset Data Lokal</button>
+      <div class="int-hint">Auto-sync aktif: setiap halaman dibuka, data terbaru otomatis ditarik dari spreadsheet (selama URL sudah diisi).</div>
+
+      <div class="int-actions">
+        <button class="btn primary" id="btnPullSheet">Tarik Data dari Spreadsheet</button>
+        <button class="btn" id="btnPushSheet">Kirim Semua Data ke Spreadsheet</button>
+        <button class="btn" id="btnTestConn">🔍 Test Koneksi</button>
+        <button class="btn int-danger" id="btnResetLocal">🗑️ Reset Data Lokal</button>
       </div>
-      <div class="muted-note" id="sheetSyncMsg" style="margin-bottom:10px;color:var(--cyan);">Belum disinkronkan.</div>
-      <div class="muted-note" style="margin-bottom:8px;">Buka Google Sheet Anda → <b>Extensions → Apps Script</b> → tempel kode di bawah → <b>Deploy → New deployment → Web app</b> (Execute as: Me, Who has access: Anyone) → salin URL hasil deploy ke kolom di atas. Buat 2 sheet bernama <code class="inline">Produksi</code> (kolom urut: tanggal, judul, nama, tipe, produk, platform, views, likes, comments, shares, lastUpdated, akunPosting, saves, reposts, tanggalPosting, hookRate, kunjunganLP, konversiLP, statusKonten, ctr) dan <code class="inline">Akun</code> (kolom: tanggal, nama, platform, status, followers, note, salesUnit, salesOmzet). Kalau sheet <code class="inline">Produksi</code> sudah ada sebelumnya, cukup tambahkan kolom baru <code class="inline">saves</code>, <code class="inline">reposts</code>, <code class="inline">tanggalPosting</code>, <code class="inline">hookRate</code>, <code class="inline">kunjunganLP</code>, <code class="inline">konversiLP</code>, <code class="inline">statusKonten</code> dan <code class="inline">ctr</code> di paling kanan (kolom M sampai T) — jangan disisipkan di tengah, supaya data lama tidak bergeser. Kolom <code class="inline">statusKonten</code> diisi otomatis <code class="inline">Tayang</code> untuk konten baru, dan bisa diubah jadi <code class="inline">Ditakedown</code>/<code class="inline">Banned</code>/<code class="inline">Lainnya</code> lewat form Update Performa kalau kontennya bermasalah — otomatis dikecualikan dari total Views/Engagement & grafik performa per platform, tapi tetap dihitung di Total Konten Diproduksi. Kolom <code class="inline">ctr</code> khusus konten Tipe=Foto/Gambar — diisi manual dari data CTR yang sudah kamu punya di platform Ads (Meta Ads Manager/TikTok Ads Manager), dipakai untuk KPI target tim desain grafis (rata-rata CTR & progress terhadap target di bagian atas dashboard). Kolom <code class="inline">hookRate</code> diisi langsung sebagai persentase Hook Rate konten Tipe=Video (diambil dari Insight native platform, misal TikTok/Instagram). Kolom <code class="inline">kunjunganLP</code> &amp; <code class="inline">konversiLP</code> dipakai untuk hitung <b>Konversi Rate</b> konten Tipe=Landing Page (Konversi ÷ Kunjungan). Kolom <code class="inline">tanggalPosting</code> adalah tanggal konten itu benar-benar tayang/diposting (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi) — dipakai dashboard untuk hitung "Performa per Platform" &amp; total views/engagement berdasarkan kapan konten posting, bukan kapan dibuat. Kolom <code class="inline">akunPosting</code> mendukung lebih dari satu akun sekaligus untuk konten yang sama — nilainya disimpan sebagai teks dipisah koma, contoh: <code class="inline">josvitnextugo, jossvit.id</code>. Sheet <code class="inline">RequestKonten</code> (kolom: tanggal, judul, requester, pic, produk, platform, deadline, prioritas, status, brief, link, tipe, ts, qty) akan dibuat otomatis saat request konten pertama dikirim. Kolom <code class="inline">qty</code> adalah jumlah konten yang diminta dalam satu request (mis. 1 request untuk 5 video) — dipakai untuk menghitung QTY konten yang benar-benar diproduksi begitu status request menjadi "Selesai". Kalau sheet <code class="inline">RequestKonten</code> sudah ada sebelumnya, cukup tambahkan kolom <code class="inline">qty</code> di paling kanan (kolom N). Kolom <code class="inline">converted</code> (kolom O) dibuat &amp; diisi <b>otomatis</b> oleh script begitu sebuah request pertama kali dikonversi jadi konten — jangan diisi manual — ini yang membuat penanda "sudah dikonversi" tersimpan permanen di spreadsheet (bukan cuma di browser), supaya tidak ada lagi konten yang terduplikat kalau dashboard dibuka dari beberapa device. Sheet <code class="inline">Settings</code> (kolom: key, value) juga dibuat otomatis begitu ada target KPI pertama yang diatur — dipakai untuk simpan target KPI (di kartu "Ringkasan Periode", klik "✏️ atur target") secara <b>SHARED</b>, supaya semua device/anggota tim yang buka dashboard ini lihat angka target yang sama, bukan cuma tersimpan di browser masing-masing.</div>
+
+      <details class="int-guide">
+        <summary>📘 Panduan setup &amp; format kolom spreadsheet</summary>
+        <div class="int-guide-body">
+          <ol class="int-steps">
+            <li>Buka Google Sheet Anda, lalu pilih <b>Extensions → Apps Script</b>.</li>
+            <li>Tempel kode Apps Script (tombol <b>Lihat / Salin Kode Apps Script</b> di bagian bawah).</li>
+            <li>Pilih <b>Deploy → New deployment → Web app</b>. Isi <i>Execute as: Me</i> dan <i>Who has access: Anyone</i>.</li>
+            <li>Salin URL hasil deploy ke kolom <b>URL Web App</b> di atas.</li>
+            <li>Buat sheet <code class="inline">Produksi</code> dan <code class="inline">Akun</code> dengan kolom seperti di bawah. Sheet lainnya dibuat otomatis.</li>
+          </ol>
+
+          <div class="int-sheet">
+            <div class="int-sheet-h"><b>Produksi</b><span>dibuat manual · kolom A–T</span></div>
+            <div class="int-chips"><code class="inline">tanggal</code><code class="inline">judul</code><code class="inline">nama</code><code class="inline">tipe</code><code class="inline">produk</code><code class="inline">platform</code><code class="inline">views</code><code class="inline">likes</code><code class="inline">comments</code><code class="inline">shares</code><code class="inline">lastUpdated</code><code class="inline">akunPosting</code><code class="inline">saves</code><code class="inline">reposts</code><code class="inline">tanggalPosting</code><code class="inline">hookRate</code><code class="inline">kunjunganLP</code><code class="inline">konversiLP</code><code class="inline">statusKonten</code><code class="inline">ctr</code></div>
+            <div class="int-warn">Kalau sheet sudah ada, cukup tambahkan kolom <code class="inline">saves</code> sampai <code class="inline">ctr</code> di paling kanan (M–T). Jangan disisipkan di tengah supaya data lama tidak bergeser.</div>
+            <table class="int-tbl">
+              <tr><td><code class="inline">tanggalPosting</code></td><td>Tanggal konten benar-benar tayang (beda dari <code class="inline">tanggal</code> yang merupakan tanggal produksi). Dipakai untuk &quot;Performa per Platform&quot; dan total views/engagement.</td></tr>
+              <tr><td><code class="inline">akunPosting</code></td><td>Bisa lebih dari satu akun, dipisah koma. Contoh: <code class="inline">josvitnextugo, jossvit.id</code></td></tr>
+              <tr><td><code class="inline">statusKonten</code></td><td>Otomatis <code class="inline">Tayang</code> untuk konten baru. Bisa diubah ke <code class="inline">Ditakedown</code>, <code class="inline">Banned</code>, atau <code class="inline">Lainnya</code> lewat form Update Performa. Konten bermasalah tidak dihitung di total Views/Engagement dan grafik platform, tapi tetap masuk Total Konten Diproduksi.</td></tr>
+              <tr><td><code class="inline">hookRate</code></td><td>Persentase Hook Rate konten Tipe=Video, diambil dari Insight platform (TikTok/Instagram).</td></tr>
+              <tr><td><code class="inline">kunjunganLP</code><br><code class="inline">konversiLP</code></td><td>Dipakai menghitung Konversi Rate konten Tipe=Landing Page (Konversi ÷ Kunjungan).</td></tr>
+              <tr><td><code class="inline">ctr</code></td><td>Khusus konten Tipe=Foto/Gambar. Isi manual dari data CTR di Meta Ads Manager / TikTok Ads Manager. Dipakai untuk KPI target tim desain grafis.</td></tr>
+            </table>
+          </div>
+
+          <div class="int-sheet">
+            <div class="int-sheet-h"><b>Akun</b><span>dibuat manual</span></div>
+            <div class="int-chips"><code class="inline">tanggal</code><code class="inline">nama</code><code class="inline">platform</code><code class="inline">status</code><code class="inline">followers</code><code class="inline">note</code><code class="inline">salesUnit</code><code class="inline">salesOmzet</code></div>
+          </div>
+
+          <div class="int-sheet">
+            <div class="int-sheet-h"><b>RequestKonten</b><span>dibuat otomatis saat request pertama dikirim</span></div>
+            <div class="int-chips"><code class="inline">tanggal</code><code class="inline">judul</code><code class="inline">requester</code><code class="inline">pic</code><code class="inline">produk</code><code class="inline">platform</code><code class="inline">deadline</code><code class="inline">prioritas</code><code class="inline">status</code><code class="inline">brief</code><code class="inline">link</code><code class="inline">tipe</code><code class="inline">ts</code><code class="inline">qty</code><code class="inline">converted</code></div>
+            <table class="int-tbl">
+              <tr><td><code class="inline">qty</code></td><td>Jumlah konten dalam satu request (mis. 1 request untuk 5 video). Dipakai menghitung QTY konten yang benar-benar diproduksi saat status request menjadi &quot;Selesai&quot;. Kalau sheet sudah ada, tambahkan kolom ini di paling kanan (kolom N).</td></tr>
+              <tr><td><code class="inline">converted</code></td><td>Kolom O. Diisi otomatis oleh script, <b>jangan diisi manual</b>. Menyimpan penanda &quot;sudah dikonversi&quot; di spreadsheet, supaya konten tidak terduplikat kalau dashboard dibuka dari beberapa device.</td></tr>
+            </table>
+          </div>
+
+          <div class="int-sheet">
+            <div class="int-sheet-h"><b>Settings</b><span>dibuat otomatis saat target KPI pertama diatur</span></div>
+            <div class="int-chips"><code class="inline">key</code><code class="inline">value</code></div>
+            <div class="int-note">Menyimpan target KPI (kartu &quot;Ringkasan Periode&quot; → &quot;✏️ atur target&quot;) secara <b>shared</b>, jadi semua device dan anggota tim melihat angka target yang sama.</div>
+          </div>
+        </div>
+      </details>
 
       <details class="adv-tools"><summary>🧹 Alat Pembersih Data (lanjutan) — klik untuk membuka</summary>
       <div class="card" style="background:var(--panel-2);border-color:var(--yellow);margin-bottom:16px;">
@@ -1528,8 +1720,10 @@ th{background:var(--th-bg);color:var(--th-text2);border-bottom:2px solid var(--p
 
       </details>
 
-      <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
-      <button class="btn" id="btnCopyScript">Copy Kode</button>
+      <div class="int-actions int-script-actions"><span class="int-lbl">Kode Apps Script</span>
+        <button class="btn" id="btnShowScript">Lihat / Salin Kode Apps Script</button>
+        <button class="btn" id="btnCopyScript">Copy Kode</button>
+      </div>
       <div id="scriptBox" style="display:none;margin-top:12px;"><pre id="scriptCode"></pre></div>
     </div>
   </div>
@@ -2618,7 +2812,7 @@ function refreshPerfSelect(){
   if(cur !== '' && VIDEOS[parseInt(cur)]) sel.value = cur;
 }
 
-const PERF_PLATFORM_COLORS = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
+const PERF_PLATFORM_COLORS = {TikTok:'#FF5FA2', Instagram:'#FB923C', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
 let selectedPerfAkun = new Set();
 function refreshPerfAkunSelect(){
   const wrap = document.getElementById('inPerfAkunChips');
@@ -2969,15 +3163,22 @@ function renderKpiTargetLine(def, value, hasData){
   const monthLabel = lastKpiRange ? monthLabelID(lastKpiRange[0]) : monthLabelID(new Date());
   const found  = getKpiTarget(def.id, monthKey);
   const fmtVal = (n)=> def.unit==='percent' ? n.toFixed(2)+'%' : numFmt(Math.round(n));
-  const editLink = ` <span class="kpi-edit-month" data-id="${def.id}" style="text-decoration:underline;cursor:pointer;">✏️ atur target ${monthLabel}</span>`;
+  el.style.color = '';
   if(found===null){
-    el.innerHTML = 'Belum ada target'+editLink;
-    el.style.color = 'var(--muted)';
-  } else {
-    const met = hasData && (def.dir==='higher' ? value >= found.value : value <= found.value);
-    el.innerHTML = 'Target: '+fmtVal(found.value)+' ('+monthLabel+') '+(hasData ? (met ? '✅ tercapai' : '⚠️ di bawah target') : '')+editLink;
-    el.style.color = hasData ? (met ? 'var(--cyan)' : 'var(--yellow)') : 'var(--muted)';
+    el.innerHTML = `<span class="kpi-edit-month kpi-add" data-id="${def.id}" title="Atur target ${monthLabel}">＋ Atur target</span>`;
+    return;
   }
+  const met = hasData && (def.dir==='higher' ? value >= found.value : value <= found.value);
+  let ratio = 0;
+  if(hasData){
+    if(def.dir==='higher') ratio = found.value>0 ? value/found.value : 1;
+    else ratio = value>0 ? found.value/value : 1;
+  }
+  const pct = Math.round(ratio*100);
+  const state = !hasData ? '' : (met ? 'ok' : 'warn');
+  const txt = hasData ? `${met?'✅ ':''}${pct}% dari target ${fmtVal(found.value)}` : `Target ${fmtVal(found.value)}`;
+  el.innerHTML = `<div class="kpi-prog ${state}" title="Target ${monthLabel}"><i style="width:${Math.max(0,Math.min(100,pct))}%"></i></div>`
+    + `<div class="kpi-prog-t ${state}"><span>${txt}</span><span class="kpi-edit-month" data-id="${def.id}" title="Ubah target ${monthLabel}">✏️</span></div>`;
 }
 document.addEventListener('click', (ev)=>{
   const monthEl = ev.target.closest('.kpi-edit-month');
@@ -3093,21 +3294,20 @@ function renderSummary(range){
   const prevLbl = fmtDateID(prevRange[0])+' — '+fmtDateID(prevRange[1]);
   // chip selisih poin persentase (untuk rate: Hook Rate, Konversi, CTR)
   function kpiPpHtml(cur, prev, hasPrev){
-    if(!hasPrev) return `<div style="font-size:11.5px;color:var(--muted);margin-top:5px;" title="Periode lalu (${prevLbl}) belum ada data">belum ada pembanding</div>`;
+    if(!hasPrev) return `<span class="kpi-d na" title="Periode lalu (${prevLbl}) belum ada data">belum ada pembanding</span>`;
     const diff = cur - prev, up = diff >= 0;
-    if(Math.abs(diff) < 0.005) return `<div style="font-size:11.5px;color:var(--muted);margin-top:5px;font-weight:700;" title="Dibanding ${prevLbl}">● sama dgn periode lalu</div>`;
-    const c  = up ? 'var(--cyan)' : 'var(--red)';
-    const bg = up ? 'rgba(63,216,212,.12)' : 'rgba(240,86,108,.12)';
-    return `<div style="margin-top:5px;display:inline-flex;align-items:center;gap:3px;background:${bg};color:${c};border-radius:5px;padding:2px 7px;font-size:11.5px;font-weight:700;" title="Dibanding ${prevLbl} (${prev.toFixed(2)}%)">${up?'▲':'▼'} ${Math.abs(diff).toFixed(2)} poin vs periode lalu</div>`;
+    if(Math.abs(diff) < 0.005) return `<span class="kpi-d flat" title="Dibanding ${prevLbl}"><b>Sama</b><em>dengan periode lalu</em></span>`;
+    return `<span class="kpi-d ${up?'up':'down'}" title="Dibanding ${prevLbl} (${prev.toFixed(2)}%)"><b><i>${up?'▲':'▼'}</i>${Math.abs(diff).toFixed(2)} poin</b><em>vs periode lalu</em></span>`;
   }
-  // banner chip for top KPI cards
+  // chip perubahan untuk kartu KPI utama
   function kpiDeltaHtml(cur, prev){
     const d = delta(cur, prev);
     if(d===null) return '';
-    if(d.pct===null) return `<div style="font-size:11.5px;color:var(--cyan);margin-top:4px;font-weight:700;" title="Periode lalu (${prevLbl}) belum ada data">Baru</div>`;
-    const c  = d.up ? 'var(--cyan)' : 'var(--red)';
-    const bg = d.up ? 'rgba(63,216,212,.12)' : 'rgba(240,86,108,.12)';
-    return `<div style="margin-top:5px;display:inline-flex;align-items:center;gap:3px;background:${bg};color:${c};border-radius:5px;padding:2px 7px;font-size:11.5px;font-weight:700;" title="Dibanding ${prevLbl}">${d.up?'▲':'▼'} ${Math.abs(d.pct)}% vs periode lalu</div>`;
+    if(d.pct===null) return `<span class="kpi-d up" title="Periode lalu (${prevLbl}) belum ada data"><b>Baru</b></span>`;
+    const n = parseFloat(d.pct);
+    const t = new Intl.NumberFormat('id-ID',{maximumFractionDigits:1}).format(Math.abs(n));
+    if(n===0) return `<span class="kpi-d flat" title="Dibanding ${prevLbl}"><b>Sama</b><em>dengan periode lalu</em></span>`;
+    return `<span class="kpi-d ${d.up?'up':'down'}" title="Dibanding ${prevLbl}"><b><i>${d.up?'▲':'▼'}</i>${t}%</b><em>vs periode lalu</em></span>`;
   }
 
   // Hitung jumlah KONTEN UNIK (dedup judul+tanggal) — beda dari jumlah baris,
@@ -3198,65 +3398,31 @@ function renderSummary(range){
   document.getElementById('rangeLabel2').textContent = label;
   document.getElementById('rangeLabel3').textContent = label;
 
-  // ── PLATFORM BREAKDOWN CARDS ──
+  // ── PLATFORM BREAKDOWN (tabel yang bisa diurutkan) ──
   const platColors = {TikTok:'var(--pink)', Instagram:'var(--purple)', Facebook:'var(--blue)', YouTube:'var(--red)', Marketplace:'var(--yellow)', 'Meta Ads':'#4C6EF5', CS:'#3DDC97', CRM:'#5FA8FF'};
   const activePlatforms = f.platform ? [f.platform] : PLATFORMS;
-  document.getElementById('platformCards').innerHTML = activePlatforms.map(plat=>{
+  const engOf = list => list.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
+  const platRows = activePlatforms.map(plat=>{
     const pvids  = vidsPosted.filter(v=>v.platform===plat);
-    const pViews = pvids.reduce((s,v)=>s+(v.views||0),0);
-    const pEng   = pvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
-    const pER    = pViews>0 ? (pEng/pViews*100) : 0;
-    const pERStr = pViews>0 ? pER.toFixed(1)+'%' : '—';
-    const color  = platColors[plat]||'var(--muted)';
-
-    const ppvids  = prevVidsPosted.filter(v=>v.platform===plat);
-    const ppViews = ppvids.reduce((s,v)=>s+(v.views||0),0);
-    const ppEng   = ppvids.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
-    const ppER    = ppViews>0 ? (ppEng/ppViews*100) : 0;
-
-    const dKonten = delta(uniquePostedCount(pvids), uniquePostedCount(ppvids));
-    const dViews  = delta(pViews, ppViews);
-    const dEng    = delta(pEng, ppEng);
-    const dER     = delta(pER, ppER);
-
-    return `<div class="card kpi ${f.platform===plat?'plat-on':''}" data-plat="${escapeHtml(plat)}" title="Klik untuk memfilter ringkasan ke platform ini" style="gap:10px;">
-      <div class="bar-accent" style="background:${color}"></div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-        <span class="dot" style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
-        <span style="font-weight:700;font-size:13px;">${plat}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:11px;">
-        <div>
-          <div style="color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;margin-bottom:3px;">Konten</div>
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <span style="font-size:18px;font-weight:700;">${numFmt(uniquePostedCount(pvids))}</span>
-            ${deltaChip(dKonten, color)}
-          </div>
-        </div>
-        <div>
-          <div style="color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;margin-bottom:3px;">Views</div>
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <span style="font-size:18px;font-weight:700;">${numFmt(pViews)}</span>
-            ${deltaChip(dViews, color)}
-          </div>
-        </div>
-        <div>
-          <div style="color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;margin-bottom:3px;">Engagement</div>
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <span style="font-size:15px;font-weight:600;">${numFmt(pEng)}</span>
-            ${deltaChip(dEng, color)}
-          </div>
-        </div>
-        <div>
-          <div style="color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;margin-bottom:3px;">Avg ER</div>
-          <div style="display:flex;align-items:baseline;gap:5px;">
-            <span style="font-size:15px;font-weight:600;color:${color};">${pERStr}</span>
-            ${deltaChip(dER, color)}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    const ppvids = prevVidsPosted.filter(v=>v.platform===plat);
+    const views = pvids.reduce((s,v)=>s+(v.views||0),0), pViewsPrev = ppvids.reduce((s,v)=>s+(v.views||0),0);
+    const eng = engOf(pvids), engPrev = engOf(ppvids);
+    const er = views>0 ? eng/views*100 : 0, erPrev = pViewsPrev>0 ? engPrev/pViewsPrev*100 : 0;
+    const konten = uniquePostedCount(pvids), kontenPrev = uniquePostedCount(ppvids);
+    return { plat, color: platColors[plat]||'var(--muted)', konten, views, eng, er,
+      empty: pvids.length===0,
+      dK: delta(konten,kontenPrev), dV: delta(views,pViewsPrev), dE: delta(eng,engPrev), dER: delta(er,erPrev) };
+  });
+  const tViews = vidsPosted.reduce((s,v)=>s+(v.views||0),0), tViewsPrev = prevVidsPosted.reduce((s,v)=>s+(v.views||0),0);
+  const tEng = engOf(vidsPosted), tEngPrev = engOf(prevVidsPosted);
+  const tKonten = uniquePostedCount(vidsPosted), tKontenPrev = uniquePostedCount(prevVidsPosted);
+  const tER = tViews>0 ? tEng/tViews*100 : 0, tERPrev = tViewsPrev>0 ? tEngPrev/tViewsPrev*100 : 0;
+  window._platData = {
+    rows: platRows, active: f.platform || '',
+    total: { plat:'Semua platform', konten:tKonten, views:tViews, eng:tEng, er:tER,
+      dK:delta(tKonten,tKontenPrev), dV:delta(tViews,tViewsPrev), dE:delta(tEng,tEngPrev), dER:delta(tER,tERPrev) }
+  };
+  drawPlatformTable();
 
   // ── CHART: Produksi Harian ──
   const days = [];
@@ -3305,7 +3471,7 @@ function renderSummary(range){
   TEAM.forEach(n=>perOrang[n]=0);
   vids.forEach(v=>{ if(perOrang[v.nama]===undefined) perOrang[v.nama]=0; perOrang[v.nama]++; });
   const names = Object.keys(perOrang).filter(n=>perOrang[n]>0);
-  const palette = ['#FF5FA2','#9C6BFF','#3FD8D4','#F2C12E','#4C8DFF','#F0566C'];
+  const palette = ['#FF5FA2','#FB923C','#3FD8D4','#F2C12E','#4C8DFF','#F0566C'];
   const kontribusiCanvas = document.getElementById('chartKontribusi');
   const kontribusiEmpty  = document.getElementById('chartKontribusiEmpty');
   destroyChart('chartKontribusi');
@@ -3453,6 +3619,7 @@ function renderSummary(range){
 }
 
 let leaderboardMode = 'views';
+let lbPlatform = 'all', lbQuery = '', lbOpen = new Set(), lbInit = false;
 function setLeaderboardMode(mode){
   leaderboardMode = mode;
   document.querySelectorAll('#leaderboardModeBtns .period-btn').forEach(b=>{
@@ -3460,46 +3627,195 @@ function setLeaderboardMode(mode){
   });
   renderLeaderboard();
 }
+function lbSetPlatform(p){ lbPlatform = p; renderLeaderboard(); }
+function lbSetQuery(q){ lbQuery = String(q||'').trim().toLowerCase(); renderLeaderboard(); }
+function lbToggleAll(){
+  const keys = window._lbVisible || [];
+  const allOpen = keys.length>0 && keys.every(k=>lbOpen.has(k));
+  keys.forEach(k=> allOpen ? lbOpen.delete(k) : lbOpen.add(k));
+  renderLeaderboard();
+}
+function lbToggleRow(k){
+  if(lbOpen.has(k)) lbOpen.delete(k); else lbOpen.add(k);
+  renderLeaderboard();
+}
 function renderLeaderboard(){
   const vids = window._leaderboardVids || [];
-  const sorter = leaderboardMode==='er'
+  const isER = leaderboardMode==='er';
+  const sorter = isER
     ? (a,b)=>(engagementRate(b)-engagementRate(a))
     : (a,b)=>((b.views||0)-(a.views||0));
   const note = document.getElementById('leaderboardNote');
-  if(note) note.textContent = leaderboardMode==='er'
-    ? 'Top 3 konten per akun berdasarkan Engagement Rate pada periode & filter terpilih'
-    : 'Top 3 konten per akun berdasarkan views pada periode & filter terpilih';
+  if(note) note.textContent = isER
+    ? 'Akun diurutkan dari ER rata-rata tertinggi. Klik akun untuk melihat 3 konten terbaiknya.'
+    : 'Akun diurutkan dari total views tertinggi. Klik akun untuk melihat 3 konten terbaiknya.';
 
   const grid = document.getElementById('leaderboardAkunGrid');
   if(!grid) return;
+  if(!grid._lbBound){
+    grid._lbBound = true;
+    grid.addEventListener('click', e=>{
+      const row = e.target.closest('.lb-row'); if(row) lbToggleRow(row.dataset.k);
+    });
+    grid.addEventListener('keydown', e=>{
+      if(e.key!=='Enter' && e.key!==' ') return;
+      const row = e.target.closest('.lb-row'); if(!row) return;
+      e.preventDefault(); lbToggleRow(row.dataset.k);
+    });
+  }
 
-  const cards = ACCOUNTS.map(acc=>{
-    const accVids = vids.filter(v=> String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(acc.nama));
-    if(!accVids.length) return null;
-    const top = [...accVids].sort(sorter).slice(0,3);
-    const rows = top.map(v=>`
-      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
-        <div style="font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:4px;">${escapeHtml(v.judul)}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);">
-          <span>👁 ${numFmt(v.views)}</span>
-          <span>❤️ ${numFmt(v.likes)}</span>
-          <span>💬 ${numFmt(v.comments)}</span>
-          <span>↗️ ${numFmt(v.shares)}</span>
-          <span>🔖 ${numFmt(v.saves)}</span>
-          <span>🔁 ${numFmt(v.reposts)}</span>
-          <span style="color:var(--purple);font-weight:700;">ER ${engagementRate(v).toFixed(2)}%</span>
+  // Agregasi per akun
+  let accs = ACCOUNTS.map(acc=>{
+    const av = vids.filter(v=> String(v.akunPosting||'').split(',').map(x=>x.trim()).includes(acc.nama));
+    if(!av.length) return null;
+    const totalViews = av.reduce((t,v)=>t+(v.views||0),0);
+    const avgEr = av.reduce((t,v)=>t+engagementRate(v),0)/av.length;
+    return {acc, av, totalViews, avgEr, n:av.length};
+  }).filter(Boolean);
+
+  // Chip platform (hitungan dari semua akun yang punya data)
+  const plats = [...new Set(accs.map(x=>x.acc.platform))];
+  if(lbPlatform!=='all' && !plats.includes(lbPlatform)) lbPlatform = 'all';
+  const chips = document.getElementById('lbChips');
+  if(chips){
+    const mk = (val,label,cnt)=>`<button type="button" class="lb-chip${lbPlatform===val?' on':''}" aria-pressed="${lbPlatform===val}" onclick="lbSetPlatform(${JSON.stringify(val).replace(/"/g,'&quot;')})">${escapeHtml(label)}<b>${cnt}</b></button>`;
+    chips.innerHTML = mk('all','Semua',accs.length) + plats.map(pl=>mk(pl,pl,accs.filter(x=>x.acc.platform===pl).length)).join('');
+  }
+
+  if(lbPlatform!=='all') accs = accs.filter(x=>x.acc.platform===lbPlatform);
+  if(lbQuery) accs = accs.filter(x=>String(x.acc.nama).toLowerCase().includes(lbQuery));
+  accs.sort((a,b)=> isER ? (b.avgEr-a.avgEr) : (b.totalViews-a.totalViews));
+
+  // Buka akun peringkat 1 secara default saat pertama kali tampil
+  if(!lbInit && accs.length){ lbOpen.add(accs[0].acc.nama); lbInit = true; }
+  window._lbVisible = accs.map(x=>x.acc.nama);
+
+  const sum = document.getElementById('lbSummary');
+  if(sum) sum.textContent = accs.length
+    ? `${accs.length} akun · ${numFmt(accs.reduce((t,x)=>t+x.totalViews,0))} views · ${accs.reduce((t,x)=>t+x.n,0)} konten`
+    : '';
+  const tgl = document.getElementById('lbToggleAll');
+  if(tgl){
+    const allOpen = accs.length>0 && accs.every(x=>lbOpen.has(x.acc.nama));
+    tgl.textContent = allOpen ? 'Tutup semua' : 'Buka semua';
+    tgl.disabled = !accs.length;
+  }
+
+  if(!accs.length){
+    grid.innerHTML = '<div class="muted-note" style="padding:18px;">'+(vids.length
+      ? 'Tidak ada akun yang cocok dengan filter ini.'
+      : 'Belum ada data konten pada periode &amp; filter ini.')+'</div>';
+    return;
+  }
+
+  const maxVal = Math.max(...accs.map(x=> isER ? x.avgEr : x.totalViews), 0) || 1;
+  const head = `<div class="lb-head"><span>#</span><span>Akun</span><span>${isER?'ER rata-rata':'Total views'}</span><span class="lb-num">Konten</span><span class="lb-num">${isER?'Total views':'ER rata-rata'}</span><span></span></div>`;
+
+  const rowsHtml = accs.map((x,i)=>{
+    const k = x.acc.nama, open = lbOpen.has(k);
+    const val = isER ? x.avgEr : x.totalViews;
+    const valTxt = isER ? x.avgEr.toFixed(2)+'%' : numFmt(x.totalViews);
+    const side = isER ? numFmt(x.totalViews) : x.avgEr.toFixed(2)+'%';
+    const top = [...x.av].sort(sorter).slice(0,3);
+    const items = top.map((v,j)=>`
+      <div class="lb-item">
+        <div class="lb-item-t" title="${escapeHtml(v.judul)}">${escapeHtml(v.judul)}</div>
+        <div class="lb-item-m">
+          <span class="lb-big">${isER ? engagementRate(v).toFixed(2)+'%' : numFmt(v.views)}<i>${isER?'ER':'views'}</i></span>
+          <span class="lb-er">${isER ? numFmt(v.views)+' views' : 'ER '+engagementRate(v).toFixed(2)+'%'}</span>
+        </div>
+        <div class="lb-stats">
+          <span>${numFmt(v.likes)}<em>Likes</em></span>
+          <span>${numFmt(v.comments)}<em>Komen</em></span>
+          <span>${numFmt(v.shares)}<em>Share</em></span>
+          <span>${numFmt(v.saves)}<em>Simpan</em></span>
+          <span>${numFmt(v.reposts)}<em>Repost</em></span>
         </div>
       </div>`).join('');
     return `
-      <div class="card" style="padding:14px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-          ${platformPill(acc.platform)}<b style="font-size:13.5px;">${escapeHtml(acc.nama)}</b>
-        </div>
-        ${rows}
-      </div>`;
-  }).filter(Boolean);
+      <div class="lb-row" role="button" tabindex="0" aria-expanded="${open}" data-k="${escapeHtml(k)}">
+        <span class="lb-rank r${i<3?i+1:0}">${i+1}</span>
+        <span class="lb-name">${platformPill(x.acc.platform)}<b title="${escapeHtml(k)}">${escapeHtml(k)}</b></span>
+        <span class="lb-barwrap"><span class="lb-bar"><i style="width:${Math.max(2,val/maxVal*100).toFixed(1)}%"></i></span><span class="lb-val">${valTxt}</span></span>
+        <span class="lb-num">${x.n}</span>
+        <span class="lb-num">${side}</span>
+        <span class="lb-chev" aria-hidden="true">›</span>
+      </div>
+      <div class="lb-panel">${items}</div>`;
+  }).join('');
+  grid.innerHTML = head + rowsHtml;
+}
 
-  grid.innerHTML = cards.join('') || '<div class="muted-note" style="padding:16px;">Belum ada data konten pada periode &amp; filter ini.</div>';
+/* ===== Performa per Platform: tabel bisa diurutkan & diklik ===== */
+let platSort = {key:'views', dir:-1}, platShowEmpty = false;
+function platSetSort(k){
+  platSort = (platSort.key===k) ? {key:k, dir:-platSort.dir} : {key:k, dir:(k==='plat'?1:-1)};
+  drawPlatformTable();
+}
+function platToggleEmpty(){ platShowEmpty = !platShowEmpty; drawPlatformTable(); }
+function platDelta(d){
+  if(d===null) return '<span class="pt-d na" title="Belum ada data">–</span>';
+  if(d.pct===null) return '<span class="pt-d up" title="Periode lalu belum ada data">Baru</span>';
+  const n = parseFloat(d.pct);
+  if(n===0) return '<span class="pt-d flat" title="Sama dengan periode lalu">=</span>';
+  const t = new Intl.NumberFormat('id-ID',{maximumFractionDigits:1}).format(Math.abs(n));
+  return `<span class="pt-d ${n>0?'up':'down'}" title="Dibanding periode lalu">${n>0?'▲':'▼'}${t}%</span>`;
+}
+function drawPlatformTable(){
+  const box = document.getElementById('platformCards');
+  const D = window._platData;
+  if(!box || !D) return;
+  if(!box._ptBound){
+    box._ptBound = true;
+    box.addEventListener('keydown', e=>{
+      if(e.key!=='Enter' && e.key!==' ') return;
+      const row = e.target.closest('.pt-row[data-plat]'); if(!row) return;
+      e.preventDefault(); row.click();
+    });
+  }
+  const {key, dir} = platSort;
+  const val = r => key==='plat' ? r.plat.toLowerCase() : r[key];
+  const isEmpty = r => r.empty && r.plat!==D.active;
+  const withData = D.rows.filter(r=>!isEmpty(r));
+  const empties  = D.rows.filter(isEmpty);
+  const sorted = [...withData].sort((a,b)=>{
+    const x=val(a), y=val(b);
+    const c = typeof x==='string' ? x.localeCompare(y,'id') : x-y;
+    return (c*dir) || a.plat.localeCompare(b.plat);
+  });
+  const maxViews = Math.max(...withData.map(r=>r.views), 1);
+  const th = (k,label,cls)=>`<button type="button" class="pt-th ${cls||''} ${key===k?'on':''}" onclick="platSetSort('${k}')" title="Urutkan menurut ${label}">${label}<i>${key===k?(dir<0?'↓':'↑'):''}</i></button>`;
+  const head = `<div class="pt-row pt-head">${th('plat','Platform')}${th('konten','Konten')}${th('views','Views')}${th('eng','Engagement')}${th('er','Avg ER')}</div>`;
+  const row = r => {
+    const on = D.active===r.plat;
+    const bar = Math.max(r.views>0?2:0, r.views/maxViews*100);
+    return `<div class="pt-row pt-body${on?' on':''}" data-plat="${escapeHtml(r.plat)}" role="button" tabindex="0" title="${on?'Klik untuk menghapus filter platform':'Klik untuk memfilter ringkasan ke platform ini'}">
+      <span class="pt-name"><i class="pt-dot" style="background:${r.color}"></i><b>${escapeHtml(r.plat)}</b>${on?'<em>filter aktif ✕</em>':''}</span>
+      <span class="pt-cell"><b>${numFmt(r.konten)}</b>${platDelta(r.dK)}</span>
+      <span class="pt-cell pt-views"><span class="pt-bar"><i style="width:${bar.toFixed(1)}%;background:${r.color}"></i></span><b>${numFmt(r.views)}</b>${platDelta(r.dV)}</span>
+      <span class="pt-cell"><b>${numFmt(r.eng)}</b>${platDelta(r.dE)}</span>
+      <span class="pt-cell"><b>${r.views>0 ? r.er.toFixed(1)+'%' : '—'}</b>${platDelta(r.dER)}</span>
+    </div>`;
+  };
+  const emptyRow = r => `<div class="pt-row pt-body pt-empty${D.active===r.plat?' on':''}" data-plat="${escapeHtml(r.plat)}" role="button" tabindex="0" title="Klik untuk memfilter ke platform ini">
+      <span class="pt-name"><i class="pt-dot" style="background:${r.color}"></i><b>${escapeHtml(r.plat)}</b></span>
+      <span class="pt-none">Belum ada posting di periode ini</span>
+    </div>`;
+  let html = head + sorted.map(row).join('');
+  if(!sorted.length) html += '<div class="muted-note" style="padding:14px 10px;">Belum ada posting pada periode &amp; filter ini.</div>';
+  if(empties.length){
+    if(platShowEmpty) html += empties.map(emptyRow).join('');
+    html += `<button type="button" class="pt-more" onclick="platToggleEmpty()">${platShowEmpty?'Sembunyikan':'Tampilkan'} ${empties.length} platform tanpa posting</button>`;
+  }
+  if(withData.length>1){
+    const t = D.total;
+    html += `<div class="pt-row pt-total"><span class="pt-name"><b>${t.plat}</b></span>
+      <span class="pt-cell"><b>${numFmt(t.konten)}</b>${platDelta(t.dK)}</span>
+      <span class="pt-cell pt-views"><span class="pt-bar" style="visibility:hidden"></span><b>${numFmt(t.views)}</b>${platDelta(t.dV)}</span>
+      <span class="pt-cell"><b>${numFmt(t.eng)}</b>${platDelta(t.dE)}</span>
+      <span class="pt-cell"><b>${t.views>0 ? t.er.toFixed(1)+'%' : '—'}</b>${platDelta(t.dER)}</span></div>`;
+  }
+  box.innerHTML = `<div class="pt-scroll"><div class="pt-inner">${html}</div></div>`;
 }
 
 function tipeTagClass(tipe){
@@ -3509,7 +3825,7 @@ function tipeTagClass(tipe){
   return 'yellow'; // Foto/Gambar
 }
 function platformPill(p){
-  const colors = {TikTok:'#FF5FA2', Instagram:'#9C6BFF', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
+  const colors = {TikTok:'#FF5FA2', Instagram:'#FB923C', Facebook:'#4C8DFF', YouTube:'#F0566C', Marketplace:'#F2B84B', CS:'#3DDC97', CRM:'#5FA8FF'};
   return `<span class="platform-pill"><span class="dot" style="background:${colors[p]||'#888'}"></span>${p||'-'}</span>`;
 }
 function platformPillEditable(v, globalIdx){
@@ -3524,7 +3840,7 @@ async function changeVideoPlatform(globalIdx, newPlatform){
   if(status==='ok'){ showToast('Platform diperbarui', VIDEOS[globalIdx].judul, 'success'); setTimeout(()=>pullFromSheet(true), 1500); }
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function getMuted(){ return getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#8E87A8'; }
+function getMuted(){ return getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#8995A6'; }
 function destroyChart(key){ if(charts[key]){ charts[key].destroy(); delete charts[key]; } }
 function chartOpts(){
   const grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
@@ -3650,7 +3966,7 @@ function renderVideoPagination(total, totalPages){
     display:inline-flex;align-items:center;justify-content:center;
     min-width:32px;height:32px;border-radius:7px;font-size:12px;font-weight:700;
     cursor:pointer;border:1px solid var(--line);padding:0 8px;
-    background:${active?'linear-gradient(135deg,var(--pink),#7C3AED)':'var(--panel-2)'};
+    background:${active?'linear-gradient(135deg,var(--pink),#2563EB)':'var(--panel-2)'};
     color:${active?'#fff':'var(--muted)'};
   `;
   const disabledStyle = `
@@ -5868,7 +6184,7 @@ function vidQuickFilter(list){
     // gauges
     document.getElementById('ovGauges').innerHTML=[['Hook Rate','kpiAvgHookRate',100],['Konversi','kpiAvgKonversiRate',10],['CTR','kpiAvgCtr',5]].map(([l,id,def],n)=>{
       const v=parseFloat(txt(id)), has=!isNaN(v), t=getKpiTarget(id,mkey), base=t?t.value:def, fr=has&&base>0?Math.min(v/base,1):0, C=2*Math.PI*34;
-      return `<div class="ov-g"><svg viewBox="0 0 90 90"><defs><linearGradient id="og${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#D946EF"/></linearGradient></defs>
+      return `<div class="ov-g"><svg viewBox="0 0 90 90"><defs><linearGradient id="og${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#38BDF8"/></linearGradient></defs>
       <circle cx="45" cy="45" r="34" fill="none" stroke="${css('--line')}" stroke-width="9"/><circle cx="45" cy="45" r="34" fill="none" stroke="url(#og${n})" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C*fr).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 45 45)"/>
       <text x="45" y="50" text-anchor="middle" class="gv">${has?v.toFixed(v<10?1:0)+'%':'—'}</text></svg><div class="gl">${l}</div><div class="gt">${t?'target '+t.value+'%':'skala 0–'+def+'%'}</div></div>`; }).join('');
     // platform dots
@@ -5878,11 +6194,11 @@ function vidQuickFilter(list){
       return `<div class="ov-pos"><span class="n" title="${escapeHtml(k)}">${escapeHtml(k)}</span><span class="dots">${Array.from({length:10},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</span><span class="p">${Math.round(sh*100)}%</span></div>`; }).join(''):'<div class="muted-note" style="padding:14px 0">Belum ada data di periode ini</div>';
     // radar
     const labs=PLATFORMS, tick=css('--chart-tick'), grid=css('--chart-grid');
-    chart('ovRadar',{type:'radar',data:{labels:labs,datasets:[{data:labs.map(k=>byP[k]||0),borderColor:css('--pink'),backgroundColor:'rgba(217,70,239,.28)',pointBackgroundColor:css('--cyan'),pointRadius:4,borderWidth:2.5}]},
+    chart('ovRadar',{type:'radar',data:{labels:labs,datasets:[{data:labs.map(k=>byP[k]||0),borderColor:css('--pink'),backgroundColor:'rgba(56,189,248,.28)',pointBackgroundColor:css('--cyan'),pointRadius:4,borderWidth:2.5}]},
       options:{maintainAspectRatio:false,layout:{padding:6},plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,ticks:{display:false},grid:{color:grid},angleLines:{color:grid},pointLabels:{color:tick,font:{size:11,weight:'600'},padding:4,callback:l=>l==='Marketplace'?'Market':l}}}}});
     // weekday
     const wk=[0,0,0,0,0,0,0]; inR.forEach(v=>{ wk[(postDate(v).getDay()+6)%7]+=(v.views||0); }); const mx=Math.max(...wk);
-    chart('ovWeek',{type:'bar',data:{labels:['Sen','Sel','Rab','Kam','Jum','Sab','Min'],datasets:[{data:wk,borderRadius:6,backgroundColor:wk.map(x=>x===mx&&mx>0?css('--pink'):'rgba(139,92,246,.45)')}]},
+    chart('ovWeek',{type:'bar',data:{labels:['Sen','Sel','Rab','Kam','Jum','Sab','Min'],datasets:[{data:wk,borderRadius:6,backgroundColor:wk.map(x=>x===mx&&mx>0?css('--pink'):'rgba(59,130,246,.45)')}]},
       options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tick}},y:{beginAtZero:true,grid:{color:grid},ticks:{color:tick,maxTicksLimit:5}}}}});
     // calendar (bulan dari akhir periode)
     const e=range[1], y=e.getFullYear(), m=e.getMonth(), first=(new Date(y,m,1).getDay()+6)%7, dim=new Date(y,m+1,0).getDate(), cnt={};
@@ -5891,7 +6207,7 @@ function vidQuickFilter(list){
     document.getElementById('ovCalT').textContent='Kalender Posting · '+e.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
     document.getElementById('ovCal').innerHTML=['SEN','SEL','RAB','KAM','JUM','SAB','MIN'].map(d=>`<div class="dw">${d}</div>`).join('')+'<div></div>'.repeat(first)+
       Array.from({length:dim},(_,i)=>{ const d=i+1,c=cnt[d]||0, t=(td.getFullYear()===y&&td.getMonth()===m&&td.getDate()===d);
-        return `<div class="d${c?' has':''}${t?' today':''}" ${c?`style="background:rgba(192,38,211,${(.3+.7*c/cm).toFixed(2)})" title="${c} konten tayang"`:''}>${d}</div>`; }).join('');
+        return `<div class="d${c?' has':''}${t?' today':''}" ${c?`style="background:rgba(14,116,144,${(.3+.7*c/cm).toFixed(2)})" title="${c} konten tayang"`:''}>${d}</div>`; }).join('');
   }
   const _rs=renderSummary; renderSummary=function(range){ const r=_rs.apply(this,arguments); try{ refresh(range); }catch(e){ console.warn('v21 overview',e); } return r; };
   try{ refresh(getRange()); }catch(e){}
