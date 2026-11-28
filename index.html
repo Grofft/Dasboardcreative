@@ -1,6 +1,13 @@
 <!--
   CHANGELOG
   =========
+  v22 — 28 November 2026
+  - Request Konten: sub-tab baru "📁 Folder Peminta" (di samping Ajukan Request & Daftar Request). Tampilan folder ala
+    Explorer — satu folder per peminta, hanya berisi request berstatus Selesai. Klik folder untuk membuka
+    isinya (request SELESAI orang itu, filter Belum/Sudah Dipakai, tombol "← Semua Folder"). Ada pencarian nama peminta. Daftar
+    Request tidak diubah. Tidak ada perubahan data/Apps Script.
+  - Judul tab browser dikunci "DASHBOARD CREATIVE TEAM" (tidak lagi berganti per menu) + ikon tab khusus (bukan globe).
+
   v20 — 27 November 2026
   - Produksi & Performa: ringkasan hasil filter (konten, views, ER), chip filter cepat (Belum ada performa, Belum posting,
     Takedown/Banned, per platform dengan jumlah), unduh CSV daftar yang tampil, batang heat pada kolom Views, dan tombol
@@ -201,6 +208,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DASHBOARD CREATIVE TEAM</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%2338BDF8%22/%3E%3Cstop offset=%221%22 stop-color=%22%232563EB%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2215%22 fill=%22url%28%23g%29%22/%3E%3Crect x=%2212%22 y=%2220%22 width=%2240%22 height=%2230%22 rx=%226%22 fill=%22%23fff%22/%3E%3Cpath d=%22M12 26l6-12h10l-6 12zM28 26l6-12h10l-6 12zM44 26l6-12h2a0 0 0 0 1 0 0v12z%22 fill=%22%230B1B4D%22 opacity=%22.9%22/%3E%3Cpath d=%22M28 31v13l11-6.5z%22 fill=%22%232563EB%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1273,6 +1281,24 @@ details.int-guide[open]>summary{margin-bottom:12px;}
 .pt-more:focus-visible{outline:2px solid var(--pink);border-radius:4px;}
 .pt-total{padding:10px;border-top:1px solid var(--line);margin-top:2px;}
 .pt-total .pt-name b{font-size:12.5px;color:var(--muted);}
+
+/* ===== v22: sub-tab Folder Peminta (Request Konten) ===== */
+.page-view:not([data-sub="folder"]) [data-sub-g="folder"]{display:none !important;}
+.page-view[data-sub="folder"] .jumpbar{display:none !important;}
+.page-view[data-sub="folder"] [data-sub-g="input"],.page-view[data-sub="folder"] [data-sub-g="list"]{display:none !important;}
+.rq-fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;}
+.rq-fold{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text);font:inherit;cursor:pointer;text-align:center;transition:background .12s,border-color .12s;}
+.rq-fold:hover,.rq-fold:focus-visible{background:rgba(56,139,253,.15);border-color:rgba(56,139,253,.45);outline:none;}
+.rq-fold .nm{font-size:13px;font-weight:600;line-height:1.25;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rq-fold .sb{font-size:10.5px;color:var(--muted);}
+.rq-fold .lb{position:absolute;top:6px;right:8px;padding:1px 7px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;}
+.rq-fhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.rq-ftitle{font-weight:800;font-size:16px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.rq-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.rq-chip{padding:5px 12px;border-radius:99px;border:1px solid var(--line,rgba(120,120,160,.3));background:transparent;color:var(--text);font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.rq-chip .n{opacity:.7;margin-left:3px;}
+.rq-chip.on{background:linear-gradient(135deg,var(--pink),#2563EB);color:#fff;border-color:transparent;}
+.rq-st{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--c);border:1px solid var(--c);}
 </style>
 </head>
 <body>
@@ -1545,6 +1571,13 @@ details.int-guide[open]>summary{margin-bottom:12px;}
 
   <!-- ===================== PAGE 5: REQUEST KONTEN ===================== -->
   <div class="page-view" data-page="5">
+    <div id="reqFolderView" data-sub-g="folder">
+      <div class="section-header"><h2>Folder Peminta</h2><div class="muted-note">Satu folder per peminta, hanya berisi request berstatus Selesai — klik folder untuk membukanya</div></div>
+      <div class="card">
+        <div id="rqFvSearchWrap" class="filterbar" style="margin-bottom:12px;"><input type="text" id="rqFvSearch" placeholder="Cari nama peminta..." style="max-width:280px;"></div>
+        <div id="rqFvBody"></div>
+      </div>
+    </div>
     <div class="section-header"><h2>Ajukan Request Konten</h2><div class="muted-note">Isi brief permintaan konten — tersimpan otomatis &amp; terkirim ke spreadsheet (jika sudah terhubung)</div></div>
     <div class="card">
       <div class="input-panel">
@@ -2413,6 +2446,7 @@ async function convertRequestToVideo(idx){
 function isReqDipakai(r){ return String(r.dipakai||'').trim().toUpperCase()==='YES'; }
 function renderRequests(){
   renderDeadlineTicker();
+  reqFolderViewRender();
   const tbody = document.getElementById('tblRequests');
   if(!tbody) return;
   const fStatus = document.getElementById('filterReqStatus').value;
@@ -2666,6 +2700,77 @@ function renderRequests(){
 /* ============== v15: UTIL, FILTER CEPAT, DEADLINE ============== */
 function debounce(fn, ms){ let t; return function(){ const a=arguments, c=this; clearTimeout(t); t=setTimeout(()=>fn.apply(c,a), ms); }; }
 let reqQuick = ''; // '' | 'berjalan'
+function reqWho(r){ return (r.requester||'').trim() || '(Tanpa nama)'; }
+function reqWhoKey(r){ return normName(reqWho(r)); }
+function reqIsLate(r){
+  if(!r.deadline || ['Selesai','Ditolak'].includes(r.status)) return false;
+  const d = parseDate(r.deadline); if(!d) return false;
+  const t = new Date(); t.setHours(0,0,0,0); d.setHours(0,0,0,0); return d < t;
+}
+/* ===== v22: sub-tab "Folder Peminta" (tampilan folder ala Explorer) ===== */
+var rqFV = {open:'', q:'', st:''};
+function reqFolderViewRender(){
+  if(typeof rqFV==='undefined' || !rqFV) return;
+  const body = document.getElementById('rqFvBody'); if(!body) return;
+  const sw = document.getElementById('rqFvSearchWrap');
+  const map = new Map();
+  REQUESTS.filter(r=>r.status==='Selesai').forEach(r=>{
+    const k = reqWhoKey(r);
+    let o = map.get(k); if(!o){ o = {k, name:reqWho(r), rows:[], used:0}; map.set(k,o); }
+    o.rows.push(r);
+    if(isReqDipakai(r)) o.used++;
+  });
+  if(rqFV.open && !map.has(rqFV.open)) rqFV.open = '';
+  if(sw) sw.style.display = rqFV.open ? 'none' : '';
+  if(!rqFV.open){
+    const q = (rqFV.q||'').toLowerCase().trim();
+    const list = [...map.values()].filter(o=>!q || o.name.toLowerCase().includes(q)).sort((a,b)=> a.name.localeCompare(b.name,'id'));
+    if(!list.length){ body.innerHTML = '<div class="muted-note" style="padding:18px 4px;">'+(map.size?'Tidak ada peminta yang cocok.':'Belum ada request yang selesai.')+'</div>'; return; }
+    const icon = '<svg viewBox="0 0 96 80" width="84" height="70" aria-hidden="true"><path d="M4 14a6 6 0 0 1 6-6h24l8 8h44a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6z" fill="#E9B43C"/><rect x="18" y="15" width="56" height="40" rx="3" fill="#fff" stroke="#D5DBE6"/><rect x="25" y="22" width="30" height="3" rx="1.5" fill="#9DB7E8"/><rect x="25" y="29" width="40" height="3" rx="1.5" fill="#C9D4EA"/><path d="M4 32a6 6 0 0 1 6-6h80a6 6 0 0 1 6 6v34a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6z" fill="#FFD76A"/><path d="M4 32a6 6 0 0 1 6-6h80a6 6 0 0 1 6 6v3H4z" fill="#FFE59A"/></svg>';
+    body.innerHTML = '<div class="rq-fgrid">'+list.map(o=>`<button type="button" class="rq-fold" data-k="${escapeHtml(o.k)}" title="${escapeHtml(o.name)}">
+      ${icon}<span class="nm">${escapeHtml(o.name)}</span>
+      <span class="sb">${o.rows.length} selesai · ${o.rows.length-o.used} belum dipakai</span></button>`).join('')+'</div>';
+    return;
+  }
+  const o = map.get(rqFV.open);
+  const nUsed = o.rows.filter(isReqDipakai).length, nNot = o.rows.length - nUsed;
+  const sk = r => r.ts ? new Date(r.ts).getTime() : new Date((r.tanggal||'1970-01-01')+'T00:00:00').getTime();
+  let rows = o.rows.slice().sort((a,b)=> sk(b) - sk(a));
+  if(rqFV.st==='belum') rows = rows.filter(r=>!isReqDipakai(r));
+  if(rqFV.st==='sudah') rows = rows.filter(isReqDipakai);
+  const tgl = r => r.ts ? new Date(r.ts).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : (r.tanggal||'');
+  body.innerHTML = `<div class="rq-fhead">
+      <button type="button" class="btn rq-back">← Semua Folder</button>
+      <div class="rq-ftitle">📂 ${escapeHtml(o.name)} <span class="muted-note">${o.rows.length} request selesai</span></div>
+      <button type="button" class="btn rq-goto" style="margin-left:auto;font-size:11px;">✏️ Ubah pemakaian di Daftar Request</button>
+    </div>
+    <div class="rq-chips"><button type="button" class="rq-chip ${rqFV.st?'':'on'}" data-st="">Semua <span class="n">${o.rows.length}</span></button><button type="button" class="rq-chip ${rqFV.st==='belum'?'on':''}" data-st="belum">Belum Dipakai <span class="n">${nNot}</span></button><button type="button" class="rq-chip ${rqFV.st==='sudah'?'on':''}" data-st="sudah">Sudah Dipakai <span class="n">${nUsed}</span></button></div>
+    <div class="table-scroll"><table class="mobile-cards"><thead><tr><th>Tanggal</th><th>Judul</th><th>PIC</th><th>Produk</th><th>Tipe</th><th>Platform</th><th>QTY</th><th>Deadline</th><th>Status</th><th>Pemakaian</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td data-label="Tanggal">${escapeHtml(tgl(r))}</td>
+      <td data-label="Judul">${escapeHtml(r.judul||'')}</td>
+      <td data-label="PIC">${escapeHtml(r.pic||'')}</td>
+      <td data-label="Produk">${escapeHtml(r.produk||'')}</td>
+      <td data-label="Tipe">${escapeHtml(r.tipe||'')}</td>
+      <td data-label="Platform">${escapeHtml(r.platform||'')}</td>
+      <td data-label="QTY" style="text-align:center;font-weight:700;">${escapeHtml(String(r.qty||1))}</td>
+      <td data-label="Deadline">${reqDeadlineCell(r)}</td>
+      <td data-label="Status"><span class="rq-st" style="--c:var(--good)">${escapeHtml(r.status||'Selesai')}</span></td>
+      <td data-label="Pemakaian">${isReqDipakai(r)?`<span class="rq-st" style="--c:var(--good)">Sudah Dipakai</span>${r.dipakaiOleh?`<div style="font-size:11px;color:var(--muted);margin-top:3px;">oleh ${escapeHtml(r.dipakaiOleh)}</div>`:''}`:'<span class="rq-st" style="--c:var(--muted)">Belum Dipakai</span>'}</td></tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--muted);">Tidak ada request pada filter ini.</td></tr>'}
+    </tbody></table></div>`;
+}
+document.addEventListener('click', e=>{
+  const root = e.target.closest('#reqFolderView'); if(!root) return;
+  const f = e.target.closest('.rq-fold');
+  if(f){ rqFV.open = f.dataset.k; rqFV.st=''; reqFolderViewRender(); return; }
+  if(e.target.closest('.rq-back')){ rqFV.open=''; rqFV.st=''; reqFolderViewRender(); return; }
+  const c = e.target.closest('.rq-chip');
+  if(c){ rqFV.st = c.dataset.st||''; reqFolderViewRender(); return; }
+  if(e.target.closest('.rq-goto')){ if(window.__subTabs && window.__subTabs['5']) window.__subTabs['5']('list'); }
+});
+document.addEventListener('input', e=>{
+  if(e.target && e.target.id==='rqFvSearch'){ rqFV.q = e.target.value; reqFolderViewRender(); }
+});
 function reqChipOn(q){
   const st = document.getElementById('filterReqStatus').value;
   const pk = document.getElementById('filterReqPakai').value;
@@ -4320,7 +4425,7 @@ function navSync(n){
     if(act && g.classList.contains('collapsed')){ g.classList.remove('collapsed'); const h=g.querySelector('.nav-group-head'); if(h) h.setAttribute('aria-expanded','true'); try{ navPersistGroups(); }catch(e){} }
   });
   const m = document.getElementById('pageTitleMark'); if(m) m.textContent = NAV_TITLES[n] || '';
-  document.title = (NAV_TITLES[n] ? NAV_TITLES[n] + ' · ' : '') + 'Creative Ops';
+  document.title = 'DASHBOARD CREATIVE TEAM'; // v22: judul tab dikunci (tidak berubah saat ganti menu)
 }
 function navPersistGroups(){
   try{ localStorage.setItem('creativeNavGroups', JSON.stringify([...document.querySelectorAll('.nav-group.collapsed')].map(g=>g.dataset.group))); }catch(e){}
@@ -6081,6 +6186,12 @@ function vidQuickFilter(list){
       if(rc){ new MutationObserver(upd).observe(rc,{childList:true,characterData:true,subtree:true}); upd(); }
     } else cnt.remove();
   });
+})();
+
+(function(){ /* v22: sub-tab ke-3 di Request Konten */
+  const bar=document.getElementById('subTabsRequest'); if(!bar) return;
+  const b=document.createElement('button'); b.type='button'; b.className='subtab'; b.dataset.sub='folder'; b.innerHTML='📁 Folder Peminta';
+  bar.appendChild(b); reqFolderViewRender();
 })();
 
 /* ============== v21: PENGATURAN KOLOM TABEL DAFTAR KONTEN ============== */
