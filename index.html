@@ -3052,7 +3052,16 @@ document.getElementById('btnSavePerf').onclick = async ()=>{
   const status = await pushOneToSheet({sheetType:'video_update', ...VIDEOS[idx]});
   if(status==='ok'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' & terkirim ke spreadsheet.'; unsavedDuplicatePending = false; clearTimeout(window._dupSafetyTimeout); setTimeout(()=>pullFromSheet(true), 1500); showToast('Update performa selesai', VIDEOS[idx].judul, 'success'); }
   else if(status==='no-url'){ msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard — hubungkan spreadsheet di tab Integrasi untuk sinkronisasi).'; showToast('Update performa selesai (lokal)', VIDEOS[idx].judul, 'warn'); }
-  else msg.textContent = '✅ Performa diperbarui: '+VIDEOS[idx].judul+' (tersimpan di dashboard, tapi gagal kirim ke spreadsheet — cek URL Apps Script).';
+  else {
+    msg.textContent = '⚠️ GAGAL terkirim ke spreadsheet: '+VIDEOS[idx].judul+' — '+(lastPushErrorMsg||'cek URL Apps Script')+'. Data belum aman, klik Update Performa lagi.';
+    msg.style.color = 'var(--red)';
+    showToast('⚠️ Performa gagal tersimpan ke spreadsheet', '"'+VIDEOS[idx].judul+'": '+(lastPushErrorMsg||'cek URL Apps Script / koneksi'), 'warn');
+    // tahan auto-sync supaya angka ini tidak tertimpa data lama dari spreadsheet, dan form dibiarkan terisi
+    unsavedDuplicatePending = true; lastLocalEditAt = Date.now();
+    clearTimeout(window._dupSafetyTimeout);
+    window._dupSafetyTimeout = setTimeout(()=>{ unsavedDuplicatePending = false; }, 5*60*1000);
+    return;
+  }
   document.getElementById('inPerfKonten').value='';
   selectedPerfAkun = new Set(); refreshPerfAkunSelect();
   document.getElementById('inPerfTanggalPosting').value='';
@@ -5262,6 +5271,16 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
   try{
     const res = await fetch(url+'?action=read', {cache:'no-store'});
     const json = await res.json();
+    // v25 PENGAMAN: jangan hapus data lokal kalau respons spreadsheet error / tidak berisi daftar video.
+    if(!json || json.status==='error' || !Array.isArray(json.videos)){
+      throw new Error((json && json.message) ? json.message : 'Respons spreadsheet tidak valid (tidak ada data video).');
+    }
+    // v25 PENGAMAN: sheet balas 0 video padahal di dashboard ada data -> kemungkinan error sementara.
+    // Saat auto-sync latar belakang, data lokal dipertahankan (tidak ditimpa kosong).
+    if(isBackgroundAutoSync && json.videos.length===0 && VIDEOS.length>0){
+      console.warn('pullFromSheet: spreadsheet mengembalikan 0 video, data lokal dipertahankan.');
+      return;
+    }
     let countVideo=0, countAkun=0;
     VIDEOS = [];
     AKUN_LOG = [];
@@ -5482,6 +5501,10 @@ async function pullFromSheet(silent, isBackgroundAutoSync){
   }catch(err){
     msg.textContent = 'Gagal menarik data: '+err.message;
     msg.style.color = 'var(--red)';
+    if(silent && Date.now() - (window._lastPullErrToast||0) > 60000){
+      window._lastPullErrToast = Date.now();
+      showToast('⚠️ Gagal menarik data dari spreadsheet', 'Data di dashboard TIDAK dihapus. '+err.message, 'warn');
+    }
   }
 }
 async function pushOneToSheet(payload){
