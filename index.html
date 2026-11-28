@@ -6,6 +6,7 @@
     Explorer — satu folder per peminta, hanya berisi request berstatus Selesai. Klik folder untuk membuka
     isinya (request SELESAI orang itu, filter Belum/Sudah Dipakai, tombol "← Semua Folder"). Ada pencarian nama peminta. Daftar
     Request tidak diubah. Tidak ada perubahan data/Apps Script.
+  - v25: Total Konten Diproduksi, chart Produksi Konten Harian, donat Kontribusi (+rincian) & kartu Total Views kini dihitung dari Request Konten berstatus Selesai (jumlah QTY, basis tanggal Deadline) — sama persis dengan tab Request Konten. Daftar Konten tidak lagi dipakai untuk angka produksi.
   - FIX: "Total Konten Diproduksi" (kartu KPI + kartu Total Views di Ringkasan) sekarang sama dengan total chart "Produksi Konten Harian" — keduanya menghitung konten di Daftar Konten berdasarkan tanggal produksi (sebelumnya KPI memakai SUM QTY Request Selesai sehingga bisa selisih, mis. 103 vs 107).
   - Tabel folder punya kolom "Link Hasil": tombol 🔗 Buka bila link sudah ada, kolom isi/ubah link langsung dari folder (tersimpan sama seperti kolom Link di Daftar Request).
   - Judul tab browser dikunci "DASHBOARD CREATIVE TEAM" (tidak lagi berganti per menu) + ikon tab khusus (bukan globe, memakai logo dasbor biru-oranye).
@@ -3397,6 +3398,28 @@ function renderSummary(range){
   if(f.produk)   prevVidsPosted = prevVidsPosted.filter(v=>v.produk===f.produk);
   if(f.akun)     prevVidsPosted = prevVidsPosted.filter(v=>String(v.akunPosting||'').split(',').map(s=>s.trim()).includes(f.akun));
 
+  // v25: "konten diproduksi" = Request berstatus Selesai (jumlah QTY), basis tanggal request —
+  // sama persis dengan angka di tab Request Konten. Tiap QTY dibuat 1 record supaya chart/donat/rincian
+  // bisa memakai logika yang sama. Filter Platform/Kreator(PIC)/Produk tetap berlaku.
+  const reqToProd = (rng)=>{
+    // basis tanggal = DEADLINE request (fallback ke tanggal request kalau deadline kosong)
+    const dlOf = r=>{ const dl=String(r.deadline||'').slice(0,10); return /^\d{4}-\d{2}-\d{2}$/.test(dl) ? dl : String(r.tanggal||'').slice(0,10); };
+    const dlDate = r=>{ const k=dlOf(r); return k ? parseDate(k+'T00:00:00') : null; };
+    let reqs = REQUESTS.filter(r=>{ const d=dlDate(r); return r.status==='Selesai' && d && inRange(d, rng); });
+    if(f.platform) reqs = reqs.filter(r=>r.platform===f.platform);
+    if(f.kreator)  reqs = reqs.filter(r=>r.pic===f.kreator);
+    if(f.produk)   reqs = reqs.filter(r=>r.produk===f.produk);
+    const out = [];
+    reqs.forEach((r,ri)=>{
+      const q = Math.max(1, parseInt(r.qty,10)||1);
+      for(let n=1;n<=q;n++) out.push({ _id: ri+'#'+n+'#'+(r.ts||r.judul), tanggal:dlOf(r), judul: q>1 ? `${r.judul} (${n}/${q})` : r.judul,
+        nama:r.pic||'', tipe:r.tipe, produk:r.produk, platform:r.platform });
+    });
+    return out;
+  };
+  const prodVids = reqToProd(range);
+  const prevProdVids = reqToProd(prevRange);
+
   // helper: compute % delta
   function delta(cur, prev){
     if(prev===0 && cur===0) return null;
@@ -3463,13 +3486,13 @@ function renderSummary(range){
     return reqs.reduce((s,r)=> s + (parseInt(r.qty,10)||1), 0);
   };
   // v22: disamakan dengan chart "Produksi Konten Harian" (jumlah konten di Daftar Konten, tanggal produksi).
-  const totalVideo      = vids.length;
+  const totalVideo      = prodVids.length; // v25: sama dengan jumlah QTY Request Selesai
   const totalViews      = vidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const totalEngagement = vidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const avgERVal        = totalViews>0 ? (totalEngagement/totalViews*100) : 0;
   const avgER           = totalViews>0 ? avgERVal.toFixed(2)+'%' : '0%';
 
-  const prevTotalVideo      = prevVids.length;
+  const prevTotalVideo      = prevProdVids.length;
   const prevTotalViews      = prevVidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const prevTotalEngagement = prevVidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const prevAvgERVal        = prevTotalViews>0 ? (prevTotalEngagement/prevTotalViews*100) : 0;
@@ -3550,7 +3573,7 @@ function renderSummary(range){
   const days = [];
   let cur = new Date(range[0]);
   while(cur <= range[1]){ days.push(new Date(cur)); cur = addDays(cur,1); }
-  const countsPerDay = days.map(d=> vids.filter(v=>{ const vd=parseDate(v.tanggal); return vd && startOfDay(vd).getTime()===startOfDay(d).getTime(); }).length);
+  const countsPerDay = days.map(d=> prodVids.filter(v=>{ const vd=parseDate(v.tanggal); return vd && startOfDay(vd).getTime()===startOfDay(d).getTime(); }).length);
   const hasProduksiData = countsPerDay.some(c=>c>0);
   const produksiCanvas = document.getElementById('chartProduksiHarian');
   const produksiEmpty  = document.getElementById('chartProduksiHarianEmpty');
@@ -3591,7 +3614,7 @@ function renderSummary(range){
   // ── CHART: Kontribusi per Orang ──
   const perOrang = {};
   TEAM.forEach(n=>perOrang[n]=0);
-  vids.forEach(v=>{ if(perOrang[v.nama]===undefined) perOrang[v.nama]=0; perOrang[v.nama]++; });
+  prodVids.forEach(v=>{ if(perOrang[v.nama]===undefined) perOrang[v.nama]=0; perOrang[v.nama]++; });
   const names = Object.keys(perOrang).filter(n=>perOrang[n]>0);
   const palette = ['#FF5FA2','#FB923C','#3FD8D4','#F2C12E','#4C8DFF','#F0566C'];
   const kontribusiCanvas = document.getElementById('chartKontribusi');
@@ -3641,8 +3664,8 @@ function renderSummary(range){
       const dataPerName = names.map(n=>{
         const seen = new Set();
         const items = [];
-        vids.filter(v=>v.nama===n).forEach(v=>{
-          const key = (v.judul||'').trim().toLowerCase()+'|'+(v.tanggal||'');
+        prodVids.filter(v=>v.nama===n).forEach(v=>{
+          const key = v._id;
           if (seen.has(key)) return;
           seen.add(key);
           items.push(v);
