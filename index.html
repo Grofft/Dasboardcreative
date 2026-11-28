@@ -6,6 +6,7 @@
     Explorer — satu folder per peminta, hanya berisi request berstatus Selesai. Klik folder untuk membuka
     isinya (request SELESAI orang itu, filter Belum/Sudah Dipakai, tombol "← Semua Folder"). Ada pencarian nama peminta. Daftar
     Request tidak diubah. Tidak ada perubahan data/Apps Script.
+  - FIX: "Total Konten Diproduksi" (kartu KPI + kartu Total Views di Ringkasan) sekarang sama dengan total chart "Produksi Konten Harian" — keduanya menghitung konten di Daftar Konten berdasarkan tanggal produksi (sebelumnya KPI memakai SUM QTY Request Selesai sehingga bisa selisih, mis. 103 vs 107).
   - Tabel folder punya kolom "Link Hasil": tombol 🔗 Buka bila link sudah ada, kolom isi/ubah link langsung dari folder (tersimpan sama seperti kolom Link di Daftar Request).
   - Judul tab browser dikunci "DASHBOARD CREATIVE TEAM" (tidak lagi berganti per menu) + ikon tab khusus (bukan globe, memakai logo dasbor biru-oranye).
 
@@ -1375,7 +1376,7 @@ details.int-guide[open]>summary{margin-bottom:12px;}
 
     <div class="section-header"><h2>Ringkasan Periode</h2><div class="muted-note" id="rangeLabel2"></div></div>
     <div class="grid grid-4">
-      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi <span style="font-weight:400;opacity:.7;" title="Sum QTY dari Request Konten berstatus Selesai, basis tanggal request">(QTY Selesai)</span></div><div class="value" id="kpiTotalVideo">-</div><div class="muted-note kpi-target-line" id="kpiTotalVideo_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
+      <div class="card kpi"><div class="bar-accent" style="background:var(--pink)"></div><div class="label">Total Konten Diproduksi <span style="font-weight:400;opacity:.7;" title="Jumlah konten di Daftar Konten berdasarkan tanggal produksi — sama dengan total chart Produksi Konten Harian">(QTY Selesai)</span></div><div class="value" id="kpiTotalVideo">-</div><div class="muted-note kpi-target-line" id="kpiTotalVideo_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--purple)"></div><div class="label">Total Views</div><div class="value" id="kpiTotalViews">-</div><div class="muted-note kpi-target-line" id="kpiTotalViews_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--cyan)"></div><div class="label">Total Engagement</div><div class="value" id="kpiTotalEngagement">-</div><div class="muted-note kpi-target-line" id="kpiTotalEngagement_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
       <div class="card kpi"><div class="bar-accent" style="background:var(--yellow)"></div><div class="label">Avg Engagement Rate</div><div class="value" id="kpiAvgER">-</div><div class="muted-note kpi-target-line" id="kpiAvgER_targetLine" style="margin-top:4px;font-size:11px;cursor:pointer;"></div></div>
@@ -3461,13 +3462,14 @@ function renderSummary(range){
     if(f.produk)   reqs = reqs.filter(r=>r.produk===f.produk);
     return reqs.reduce((s,r)=> s + (parseInt(r.qty,10)||1), 0);
   };
-  const totalVideo      = sumQtySelesaiInRange(range);
+  // v22: disamakan dengan chart "Produksi Konten Harian" (jumlah konten di Daftar Konten, tanggal produksi).
+  const totalVideo      = vids.length;
   const totalViews      = vidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const totalEngagement = vidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const avgERVal        = totalViews>0 ? (totalEngagement/totalViews*100) : 0;
   const avgER           = totalViews>0 ? avgERVal.toFixed(2)+'%' : '0%';
 
-  const prevTotalVideo      = sumQtySelesaiInRange(prevRange);
+  const prevTotalVideo      = prevVids.length;
   const prevTotalViews      = prevVidsPosted.reduce((s,v)=>s+(v.views||0),0);
   const prevTotalEngagement = prevVidsPosted.reduce((s,v)=>s+(v.likes||0)+(v.comments||0)+(v.shares||0)+(v.saves||0)+(v.reposts||0),0);
   const prevAvgERVal        = prevTotalViews>0 ? (prevTotalEngagement/prevTotalViews*100) : 0;
